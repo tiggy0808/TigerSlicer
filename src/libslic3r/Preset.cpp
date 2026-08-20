@@ -1003,6 +1003,8 @@ bool Preset::has_cali_lines(PresetBundle* preset_bundle)
 }
 
 static std::vector<std::string> s_Preset_print_options{
+    // TigerSlicer
+    "independent_tool_layer_heights",
     "layer_height",
     "initial_layer_print_height",
     "wall_loops",
@@ -1404,6 +1406,27 @@ static std::vector<std::string> s_Preset_machine_limits_options {
 };
 
 static std::vector<std::string> s_Preset_printer_options {
+    // TigerSlicer
+    "five_axis_ab_feedrate",
+    "five_axis_kinematics",
+    "five_axis_max_yaw",
+    "five_axis_min_bed_clearance",
+    "five_axis_park_x",
+    "five_axis_park_y",
+    "five_axis_pivot_offset_z",
+    "five_axis_printing",
+    "five_axis_reorient_gcode",
+    "five_axis_rotary_continuous",
+    "five_axis_rotary_word",
+    "five_axis_stewart_pose_gcode",
+    "five_axis_table_diameter",
+    "five_axis_tilt_max",
+    "five_axis_tilt_min",
+    "five_axis_tilt_word",
+    "five_axis_transition_step",
+    "five_axis_z_clearance",
+    "extruder_preferred_layer_height",
+    "extruder_layer_height_ratio",
     "printer_technology",
     "printable_area", "extruder_printable_area", "support_parallel_printheads", "parallel_printheads_count", "parallel_printheads_bed_exclude_areas", "bed_exclude_area","bed_custom_texture", "bed_custom_model", "gcode_flavor",
      "gcode_skip_config_block", "fan_kickstart", "part_cooling_fan_min_pwm", "fan_speedup_time", "fan_speedup_overhangs",
@@ -1437,6 +1460,21 @@ static std::vector<std::string> s_Preset_printer_options {
     };
 
 static std::vector<std::string> s_Preset_sla_print_options {
+    // TigerSlicer
+    "msla_support_adaptive_diameter",
+    "msla_support_base_diameter",
+    "msla_support_base_kind",
+    "msla_support_brace_spacing",
+    "msla_support_contact_penetration",
+    "msla_support_cross_bracing",
+    "msla_support_edge_angle_delta",
+    "msla_support_manual_only",
+    "msla_support_max_pillar_diameter",
+    "msla_support_min_height",
+    "msla_support_min_overhang_area",
+    "msla_support_on_model",
+    "msla_support_overhang_angle",
+    "msla_support_precision",
     "layer_height",
     "faded_layers",
     "supports_enable",
