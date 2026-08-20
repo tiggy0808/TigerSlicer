@@ -824,6 +824,25 @@ PrintConfigDef::PrintConfigDef()
     assign_printer_technology_to_unknown(this->options, ptSLA);
 }
 
+static const t_config_enum_values s_keys_map_FiveAxisKinematics {
+    { "rotary_table",     int(FiveAxisKinematics::RotaryTable) },
+    { "stewart_platform", int(FiveAxisKinematics::StewartPlatform) }
+};
+CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(FiveAxisKinematics)
+
+static const t_config_enum_values s_keys_map_ResinPrintHostType {
+    { "local_http",    rhtLocalHttp },
+    { "mslicer_sdcp", rhtMSlicerSDCP },
+};
+CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(ResinPrintHostType)
+
+static inline const t_config_enum_values s_keys_map_MSlicerSupportBaseKind = {
+    {"none", msbNone},
+    {"raft", msbRaft},
+    {"pads", msbPads},
+};
+CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(MSlicerSupportBaseKind)
+
 void PrintConfigDef::init_common_params()
 {
     ConfigOptionDef* def;
@@ -8128,6 +8147,320 @@ void PrintConfigDef::init_fff_params()
                      "Otherwise, the rectilinear pattern will be used by default.");
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(true));
+
+    // --- TigerSlicer -------------------------------------------
+    def = this->add("independent_tool_layer_heights", coBool);
+    def->label = L("Independent tool layer heights");
+    def->category = L("Layers and Perimeters");
+    def->tooltip = L("Allow each physical tool to use its preferred layer height. Single-tool objects are sliced at that tool's height. "
+                     "Objects shared by multiple tools use synchronization Z planes at the finest requested height. Features explicitly permitted "
+                     "in each extruder profile may span several synchronized layers only where their geometry remains safe and stable. "
+                     "The scheduler keeps the current tool where dependencies allow, but additional synchronization planes may still add tool changes. "
+                     "Existing projects keep shared layer heights until this is enabled.");
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionBool(false));
+
+    def = this->add("multi_rate_layer_height_capable", coBool);
+    def->label = L("Multi-rate layer scheduling capable");
+    def->category = L("Capabilities");
+    def->tooltip = L("Declare that this printer's tool offsets, clearance radius and parked-tool geometry are safe for native independent tool layer scheduling. "
+                     "Independent tool layer heights cannot be enabled until this printer capability is set.");
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionBool(false));
+
+    def->tooltip = L("TigerSlicer can upload G-code files to a printer host. This field should contain "
+    def->tooltip = L("TigerSlicer can upload G-code files to a printer host. This field should contain "
+    def->tooltip = L("This code is inserted between objects when using sequential printing. By default extruder and bed temperature are reset using non-wait commands; however, if M104, M109, M140, or M190 are detected in this custom code, TigerSlicer will not add temperature commands. You can use placeholder variables for all TigerSlicer settings, so you can put a \"M109 S[first_layer_temperature]\" command wherever you want.");
+                   "Note that you can use placeholder variables for all TigerSlicer settings.");
+                   "Note that you can use placeholder variables for all TigerSlicer settings. "
+    def->tooltip = L("This is used only as a visual aid in the TigerSlicer interface.");
+    def->tooltip = L("This is used only as a visual aid in the TigerSlicer interface.");
+                   "The \"No extrusion\" flavor prevents TigerSlicer from exporting any extrusion value at all.");
+                     "TigerSlicer tries to connect two close infill lines to a short perimeter segment. If no such perimeter segment "
+                     "TigerSlicer tries to connect two close infill lines to a short perimeter segment. If no such perimeter segment "
+                     "When enabled, TigerSlicer uses it for time estimates and G-code Viewer speeds instead of Jerk.");
+    def->tooltip = L("When other speed settings are set to 0, TigerSlicer calculates the optimal speed automatically "
+
+    def = this->add("extruder_preferred_layer_height", coFloats);
+    def->label = L("Preferred layer height");
+    def->tooltip = L("Layer height preferred by this extruder when Independent tool layer heights is enabled. "
+                     "Set to 0 to inherit the print's ordinary layer height. The value must remain between this extruder's minimum and maximum layer height.");
+    def->sidetext = L("mm");
+    def->min = 0;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionFloats { 0. });
+
+    def = this->add("extruder_layer_height_ratio", coInts);
+    def->label = L("Layer-height ratio");
+    def->tooltip = L("Optional integer ratio to the finest synchronization grid used by this tool's object. "
+                     "Zero derives the ratio from Preferred layer height. A non-zero ratio must agree with the preferred height and remain inside this tool's limits.");
+    def->min = 0;
+    def->max = 100;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionInts { 0 });
+
+    auto add_independent_feature_permission = [this](const char *key, const char *label, const char *feature, bool default_value) {
+        ConfigOptionDef *permission = this->add(key, coBools);
+        permission->label = label;
+        permission->tooltip = format(L("Allow %1% assigned to this physical tool to use a coarser independent layer grid when geometry and dependencies prove it safe. "
+                                      "This is permission, not a guarantee; unsafe or changing geometry remains on synchronization planes."), feature);
+        permission->mode = comExpert;
+        permission->set_default_value(new ConfigOptionBools { default_value });
+        return permission;
+    };
+    add_independent_feature_permission("extruder_independent_walls", L("Independent walls"), L("walls"), false);
+    add_independent_feature_permission("extruder_independent_infill", L("Independent sparse infill"), L("sparse infill"), true);
+    add_independent_feature_permission("extruder_independent_solid_infill", L("Independent solid infill"), L("solid infill"), false);
+    ConfigOptionDef *top_surface_permission = add_independent_feature_permission(
+        "extruder_independent_top_surfaces", L("Independent top surfaces (unsupported)"), L("top surfaces"), false);
+    top_surface_permission->tooltip = L("Reserved for project compatibility. Coarse independent top surfaces are not currently supported; enabling this "
+                                        "permission for a tool with a coarser target height produces a validation error. Leave it disabled so top skins remain on synchronization planes.");
+    add_independent_feature_permission("extruder_independent_support", L("Independent support bases"), L("support base material"), false);
+    ConfigOptionDef *support_interface_permission = add_independent_feature_permission(
+        "extruder_independent_support_interface", L("Independent support interfaces (unsupported)"), L("support interfaces"), false);
+    support_interface_permission->tooltip = L("Reserved for project compatibility. Coarse independent support interfaces are not currently supported; enabling this "
+                                              "permission for a tool with a coarser target height produces a validation error. Leave it disabled so interfaces remain on synchronization planes.");
+
+    def->tooltip = L("TigerSlicer will not reduce speed below this value.");
+    def->tooltip = L("TigerSlicer can upload G-code files to a printer host. This field must contain "
+
+    def = this->add("five_axis_segment_theta", coFloat);
+    def->label = L("Build direction tilt");
+    def->category = L("5-Axis");
+    def->tooltip = L("How far this object's build direction tilts away from vertical, in degrees. "
+                     "Zero prints it flat on the bed as usual. A tilted object is sliced upright "
+                     "in its own frame and the table is reoriented before it is printed.");
+    def->sidetext = L("°");
+    def->min = 0;
+    def->max = 90;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionFloat(0.));
+
+    def = this->add("five_axis_segment_phi", coFloat);
+    def->label = L("Build direction azimuth");
+    def->category = L("5-Axis");
+    def->tooltip = L("Which way the build direction leans, in degrees around the Z axis. "
+                     "Only meaningful when the tilt is not zero.");
+    def->sidetext = L("°");
+    def->min = -360;
+    def->max = 360;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionFloat(0.));
+
+    def = this->add("five_axis_segment_origin_z", coFloat);
+    def->label = L("Build direction origin Z");
+    def->category = L("5-Axis");
+    def->tooltip = L("The height at which this object's slice plane meets the rest of the part, "
+                     "measured from the bed. A segment growing off the top of a 20 mm base has "
+                     "an origin Z of 20.");
+    def->sidetext = L("mm");
+    def->min = 0;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionFloat(0.));
+
+    // TigerSlicer: 5-axis printing (multidirectional slicing on a tilt+spin rotary table)
+
+    def = this->add("five_axis_printing", coBool);
+    def->label = L("5-Axis printer");
+    def->tooltip = L("The printer has a tilt+spin rotary table (or equivalent) for multidirectional "
+                     "5-axis printing. Enables the 5-Axis settings page.");
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionBool(false));
+
+    def = this->add("five_axis_kinematics", coEnum);
+    def->label = L("Kinematic type");
+    def->tooltip = L("What kind of 5-axis machine this is. Rotary table: a trunnion that tilts and "
+                     "spins the bed (reorientation uses rotary/tilt axis words). Stewart platform: "
+                     "a hexapod bed that tilts toward any azimuth without spinning the part "
+                     "(reorientation uses the platform pose G-code).");
+    def->set_enum<FiveAxisKinematics>({
+        { "rotary_table",     L("Rotary table (tilt + spin)") },
+        { "stewart_platform", L("Stewart platform (hexapod bed)") }
+    });
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionEnum<FiveAxisKinematics>(FiveAxisKinematics::RotaryTable));
+
+    def = this->add("five_axis_max_yaw", coFloat);
+    def->label = L("Maximum yaw");
+    def->tooltip = L("Stewart platform only: hard limit of platform rotation about the vertical "
+                     "axis. Hexapods cannot spin continuously.");
+    def->sidetext = L("°");
+    def->min = 0;
+    def->max = 180;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(30));
+
+    def = this->add("five_axis_stewart_pose_gcode", coString);
+    def->label = L("Stewart pose G-code");
+    def->tooltip = L("Stewart platform only: G-code emitted to pose the platform between segments. "
+                     "Placeholders: {THETA} tilt from vertical and {PHI} azimuth of the build "
+                     "direction (degrees, {PHI180} is the azimuth wrapped into -180..180), "
+                     "{RX} roll about X, {RY} pitch about Y, {YAW} rotation about Z (degrees), "
+                     "{F} feedrate in °/min, {X} {Y} {Z} the toolhead position the pose is "
+                     "taken at (mm). The default suits firmwares that take the pose as direction "
+                     "angles (e.g. RepRapFirmware hexapod kinematics); use {RX} {RY} {YAW} for "
+                     "controllers that want explicit platform rotations instead.");
+    def->multiline = true;
+    def->full_width = true;
+    def->height = 5;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionString("G1 A{THETA} B{PHI180} F{F} ; platform pose\n"));
+
+    def = this->add("five_axis_tilt_word", coString);
+    def->label = L("Tilt axis G-code word");
+    def->tooltip = L("G-code word for the trunnion/tilt axis (rotation about Y). CNC convention: "
+                     "A/B/C are rotations about X/Y/Z, so this is B on standard controllers.");
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionString("B"));
+
+    def = this->add("five_axis_rotary_word", coString);
+    def->label = L("Rotary axis G-code word");
+    def->tooltip = L("G-code word for the table-spin axis (rotation about Z). CNC convention: "
+                     "A/B/C are rotations about X/Y/Z, so this is C on standard controllers.");
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionString("C"));
+
+    def = this->add("five_axis_tilt_min", coFloat);
+    def->label = L("Tilt minimum");
+    def->tooltip = L("Lower hard limit of the tilt axis. Slice planes needing more tilt are rejected.");
+    def->sidetext = L("°");
+    def->min = -180;
+    def->max = 180;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
+
+    def = this->add("five_axis_tilt_max", coFloat);
+    def->label = L("Tilt maximum");
+    def->tooltip = L("Upper hard limit of the tilt axis. Slice planes needing more tilt are rejected.");
+    def->sidetext = L("°");
+    def->min = -180;
+    def->max = 180;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(90));
+
+    def = this->add("five_axis_rotary_continuous", coBool);
+    def->label = L("Continuous rotary axis");
+    def->tooltip = L("The table-spin axis can rotate without limits (slip rings). Angles are "
+                     "unwrapped across ±180° to avoid rewind moves.");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(true));
+
+    def = this->add("five_axis_pivot_offset_z", coFloat);
+    def->label = L("Tilt pivot Z offset");
+    def->tooltip = L("Height of the tilt axis line relative to the bed surface. Zero means the "
+                     "tilt axis lies in the bed plane at the table center.");
+    def->sidetext = L("mm");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
+
+    def = this->add("five_axis_table_diameter", coFloat);
+    def->label = L("Rotary table diameter");
+    def->tooltip = L("Usable diameter of the rotary table disc. Toolpaths outside this radius are rejected.");
+    def->sidetext = L("mm");
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(120));
+
+    def = this->add("five_axis_ab_feedrate", coFloat);
+    def->label = L("Rotary/tilt feedrate");
+    def->tooltip = L("Speed of reorientation moves. Both axes are scaled to finish simultaneously.");
+    def->sidetext = L("°/s");
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(25));
+
+    def = this->add("five_axis_transition_step", coFloat);
+    def->label = L("Transition tilt per layer");
+    def->tooltip = L("Stewart platform only: instead of one reorientation between a flat segment and "
+                     "a tilted one, ramp the platform tilt by this many degrees per layer while the "
+                     "first layers of the tilted segment print. The boundary becomes a small wedge of "
+                     "slanted layers hinged at the segment origin, and Z follows the changing angle. "
+                     "Zero prints the boundary with a single reorientation.");
+    def->sidetext = L("°");
+    def->min = 0;
+    def->max = 15;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(2.));
+
+    def = this->add("five_axis_z_clearance", coFloat);
+    def->label = L("Z clearance before reorientation");
+    def->tooltip = L("Z raise above the highest printed point before the table tilts or spins.");
+    def->sidetext = L("mm");
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(10));
+
+    def = this->add("five_axis_park_x", coFloat);
+    def->label = L("Reorientation park X");
+    def->tooltip = L("Where the nozzle waits while the table reorients. Must be outside the swept "
+                     "volume of the tilted table and part.");
+    def->sidetext = L("mm");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
+
+    def = this->add("five_axis_park_y", coFloat);
+    def->label = L("Reorientation park Y");
+    def->tooltip = L("Where the nozzle waits while the table reorients. Must be outside the swept "
+                     "volume of the tilted table and part.");
+    def->sidetext = L("mm");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(-120));
+
+    def = this->add("five_axis_min_bed_clearance", coFloat);
+    def->label = L("Minimum bed-to-nozzle clearance");
+    def->tooltip = L("Collision rule for tilted printing: toolpath points closer than this to the "
+                     "tilted bed plane are rejected.");
+    def->sidetext = L("mm");
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(12));
+
+    def = this->add("five_axis_reorient_gcode", coString);
+    def->label = L("Reorientation G-code");
+    def->tooltip = L("Custom G-code emitted to reorient the table between segments. Placeholders: "
+                     "{A} spin angle, {B} tilt angle, {F} feedrate in °/min, "
+                     "{ROTARY} the configured rotary axis word, {TILT} the configured tilt axis word, "
+                     "{THETA} tilt and {PHI} azimuth of the build direction (degrees, {PHI180} is the "
+                     "azimuth wrapped into -180..180), {X} {Y} {Z} the "
+                     "toolhead position the pose is taken at (mm). "
+                     "Use Klipper MANUAL_STEPPER macros here if your firmware has no native rotary words.");
+    def->multiline = true;
+    def->full_width = true;
+    def->height = 5;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionString("G0 {ROTARY}{A} {TILT}{B} F{F} ; reorient table\n"));
+
+    def->tooltip = L("This custom code is inserted before every toolchange. Placeholder variables for all TigerSlicer settings "
+                     "which changes to the correct extruder is included (such as T{next_extruder}), TigerSlicer will emit no other such command. "
+        "nozzle_diameter", "min_layer_height", "max_layer_height", "extruder_preferred_layer_height", "extruder_layer_height_ratio",
+        "extruder_independent_walls", "extruder_independent_infill", "extruder_independent_solid_infill",
+        "extruder_independent_top_surfaces", "extruder_independent_support", "extruder_independent_support_interface", "extruder_offset",
+    auto add_resin_schema = [this, &def](const char *version_key, const char *required_key,
+                                         const char *diagnostics_key, const std::string &label) {
+        def = this->add(version_key, coInt);
+        def->label = label + L(" schema version");
+        def->tooltip = L("Internal TigerSlicer Resin schema version used for safe profile and project migration.");
+        def->min = 0;
+        def->max = 1;
+        def->mode = comExpert;
+        def->set_default_value(new ConfigOptionInt(1));
+
+        def = this->add(required_key, coBool);
+        def->label = label + L(" migration requires review");
+        def->tooltip = L("Blocks Resin slicing until legacy values with ambiguous semantics are reviewed explicitly. Uncheck only after reviewing the native settings and migration message.");
+        def->mode = comExpert;
+        def->set_default_value(new ConfigOptionBool(false));
+
+        def = this->add(diagnostics_key, coStrings);
+        def->label = label + L(" migration diagnostics");
+        def->tooltip = L("Preserved reasons why a legacy Resin value could not be mapped safely.");
+        def->mode = comExpert;
+        def->set_default_value(new ConfigOptionStrings());
+    };
+
+    add_resin_schema("resin_printer_schema_version", "resin_printer_migration_required",
+        "resin_printer_migration_diagnostics", L("Resin printer"));
+
 }
 
 void PrintConfigDef::init_extruder_option_keys()
@@ -8884,6 +9217,362 @@ void PrintConfigDef::init_sla_params()
     def->enum_labels.push_back(" ");
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionEnum<SLAMaterialSpeed>(slamsFast));
+
+    // --- TigerSlicer -------------------------------------------
+    def = this->add("resin_host_type", coEnum);
+    def->label = L("Resin Host Type");
+    def->tooltip = L("Choose a local Resin upload protocol. ChiTu SDCP communicates only with an explicitly configured private-LAN IPv4 printer and never starts a print automatically.");
+    def->set_enum<ResinPrintHostType>({
+        { "local_http",    "Resin HTTP printer" },
+        { "mslicer_sdcp", "ChiTu SDCP (local LAN)" }
+    });
+    def->mode = comAdvanced;
+    def->cli = ConfigOptionDef::nocli;
+    def->set_default_value(new ConfigOptionEnum<ResinPrintHostType>(rhtLocalHttp));
+
+    def->tooltip = L("If enabled, TigerSlicer detects obstacles along the travel path and makes the slope steeper "
+    // "∆" is not in the shipped UI font and renders as a tofu box.
+    def->sidetext = "°C (difference)";
+    def->tooltip = L("When enabled, TigerSlicer will check whether your custom Start G-Code contains G-codes to set "
+                     "placeholder variables for all TigerSlicer settings, so you can put "
+                     "TigerSlicer will execute the Start G-Code after heated chamber was set to its temperature, "
+                     "When disabled, TigerSlicer will NOT emit commands to heat up extruder, bed or chamber, "
+                   "This is used to override settings for a specific filament. If TigerSlicer detects "
+                   "for all TigerSlicer settings, so you can put a \"M109 S[first_layer_temperature]\" command "
+    // TigerSlicer: per-object build direction for a multidirectional print.
+    // These live on the object, not the printer: they say which way this
+    // piece of the part is grown, and the flat pieces keep theta = 0.
+
+    def = this->add("resin_supported_formats", coStrings);
+    def->label = L("Supported Resin formats");
+    def->tooltip = L("Exact output formats accepted by this printer and implemented by the integrated MSlicer engine. Add SVG only for a diagnostic vector workflow; SVG is not a printer machine file.");
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionStrings({ "goo" }));
+
+    def->tooltip = L("Set the actual LCD display orientation inside the MSLA printer."
+    add_resin_schema("resin_material_schema_version", "resin_material_migration_required",
+        "resin_material_migration_diagnostics", L("Resin material"));
+
+    def->tooltip = L("This is used only as a visual aid in the TigerSlicer interface.");
+    def->label = L("MSLA material type");
+    def->tooltip = L("MSLA material type");
+    add_resin_schema("resin_print_schema_version", "resin_print_migration_required",
+        "resin_print_migration_diagnostics", L("Resin print"));
+
+    def = this->add("mslicer_bottom_layers", coInt);
+    def->label = L("Bottom layers");
+    def->tooltip = L("Number of fully bottom-exposed layers before the transition ramp begins.");
+    def->min = 0;
+    def->max = 100;
+    def->set_default_value(new ConfigOptionInt(3));
+
+    def = this->add("mslicer_transition_layers", coInt);
+    def->label = L("Transition layers");
+    def->tooltip = L("Number of layers that interpolate exposure and motion from bottom values to normal values.");
+    def->min = 0;
+    def->max = 100;
+    def->set_default_value(new ConfigOptionInt(10));
+
+    def = this->add("mslicer_supersample", coInt);
+    def->label = L("Raster supersampling");
+    def->tooltip = L("MSlicer anti-aliasing sample factor. Higher values improve edge smoothness but increase slicing time and memory use.");
+    def->min = 1;
+    def->max = 4;
+    def->set_default_value(new ConfigOptionInt(1));
+
+    auto add_mslicer_time = [this, &def](const char *key, const std::string &label,
+                                         const std::string &tooltip, double value) {
+        def = this->add(key, coFloat);
+        def->label = label;
+        def->tooltip = tooltip;
+        def->sidetext = L("s");
+        def->min = 0;
+        def->max = 600;
+        def->set_default_value(new ConfigOptionFloat(value));
+    };
+    auto add_mslicer_distance = [this, &def](const char *key, const std::string &label,
+                                             const std::string &tooltip, double value) {
+        def = this->add(key, coFloat);
+        def->label = label;
+        def->tooltip = tooltip;
+        def->sidetext = L("mm");
+        def->min = 0;
+        def->max = 100;
+        def->set_default_value(new ConfigOptionFloat(value));
+    };
+    auto add_mslicer_speed = [this, &def](const char *key, const std::string &label,
+                                          const std::string &tooltip, double value) {
+        def = this->add(key, coFloat);
+        def->label = label;
+        def->tooltip = tooltip;
+        def->sidetext = L("mm/min");
+        def->min = 0.1;
+        def->max = 30000;
+        def->set_default_value(new ConfigOptionFloat(value));
+    };
+
+    add_mslicer_time("mslicer_normal_wait_time", L("Normal wait before exposure"),
+        L("Settling delay before exposing a normal layer."), 0.5);
+    add_mslicer_time("mslicer_bottom_wait_time", L("Bottom wait before exposure"),
+        L("Settling delay before exposing a bottom layer."), 1.0);
+
+    def = this->add("mslicer_normal_pwm", coInt);
+    def->label = L("Normal light PWM");
+    def->tooltip = L("Light power for normal layers, from 0 to 255.");
+    def->min = 0;
+    def->max = 255;
+    def->set_default_value(new ConfigOptionInt(255));
+
+    def = this->add("mslicer_bottom_pwm", coInt);
+    def->label = L("Bottom light PWM");
+    def->tooltip = L("Light power for bottom layers, from 0 to 255.");
+    def->min = 0;
+    def->max = 255;
+    def->set_default_value(new ConfigOptionInt(255));
+
+    add_mslicer_distance("mslicer_normal_lift_distance", L("Normal lift distance"),
+        L("Build-platform lift after a normal exposure."), 5.0);
+    add_mslicer_speed("mslicer_normal_lift_speed", L("Normal lift speed"),
+        L("Build-platform lift speed after a normal exposure."), 60.0);
+    add_mslicer_distance("mslicer_normal_retract_distance", L("Normal retract distance"),
+        L("Build-platform return distance before the next normal layer."), 5.0);
+    add_mslicer_speed("mslicer_normal_retract_speed", L("Normal retract speed"),
+        L("Build-platform return speed before the next normal layer."), 120.0);
+    add_mslicer_distance("mslicer_bottom_lift_distance", L("Bottom lift distance"),
+        L("Build-platform lift after a bottom exposure."), 6.0);
+    add_mslicer_speed("mslicer_bottom_lift_speed", L("Bottom lift speed"),
+        L("Build-platform lift speed after a bottom exposure."), 45.0);
+    add_mslicer_distance("mslicer_bottom_retract_distance", L("Bottom retract distance"),
+        L("Build-platform return distance before the next bottom layer."), 6.0);
+    add_mslicer_speed("mslicer_bottom_retract_speed", L("Bottom retract speed"),
+        L("Build-platform return speed before the next bottom layer."), 90.0);
+
+    def->label = L("MSLA print material notes");
+    def->tooltip = L("You can put your notes regarding the MSLA print material here.");
+    def->label = L("Default MSLA material profile");
+    def->label = L("Default MSLA print profile");
+    def->tooltip = L("This is a relative measure of support points density. It scales the "
+                     "spacing of both face and edge supports together: a higher density "
+                     "places them closer.");
+    // --- Native MSLA support generation -------------------------------------
+    // Everything below is read by MSlicerResinJob::support_settings_from_config
+    // and changes what the generator builds. Nothing here is decorative.
+
+    def = this->add("msla_support_contact_penetration", coFloat);
+    def->label = L("Contact penetration");
+    def->category = L("Supports");
+    def->tooltip = L("How far the tip of a support is pushed into the model past the point "
+                     "it touches. Zero rests the tip on the surface, which is easiest to "
+                     "remove and holds least. Deeper bites in harder and leaves a deeper "
+                     "mark. It cannot exceed the tip length.");
+    def->sidetext = L("mm");
+    def->min = 0;
+    def->max = 5;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionFloat(0.));
+
+    def = this->add("msla_support_min_height", coFloat);
+    def->label = L("Minimum support height");
+    def->category = L("Supports");
+    def->tooltip = L("A contact point closer to the build plate than this gets no support. "
+                     "There is no room under it for a tip, and a column shorter than its "
+                     "own tip prints as a blob against the plate rather than as a support.");
+    def->sidetext = L("mm");
+    def->min = 0;
+    def->max = 50;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionFloat(1.2));
+
+    def = this->add("msla_support_min_overhang_area", coFloat);
+    def->label = L("Minimum overhang area");
+    def->category = L("Supports");
+    def->tooltip = L("Connected overhanging regions with less surface area than this are "
+                     "left unsupported. Regions are grouped by shared edges, so a large "
+                     "overhang made of many small triangles is kept. Isolated low points "
+                     "are never dropped by this rule: those cannot print at all without a "
+                     "support. Zero supports every overhang found.");
+    def->sidetext = L("mm²");
+    def->min = 0;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionFloat(0.));
+
+    def = this->add("msla_support_base_kind", coEnum);
+    def->label = L("Support base");
+    def->category = L("Supports");
+    def->tooltip = L("What each support column stands on. Every column still routes down "
+                     "to the build plate; this decides only what is built where it lands. "
+                     "A raft joins every column under one hull. Individual pads keep them "
+                     "separate, so one distant column does not drag a raft across the "
+                     "plate to reach it.");
+    def->set_enum<MSlicerSupportBaseKind>(
+        ConfigOptionEnum<MSlicerSupportBaseKind>::get_enum_names(),
+        { L("None"), L("Raft"), L("Individual pads") });
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionEnum<MSlicerSupportBaseKind>(msbRaft));
+
+    def = this->add("msla_support_base_diameter", coFloat);
+    def->label = L("Pad diameter");
+    def->category = L("Supports");
+    def->tooltip = L("Diameter of one individual support pad. Used only when the support "
+                     "base is set to individual pads.");
+    def->sidetext = L("mm");
+    def->min = 0;
+    def->max = 50;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionFloat(3.));
+
+    def = this->add("msla_support_overhang_angle", coFloat);
+    def->label = L("Overhang angle");
+    def->category = L("Supports");
+    def->tooltip = L("A face is treated as overhanging when its downward tilt is within "
+                     "this angle of pointing straight down. Larger values catch shallower "
+                     "overhangs and generate more supports.");
+    def->sidetext = L("°");
+    def->min = 0;
+    def->max = 89;
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionFloat(30.));
+
+    def = this->add("msla_support_edge_angle_delta", coFloat);
+    def->label = L("Edge detection angle");
+    def->category = L("Supports");
+    def->tooltip = L("How sharply two faces must meet before the edge between them is "
+                     "treated as an edge needing its own line of supports. Smaller values "
+                     "treat gentler creases as edges.");
+    def->sidetext = L("°");
+    def->min = 0;
+    def->max = 180;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionFloat(5.73));
+
+    def = this->add("msla_support_precision", coInt);
+    def->label = L("Support mesh precision");
+    def->category = L("Supports");
+    def->tooltip = L("How many facets each support cylinder and sphere is built from. "
+                     "Higher is rounder and slower to generate; it does not change where "
+                     "supports are placed.");
+    def->min = 4;
+    def->max = 64;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionInt(10));
+
+    def = this->add("msla_support_on_model", coBool);
+    def->label = L("Rest on model");
+    def->category = L("Supports");
+    def->tooltip = L("A support column may end on the model directly below its contact "
+                     "point instead of routing all the way to the build plate, when there "
+                     "is room for a second tip there. Shorter columns are stiffer and use "
+                     "less resin; the lower tip leaves a mark where it lands.");
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionBool(false));
+
+    def = this->add("msla_support_cross_bracing", coBool);
+    def->label = L("Cross bracing");
+    def->category = L("Supports");
+    def->tooltip = L("Add diagonal X braces between neighbouring support columns that "
+                     "stand on the plate. Braced columns resist peel forces together "
+                     "instead of flexing alone.");
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionBool(false));
+
+    def = this->add("msla_support_brace_spacing", coFloat);
+    def->label = L("Brace spacing");
+    def->category = L("Supports");
+    def->tooltip = L("Columns whose feet are within this distance brace to their nearest "
+                     "neighbour, and one X of braces covers this much height before the "
+                     "next begins.");
+    def->sidetext = L("mm");
+    def->min = 1;
+    def->max = 100;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionFloat(10.));
+
+    def = this->add("msla_support_adaptive_diameter", coBool);
+    def->label = L("Adaptive pillar diameter");
+    def->category = L("Supports");
+    def->tooltip = L("Grow the pillar diameter with column height: two millimetres of "
+                     "diameter for every 50 mm of height, on top of the configured pillar "
+                     "diameter and capped at the maximum below. Tall columns carry their "
+                     "load without becoming disproportionately flexible.");
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionBool(false));
+
+    def = this->add("msla_support_max_pillar_diameter", coFloat);
+    def->label = L("Maximum pillar diameter");
+    def->category = L("Supports");
+    def->tooltip = L("Upper bound for the adaptive pillar diameter. It must be at least "
+                     "the pillar diameter itself.");
+    def->sidetext = L("mm");
+    def->min = 0;
+    def->max = 20;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionFloat(6.));
+
+    def = this->add("msla_support_manual_only", coBool);
+    def->label = L("Manual points only");
+    def->category = L("Supports");
+    def->tooltip = L("Support only the manually placed points and skip automatic detection. "
+                     "With no manual points placed, generation then places nothing and says "
+                     "so, rather than quietly falling back to automatic supports.");
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionBool(false));
+
+    // The MSlicer resin engine does not generate pads (supports carry their
+    // own base pads), so the supported default is off; slicing rejects true.
+    def->set_default_value(new ConfigOptionBool(false));
+    def->label = L("MSlicer Resin output format");
+    def->tooltip = L("Native MSlicer output format. CTB v5, GOO v3, and NanoDLP are printer files. SVG is a diagnostic vector layer sheet and must be explicitly allowed by the printer profile.");
+    def->set_enum_values(ConfigOptionDef::GUIType::select_open, { "CTB", "GOO", "NanoDLP", "SVG" });
+    def->set_default_value(new ConfigOptionString("GOO"));
+    def->label = L("MSLA output precision");
+    if (cfg.independent_tool_layer_heights) {
+        if (! cfg.multi_rate_layer_height_capable)
+            return "--independent-tool-layer-heights requires --multi-rate-layer-height-capable";
+        const std::array<std::pair<const char *, size_t>, 8> vector_sizes {{
+            { "--extruder-preferred-layer-height", cfg.extruder_preferred_layer_height.size() },
+            { "--extruder-layer-height-ratio", cfg.extruder_layer_height_ratio.size() },
+            { "--extruder-independent-walls", cfg.extruder_independent_walls.size() },
+            { "--extruder-independent-infill", cfg.extruder_independent_infill.size() },
+            { "--extruder-independent-solid-infill", cfg.extruder_independent_solid_infill.size() },
+            { "--extruder-independent-top-surfaces", cfg.extruder_independent_top_surfaces.size() },
+            { "--extruder-independent-support", cfg.extruder_independent_support.size() },
+            { "--extruder-independent-support-interface", cfg.extruder_independent_support_interface.size() }
+        }};
+        for (const auto &[name, size] : vector_sizes)
+            if (size != cfg.nozzle_diameter.size())
+                return std::string(name) + " must contain one value per physical extruder";
+        for (size_t extruder_idx = 0; extruder_idx < cfg.nozzle_diameter.size(); ++ extruder_idx) {
+            const double configured_preferred = cfg.extruder_preferred_layer_height.get_at(extruder_idx);
+            const double preferred = configured_preferred > 0. ? configured_preferred : cfg.layer_height.value;
+            const double minimum = cfg.min_layer_height.get_at(extruder_idx) == 0. ? 0.07 :
+                                   std::max(0.01, cfg.min_layer_height.get_at(extruder_idx));
+            const double maximum = cfg.max_layer_height.get_at(extruder_idx) == 0. ?
+                                   0.75 * cfg.nozzle_diameter.get_at(extruder_idx) :
+                                   std::max(minimum, cfg.max_layer_height.get_at(extruder_idx));
+            if (preferred < minimum - EPSILON || preferred > maximum + EPSILON)
+                return "Preferred layer height must be within the configured minimum and maximum for its extruder";
+            if (configured_preferred > 0. && fabs(fmod(configured_preferred, SCALING_FACTOR)) > 1e-4)
+                return "Preferred layer height must be a multiple of print resolution";
+            if (cfg.extruder_layer_height_ratio.get_at(extruder_idx) < 0)
+                return "Layer-height ratio cannot be negative";
+        }
+    }
+
+    def->label = L("Help (FDM options)");
+    def->label = L("Help (MSLA options)");
+    def->tooltip = L("Show the full list of MSLA print configuration options.");
+    def->tooltip = L("Slice the model as FDM or MSLA based on the printer_technology configuration value "
+                     "(serialized as FFF or SLA for profile compatibility), and export the result.");
+    def->label = L("Export Resin");
+    def->tooltip = L("Slice the model with MSlicer and export the Resin output file "
+                     "selected by the printer profile (CTB, GOO, NanoDLP, or diagnostic SVG).");
+    def->tooltip = L("This version of TigerSlicer may not understand configurations produced by the newest TigerSlicer versions. "
+        "For example, newer TigerSlicer may extend the list of supported firmware flavors. One may decide to "
+    def->tooltip = L("If enabled, the command line arguments are sent to an existing instance of GUI TigerSlicer, "
+                     "or an existing TigerSlicer window is activated. "
+                     "it should write to this variable so TigerSlicer knows where it travels from when it gets control back.");
+                     "it should write to this variable so TigerSlicer deretracts correctly when it gets control back.");
+
 }
 
 void PrintConfigDef::handle_legacy(t_config_option_key &opt_key, std::string &value)

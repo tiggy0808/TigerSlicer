@@ -1098,6 +1098,48 @@ protected: \
         BOOST_PP_SEQ_FOR_EACH(PRINT_CONFIG_CLASS_ELEMENT_EQUAL, _, PARAMETER_DEFINITION_SEQ))
 
 // This object is mapped to Perl as Slic3r::Config::PrintObject.
+
+// --- TigerSlicer: types its own options are declared with -------
+// TigerSlicer: what kind of 5-axis machine this printer is
+enum class FiveAxisKinematics {
+    RotaryTable,     // tilt + spin rotary table (trunnion)
+    StewartPlatform, // hexapod bed, no-twist tilt toward any azimuth
+    Count,
+};
+
+enum ResinPrintHostType { rhtLocalHttp, rhtMSlicerSDCP };
+
+// What a generated MSLA support column stands on. Declared here rather than
+// pulled in from the engine header so PrintConfig keeps no dependency on the
+// MSlicer ABI; the values are static_asserted equal to ts_mslicer_support_base
+// in MSlicerResinJob.cpp, where the two actually meet.
+enum MSlicerSupportBaseKind {
+    msbNone = 0,
+    msbRaft = 1,
+    msbPads = 2,
+};
+
+    // Native MSLA support generation. Read by
+    // MSlicerResinJob::support_settings_from_config.
+    ((ConfigOptionFloat, msla_support_contact_penetration))
+    ((ConfigOptionFloat, msla_support_min_height))
+    ((ConfigOptionFloat, msla_support_min_overhang_area))
+    ((ConfigOptionEnum<MSlicerSupportBaseKind>, msla_support_base_kind))
+    ((ConfigOptionFloat, msla_support_base_diameter))
+    ((ConfigOptionFloat, msla_support_overhang_angle))
+    ((ConfigOptionFloat, msla_support_edge_angle_delta))
+    ((ConfigOptionInt, msla_support_precision))
+    ((ConfigOptionBool, msla_support_on_model))
+    ((ConfigOptionBool, msla_support_cross_bracing))
+    ((ConfigOptionFloat, msla_support_brace_spacing))
+    ((ConfigOptionBool, msla_support_adaptive_diameter))
+    ((ConfigOptionFloat, msla_support_max_pillar_diameter))
+    ((ConfigOptionBool, msla_support_manual_only))
+
+
+CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(FiveAxisKinematics)
+CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(MSlicerSupportBaseKind)
+
 PRINT_CONFIG_CLASS_DEFINE(
     PrintObjectConfig,
 
@@ -1724,6 +1766,24 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloats,   filament_dev_chamber_drying_time))
     ((ConfigOptionFloats,   filament_dev_drying_softening_temperature))
     ((ConfigOptionFloats,   filament_dev_drying_cooling_temperature))
+    // TigerSlicer: 5-axis printing
+    ((ConfigOptionBool,                five_axis_printing))
+    ((ConfigOptionEnum<FiveAxisKinematics>, five_axis_kinematics))
+    ((ConfigOptionFloat,               five_axis_max_yaw))
+    ((ConfigOptionString,              five_axis_stewart_pose_gcode))
+    ((ConfigOptionString,              five_axis_tilt_word))
+    ((ConfigOptionString,              five_axis_rotary_word))
+    ((ConfigOptionFloat,               five_axis_tilt_min))
+    ((ConfigOptionFloat,               five_axis_tilt_max))
+    ((ConfigOptionBool,                five_axis_rotary_continuous))
+    ((ConfigOptionFloat,               five_axis_pivot_offset_z))
+    ((ConfigOptionFloat,               five_axis_table_diameter))
+    ((ConfigOptionFloat,               five_axis_ab_feedrate))
+    ((ConfigOptionFloat,               five_axis_z_clearance))
+    ((ConfigOptionFloat,               five_axis_park_x))
+    ((ConfigOptionFloat,               five_axis_park_y))
+    ((ConfigOptionFloat,               five_axis_min_bed_clearance))
+    ((ConfigOptionString,              five_axis_reorient_gcode))
 )
 
 // This object is mapped to Perl as Slic3r::Config::Print.
@@ -1923,6 +1983,16 @@ PRINT_CONFIG_CLASS_DERIVED_DEFINE(
     ((ConfigOptionFloat,               adaptive_bed_mesh_margin))
 
 
+    ((ConfigOptionBool,               independent_tool_layer_heights))
+    ((ConfigOptionBool,               multi_rate_layer_height_capable))
+    ((ConfigOptionBools,              extruder_independent_infill))
+    ((ConfigOptionBools,              extruder_independent_solid_infill))
+    ((ConfigOptionBools,              extruder_independent_support))
+    ((ConfigOptionBools,              extruder_independent_support_interface))
+    ((ConfigOptionBools,              extruder_independent_top_surfaces))
+    ((ConfigOptionBools,              extruder_independent_walls))
+    ((ConfigOptionInts,               extruder_layer_height_ratio))
+    ((ConfigOptionFloats,             extruder_preferred_layer_height))
 )
 
 // This object is mapped to Perl as Slic3r::Config::Full.
@@ -1937,6 +2007,12 @@ std::map<std::string, std::string> validate(const FullPrintConfig &config, bool 
 PRINT_CONFIG_CLASS_DEFINE(
     SLAPrintConfig,
     ((ConfigOptionString,     filename_format))
+    ((ConfigOptionInt,        resin_print_schema_version))
+    ((ConfigOptionBool,       resin_print_migration_required))
+    ((ConfigOptionStrings,    resin_print_migration_diagnostics))
+    ((ConfigOptionInt,        mslicer_bottom_layers))
+    ((ConfigOptionInt,        mslicer_transition_layers))
+    ((ConfigOptionInt,        mslicer_supersample))
 )
 
 PRINT_CONFIG_CLASS_DEFINE(
@@ -2098,6 +2174,21 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat,                       material_correction_y))
     ((ConfigOptionFloat,                       material_correction_z))
     ((ConfigOptionEnum<SLAMaterialSpeed>,      material_print_speed))
+    ((ConfigOptionInt,                         resin_material_schema_version))
+    ((ConfigOptionBool,                        resin_material_migration_required))
+    ((ConfigOptionStrings,                     resin_material_migration_diagnostics))
+    ((ConfigOptionFloat,                       mslicer_normal_wait_time))
+    ((ConfigOptionFloat,                       mslicer_bottom_wait_time))
+    ((ConfigOptionInt,                         mslicer_normal_pwm))
+    ((ConfigOptionInt,                         mslicer_bottom_pwm))
+    ((ConfigOptionFloat,                       mslicer_normal_lift_distance))
+    ((ConfigOptionFloat,                       mslicer_normal_lift_speed))
+    ((ConfigOptionFloat,                       mslicer_normal_retract_distance))
+    ((ConfigOptionFloat,                       mslicer_normal_retract_speed))
+    ((ConfigOptionFloat,                       mslicer_bottom_lift_distance))
+    ((ConfigOptionFloat,                       mslicer_bottom_lift_speed))
+    ((ConfigOptionFloat,                       mslicer_bottom_retract_distance))
+    ((ConfigOptionFloat,                       mslicer_bottom_retract_speed))
 )
 
 PRINT_CONFIG_CLASS_DEFINE(
@@ -2128,6 +2219,10 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat,                      max_exposure_time))
     ((ConfigOptionFloat,                      min_initial_exposure_time))
     ((ConfigOptionFloat,                      max_initial_exposure_time))
+    ((ConfigOptionInt,                        resin_printer_schema_version))
+    ((ConfigOptionBool,                       resin_printer_migration_required))
+    ((ConfigOptionStrings,                    resin_printer_migration_diagnostics))
+    ((ConfigOptionStrings,                    resin_supported_formats))
 )
 
 PRINT_CONFIG_CLASS_DERIVED_DEFINE0(
