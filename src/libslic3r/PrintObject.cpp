@@ -78,6 +78,7 @@ using namespace std::literals;
     #include "SVG.hpp"
     #undef assert
     #include <cassert>
+#include "MultiRateLayerSchedule.hpp"
 #endif
 
 namespace Slic3r {
@@ -559,6 +560,152 @@ void PrintObject::make_perimeters()
     this->set_done(posPerimeters);
 }
 
+    this->combine_perimeters_for_independent_tools();
+    m_print->throw_if_canceled();
+
+namespace {
+
+bool multi_rate_wall_paths_are_compatible(const ExtrusionEntity &lhs, const ExtrusionEntity &rhs)
+{
+    if (const auto *lhs_collection = dynamic_cast<const ExtrusionEntityCollection *>(&lhs)) {
+        const auto *rhs_collection = dynamic_cast<const ExtrusionEntityCollection *>(&rhs);
+        if (rhs_collection == nullptr || lhs_collection->entities.size() != rhs_collection->entities.size())
+            return false;
+        for (size_t idx = 0; idx < lhs_collection->entities.size(); ++ idx)
+            if (! multi_rate_wall_paths_are_compatible(*lhs_collection->entities[idx], *rhs_collection->entities[idx]))
+                return false;
+        return true;
+    }
+    if (const auto *lhs_loop = dynamic_cast<const ExtrusionLoop *>(&lhs)) {
+        const auto *rhs_loop = dynamic_cast<const ExtrusionLoop *>(&rhs);
+        if (rhs_loop == nullptr || lhs_loop->paths.size() != rhs_loop->paths.size())
+            return false;
+        for (size_t idx = 0; idx < lhs_loop->paths.size(); ++ idx) {
+            const ExtrusionPath &a = lhs_loop->paths[idx];
+            const ExtrusionPath &b = rhs_loop->paths[idx];
+            if (a.role() != b.role() || ! a.role().is_perimeter() || a.role().is_bridge() ||
+                std::abs(a.length() - b.length()) > scaled<double>(0.001))
+                return false;
+        }
+        return true;
+    }
+    if (const auto *lhs_multipath = dynamic_cast<const ExtrusionMultiPath *>(&lhs)) {
+        const auto *rhs_multipath = dynamic_cast<const ExtrusionMultiPath *>(&rhs);
+        if (rhs_multipath == nullptr || lhs_multipath->paths.size() != rhs_multipath->paths.size())
+            return false;
+        for (size_t idx = 0; idx < lhs_multipath->paths.size(); ++ idx) {
+            const ExtrusionPath &a = lhs_multipath->paths[idx];
+            const ExtrusionPath &b = rhs_multipath->paths[idx];
+            if (a.role() != b.role() || ! a.role().is_perimeter() || a.role().is_bridge() ||
+                std::abs(a.length() - b.length()) > scaled<double>(0.001))
+                return false;
+        }
+        return true;
+    }
+    if (const auto *lhs_path = dynamic_cast<const ExtrusionPath *>(&lhs)) {
+        const auto *rhs_path = dynamic_cast<const ExtrusionPath *>(&rhs);
+        return rhs_path != nullptr && lhs_path->role() == rhs_path->role() &&
+               lhs_path->role().is_perimeter() && ! lhs_path->role().is_bridge() &&
+               std::abs(lhs_path->length() - rhs_path->length()) <= scaled<double>(0.001);
+    }
+    return false;
+}
+
+bool multi_rate_wall_collections_are_compatible(const LayerRegion &lhs, const LayerRegion &rhs)
+{
+    const ExPolygons lhs_slices = union_ex(lhs.slices().surfaces);
+    const ExPolygons rhs_slices = union_ex(rhs.slices().surfaces);
+    if (! diff_ex(lhs_slices, rhs_slices).empty() || ! diff_ex(rhs_slices, lhs_slices).empty())
+        return false;
+    return multi_rate_wall_paths_are_compatible(lhs.perimeters(), rhs.perimeters());
+}
+
+void set_multi_rate_wall_flow(ExtrusionEntity &entity, const LayerRegion &layer_region, coordf_t height)
+{
+    if (auto *collection = dynamic_cast<ExtrusionEntityCollection *>(&entity)) {
+        for (ExtrusionEntity *child : collection->entities)
+            set_multi_rate_wall_flow(*child, layer_region, height);
+    } else if (auto *loop = dynamic_cast<ExtrusionLoop *>(&entity)) {
+        for (ExtrusionPath &path : loop->paths)
+            path.set_flow(layer_region.flow(path.role().is_external_perimeter() ? frExternalPerimeter : frPerimeter, height));
+    } else if (auto *multipath = dynamic_cast<ExtrusionMultiPath *>(&entity)) {
+        for (ExtrusionPath &path : multipath->paths)
+            path.set_flow(layer_region.flow(path.role().is_external_perimeter() ? frExternalPerimeter : frPerimeter, height));
+    } else if (auto *path = dynamic_cast<ExtrusionPath *>(&entity)) {
+        path->set_flow(layer_region.flow(path->role().is_external_perimeter() ? frExternalPerimeter : frPerimeter, height));
+    }
+}
+
+} // namespace
+
+void PrintObject::combine_perimeters_for_independent_tools()
+{
+    const PrintConfig &print_config = this->print()->config();
+    if (! print_config.independent_tool_layer_heights || m_layers.size() < 3)
+        return;
+
+    for (size_t region_id = 0; region_id < this->num_printing_regions(); ++ region_id) {
+        const PrintRegion &region = this->printing_region(region_id);
+        const unsigned int tool_id = unsigned(std::max(1, region.config().perimeter_extruder.value) - 1);
+        if (! print_config.extruder_independent_walls.get_at(tool_id))
+            continue;
+
+        const ToolLayerPolicy policy = make_tool_layer_policy(print_config, tool_id, this->config().layer_height.value);
+        const coordf_t target_height = policy.target_height(this->slicing_parameters().layer_height);
+        if (target_height <= this->slicing_parameters().layer_height + EPSILON)
+            continue;
+
+        // The first print layer is a forced synchronization/adhesion layer. Build
+        // candidate runs only from subsequent fine layers.
+        for (size_t begin_idx = 1; begin_idx < m_layers.size();) {
+            LayerRegion &first_region = *m_layers[begin_idx]->m_regions[region_id];
+            if (first_region.perimeters().empty()) {
+                ++ begin_idx;
+                continue;
+            }
+
+            coordf_t combined_height = 0.;
+            size_t end_idx = begin_idx;
+            bool compatible = true;
+            for (; end_idx < m_layers.size(); ++ end_idx) {
+                LayerRegion &candidate_region = *m_layers[end_idx]->m_regions[region_id];
+                combined_height += m_layers[end_idx]->height;
+                if (candidate_region.perimeters().empty() ||
+                    ! multi_rate_wall_collections_are_compatible(first_region, candidate_region)) {
+                    compatible = false;
+                    break;
+                }
+                if (combined_height >= target_height - EPSILON)
+                    break;
+            }
+
+            if (! compatible || end_idx >= m_layers.size() ||
+                std::abs(combined_height - target_height) > EPSILON ||
+                combined_height < policy.minimum_height - EPSILON ||
+                combined_height > policy.maximum_height + EPSILON) {
+                ++ begin_idx;
+                continue;
+            }
+
+            LayerRegion &destination = *m_layers[end_idx]->m_regions[region_id];
+            for (ExtrusionEntity *entity : destination.m_perimeters.entities)
+                set_multi_rate_wall_flow(*entity, destination, combined_height);
+            for (size_t layer_idx = begin_idx; layer_idx < end_idx; ++ layer_idx) {
+                Layer &source_layer = *m_layers[layer_idx];
+                source_layer.m_regions[region_id]->m_perimeters.clear();
+                for (LayerSlice &slice : source_layer.lslices_ex)
+                    for (LayerIsland &island : slice.islands)
+                        if (island.perimeters.region() == region_id)
+                            island.perimeters = LayerExtrusionRange(uint32_t(region_id), ExtrusionRange(0, 0));
+            }
+
+            begin_idx = end_idx + 1;
+        }
+    }
+}
+
+
+
 void PrintObject::prepare_infill()
 {
     if (! this->set_started(posPrepareInfill))
@@ -696,6 +843,13 @@ void PrintObject::prepare_infill()
 #endif /* SLIC3R_DEBUG_SLICE_PROCESSING */
 
     this->set_done(posPrepareInfill);
+
+    // Multi-rate solid infill uses the same native surface-thickness model as
+    // sparse infill, but only for internal solid surfaces. Top, bottom and
+    // bridge surfaces remain synchronization barriers.
+    this->combine_solid_infill_for_independent_tools();
+    m_print->throw_if_canceled();
+
 }
 
 void PrintObject::infill()
@@ -960,6 +1114,8 @@ void PrintObject::generate_support_material()
         }
         this->set_done(posSupportMaterial);
     }
+
+            this->combine_support_infill_for_independent_tools();
 }
 
 void PrintObject::estimate_curled_extrusions()
@@ -4458,7 +4614,246 @@ void PrintObject::combine_infill()
             }
         }
     }
+
+        const double infill_nozzle_diameter = this->print()->config().nozzle_diameter.get_at(region.config().infill_extruder.value - 1);
+        const double nozzle_diameter = std::min(infill_nozzle_diameter,
+        double       max_combine_layer_height                      = configured_automatic_combination ?
+                                                                    std::min(automatic_infill_combination_max_layer_height, nozzle_diameter) : nozzle_diameter;
+        if (independent_infill_combination) {
+            const double independent_max_layer_height = std::min(infill_nozzle_diameter, preferred_infill_layer_height);
+            max_combine_layer_height = configured_automatic_combination ?
+                                       std::min(max_combine_layer_height, independent_max_layer_height) :
+                                       independent_max_layer_height;
+        }
+
+        const size_t       infill_extruder_idx            = size_t(std::max(1, region.config().infill_extruder.value) - 1);
+        const double       preferred_infill_layer_height  = Slicing::preferred_layer_height(
+            this->print()->config(), unsigned(infill_extruder_idx), this->slicing_parameters().layer_height);
+        const bool         independent_infill_combination = this->print()->config().independent_tool_layer_heights.value &&
+                                                            this->print()->config().extruder_independent_infill.get_at(infill_extruder_idx) &&
+                                                            preferred_infill_layer_height > this->slicing_parameters().layer_height + EPSILON;
+        const bool         configured_automatic_combination = region.config().automatic_infill_combination;
+        const bool         automatic_infill_combination  = configured_automatic_combination || independent_infill_combination;
 }
+
+void PrintObject::combine_solid_infill_for_independent_tools()
+{
+    const PrintConfig &print_config = this->print()->config();
+    if (! print_config.independent_tool_layer_heights || m_layers.size() < 3)
+        return;
+
+    for (size_t region_id = 0; region_id < this->num_printing_regions(); ++ region_id) {
+        const PrintRegion &region = this->printing_region(region_id);
+        const unsigned int tool_id = unsigned(std::max(1, region.config().solid_infill_extruder.value) - 1);
+        if (! print_config.extruder_independent_solid_infill.get_at(tool_id))
+            continue;
+
+        const ToolLayerPolicy policy = make_tool_layer_policy(print_config, tool_id, this->config().layer_height.value);
+        const coordf_t target_height = policy.target_height(this->slicing_parameters().layer_height);
+        if (target_height <= this->slicing_parameters().layer_height + EPSILON)
+            continue;
+
+        std::vector<size_t> combine(m_layers.size(), 0);
+        coordf_t current_height = 0.;
+        size_t num_layers = 0;
+        for (size_t layer_idx = 0; layer_idx < m_layers.size(); ++ layer_idx) {
+            m_print->throw_if_canceled();
+            const Layer &layer = *m_layers[layer_idx];
+            if (layer.id() == 0)
+                continue;
+            if (current_height + layer.height > target_height + EPSILON) {
+                if (num_layers > 0)
+                    combine[layer_idx - 1] = num_layers;
+                current_height = 0.;
+                num_layers = 0;
+            }
+            current_height += layer.height;
+            ++ num_layers;
+            if (std::abs(current_height - target_height) <= EPSILON) {
+                combine[layer_idx] = num_layers;
+                current_height = 0.;
+                num_layers = 0;
+            }
+        }
+        // A shorter top remainder stays on its fine native layers.
+
+        for (size_t layer_idx = 0; layer_idx < m_layers.size(); ++ layer_idx) {
+            const size_t num_layers_to_combine = combine[layer_idx];
+            if (num_layers_to_combine <= 1)
+                continue;
+
+            std::vector<LayerRegion *> layer_regions;
+            layer_regions.reserve(num_layers_to_combine);
+            for (size_t idx = layer_idx + 1 - num_layers_to_combine; idx <= layer_idx; ++ idx)
+                layer_regions.emplace_back(m_layers[idx]->m_regions[region_id]);
+
+            ExPolygons intersection = to_expolygons(layer_regions.front()->fill_surfaces().filter_by_type(stInternalSolid));
+            for (size_t idx = 1; idx < layer_regions.size() && ! intersection.empty(); ++ idx)
+                intersection = intersection_ex(layer_regions[idx]->fill_surfaces().filter_by_type(stInternalSolid), intersection);
+            if (intersection.empty())
+                continue;
+
+            coordf_t combined_height = 0.;
+            for (const LayerRegion *layer_region : layer_regions)
+                combined_height += layer_region->layer()->height;
+            if (combined_height < policy.minimum_height - EPSILON ||
+                combined_height > policy.maximum_height + EPSILON)
+                continue;
+
+            Polygons intersection_with_clearance;
+            const float clearance_offset = 0.5f * layer_regions.back()->flow(frPerimeter).scaled_width() +
+                                           0.5f * layer_regions.back()->flow(frSolidInfill).scaled_width();
+            for (const ExPolygon &expolygon : intersection)
+                polygons_append(intersection_with_clearance, offset(expolygon, clearance_offset));
+
+            for (LayerRegion *layer_region : layer_regions) {
+                Polygons internal_solid = to_polygons(std::move(layer_region->fill_surfaces().filter_by_type(stInternalSolid)));
+                layer_region->m_fill_surfaces.remove_type(stInternalSolid);
+                layer_region->m_fill_surfaces.append(diff_ex(internal_solid, intersection_with_clearance), stInternalSolid);
+                if (layer_region == layer_regions.back()) {
+                    Surface combined_surface(stInternalSolid, ExPolygon());
+                    combined_surface.thickness = combined_height;
+                    combined_surface.thickness_layers = static_cast<unsigned short>(layer_regions.size());
+                    layer_region->m_fill_surfaces.append(intersection, combined_surface);
+                } else {
+                    layer_region->m_fill_surfaces.append(
+                        intersection_ex(internal_solid, intersection_with_clearance), stInternalVoid);
+                }
+            }
+        }
+    }
+}
+
+namespace {
+
+bool extrusion_entity_contains_role(const ExtrusionEntity &entity, ExtrusionRole role)
+{
+    if (const auto *collection = dynamic_cast<const ExtrusionEntityCollection *>(&entity)) {
+        return std::any_of(collection->entities.begin(), collection->entities.end(),
+            [role](const ExtrusionEntity *child) { return extrusion_entity_contains_role(*child, role); });
+    }
+    return entity.role() == role;
+}
+
+bool erase_extrusion_role(ExtrusionEntityCollection &collection, ExtrusionRole role)
+{
+    auto &entities = collection.entities;
+    for (auto it = entities.begin(); it != entities.end();) {
+        ExtrusionEntity *entity = *it;
+        bool erase = false;
+        if (auto *child_collection = dynamic_cast<ExtrusionEntityCollection *>(entity))
+            erase = erase_extrusion_role(*child_collection, role);
+        else
+            erase = entity->role() == role;
+        if (erase) {
+            delete entity;
+            it = entities.erase(it);
+        } else {
+            ++ it;
+        }
+    }
+    return entities.empty();
+}
+
+void set_extrusion_role_flow(ExtrusionEntity &entity, ExtrusionRole role, const Flow &flow)
+{
+    if (auto *collection = dynamic_cast<ExtrusionEntityCollection *>(&entity)) {
+        for (ExtrusionEntity *child : collection->entities)
+            set_extrusion_role_flow(*child, role, flow);
+    } else if (auto *path = dynamic_cast<ExtrusionPath *>(&entity)) {
+        if (path->role() == role)
+            path->set_flow(flow);
+    } else if (auto *multipath = dynamic_cast<ExtrusionMultiPath *>(&entity)) {
+        for (ExtrusionPath &path : multipath->paths)
+            if (path.role() == role)
+                path.set_flow(flow);
+    } else if (auto *loop = dynamic_cast<ExtrusionLoop *>(&entity)) {
+        for (ExtrusionPath &path : loop->paths)
+            if (path.role() == role)
+                path.set_flow(flow);
+    }
+}
+
+bool support_base_occupancy_is_identical(const SupportLayer &lhs, const SupportLayer &rhs)
+{
+    if (lhs.support_islands.empty() || rhs.support_islands.empty())
+        return false;
+    // A tall support path is valid only when its complete XY occupancy exists
+    // throughout the slab. Similar bounds or path lengths are insufficient: a
+    // shifted branch could otherwise be extruded through empty space. Requiring
+    // an empty symmetric difference is deliberately conservative.
+    return diff_ex(lhs.support_islands, rhs.support_islands).empty() &&
+           diff_ex(rhs.support_islands, lhs.support_islands).empty();
+}
+
+} // namespace
+
+void PrintObject::combine_support_infill_for_independent_tools()
+{
+    const PrintConfig &print_config = m_print->config();
+    if (! print_config.independent_tool_layer_heights.value || this->has_raft() || m_support_layers.size() < 2)
+        return;
+
+    const int configured_tool = m_config.support_material_extruder.value;
+    if (configured_tool <= 0)
+        return;
+    const unsigned int tool_id = unsigned(configured_tool - 1);
+    if (! print_config.extruder_independent_support.get_at(tool_id))
+        return;
+
+    const ToolLayerPolicy policy = make_tool_layer_policy(print_config, tool_id,
+        m_config.layer_height.value);
+    const coordf_t synchronization_height = m_slicing_params.layer_height;
+    const coordf_t target_height = policy.target_height(synchronization_height);
+    if (target_height <= synchronization_height + EPSILON)
+        return;
+
+    size_t run_begin = 1; // The first support layer is always a synchronization barrier.
+    while (run_begin < m_support_layers.size()) {
+        SupportLayer *first = m_support_layers[run_begin];
+        if (extrusion_entity_contains_role(first->support_fills, ExtrusionRole::SupportMaterialInterface) ||
+            ! extrusion_entity_contains_role(first->support_fills, ExtrusionRole::SupportMaterial)) {
+            ++ run_begin;
+            continue;
+        }
+
+        coordf_t combined_height = 0.;
+        size_t run_end = run_begin;
+        size_t destination_idx = run_begin;
+        for (; run_end < m_support_layers.size(); ++ run_end) {
+            SupportLayer *layer = m_support_layers[run_end];
+            if (extrusion_entity_contains_role(layer->support_fills, ExtrusionRole::SupportMaterialInterface) ||
+                ! extrusion_entity_contains_role(layer->support_fills, ExtrusionRole::SupportMaterial))
+                break;
+            if (! support_base_occupancy_is_identical(*first, *layer))
+                break;
+            if (combined_height + layer->height > target_height + EPSILON)
+                break;
+            combined_height += layer->height;
+            destination_idx = run_end;
+        }
+        if (destination_idx > run_begin &&
+            combined_height >= policy.minimum_height - EPSILON &&
+            combined_height <= policy.maximum_height + EPSILON) {
+            SupportLayer *destination = m_support_layers[destination_idx];
+            Flow combined_flow = support_material_flow(this, float(combined_height));
+            set_extrusion_role_flow(destination->support_fills, ExtrusionRole::SupportMaterial, combined_flow);
+            for (size_t idx = run_begin; idx < destination_idx; ++ idx) {
+                SupportLayer *lower = m_support_layers[idx];
+                erase_extrusion_role(lower->support_fills, ExtrusionRole::SupportMaterial);
+                if (lower->support_fills.empty()) {
+                    lower->support_islands.clear();
+                    lower->support_islands_bboxes.clear();
+                }
+            }
+            run_begin = destination_idx + 1;
+        } else {
+            run_begin = std::max(run_begin + 1, run_end);
+        }
+    }
+}
+
+
 
 void PrintObject::_generate_support_material()
 {

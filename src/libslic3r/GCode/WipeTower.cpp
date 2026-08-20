@@ -2012,6 +2012,22 @@ void WipeTower::set_extruder(size_t idx, const PrintConfig& config)
         m_filpar[idx].filament_tower_interface_pre_extrusion_dist = 0.f;
         m_filpar[idx].filament_tower_interface_pre_extrusion_length = 0.f;
     }
+
+    // Each tool carries its own filament cross-section: a toolchanger may
+    // feed 1.75 mm into one hotend and a thicker filament into another, and
+    // every volume-to-E conversion below has to use the tool that is
+    // actually extruding.
+    m_filpar[idx].filament_area = float((M_PI/4.f) * pow(config.filament_diameter.get_at(idx), 2));
+    m_filpar[idx].nozzle_diameter = nozzle_diameter;
+        m_filpar[idx].max_e_speed = (max_vol_speed / m_filpar[idx].filament_area);
+
+    // The tower is printed by every tool in turn, so its line width has to be
+    // one the widest nozzle can lay down - a 0.8 nozzle cannot print a line
+    // sized for a 0.4 one. Taking the maximum also makes this independent of
+    // the order the extruders happen to be configured in, where taking
+    // whichever came last left the geometry depending on iteration order.
+    m_max_nozzle_diameter = std::max(m_max_nozzle_diameter, nozzle_diameter);
+    m_perimeter_width = m_max_nozzle_diameter * Width_To_Nozzle_Ratio;
 }
 
 

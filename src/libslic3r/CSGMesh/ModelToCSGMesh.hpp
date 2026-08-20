@@ -6,6 +6,7 @@
 #include "libslic3r/Model.hpp"
 #include "libslic3r/SLA/Hollowing.hpp"
 #include "libslic3r/MeshSplitImpl.hpp"
+#include "libslic3r/SLA/DrainHole.hpp"
 
 namespace Slic3r { namespace csg {
 

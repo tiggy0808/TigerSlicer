@@ -36,6 +36,7 @@
 #include <algorithm>
 #include <functional>
 #include <optional>
+#include "SLA/DrainHole.hpp"
 
 namespace cereal {
 	class BinaryInputArchive;

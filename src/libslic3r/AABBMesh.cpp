@@ -8,6 +8,7 @@
 
 #ifdef SLIC3R_HOLE_RAYCASTER
 #include <libslic3r/SLA/Hollowing.hpp>
+#include <libslic3r/SLA/DrainHole.hpp>
 #endif
 
 namespace Slic3r {

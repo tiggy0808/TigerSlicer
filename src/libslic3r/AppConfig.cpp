@@ -643,6 +643,39 @@ void AppConfig::set_defaults()
     erase("app", "object_settings_pos");
     erase("app", "object_settings_size");
     erase("app", "severity_level");
+
+    if (get("dark_color_mode").empty()) {
+        set("dark_color_mode", "1"); // TigerSlicer: dark theme by default
+    } else if (get("dark_color_mode_migrated").empty()) {
+        // One-time migration: a config inherited from upstream PrusaSlicer or an
+        // older build can carry a stale dark_color_mode=0 that predates
+        // TigerSlicer's dark-by-default, leaving the UI white+pink instead of
+        // black+pink. Flip it once to the intended dark theme, and set the marker
+        // only here (not unconditionally) so it is not consumed by the empty
+        // construction-time set_defaults() pass before the file is even loaded.
+        // A later deliberate light-mode choice made in Preferences is then kept,
+        // because on that run the marker already exists and this branch is skipped.
+        set("dark_color_mode", "1");
+        set("dark_color_mode_migrated", "1");
+    }
+
+        set("show_hints", "0"); // TigerSlicer: no "Did you know" tips
+
+
+        // TigerSlicer's settings remain in the main window as horizontal tabs.
+        // Override stale values so Preferences cannot silently switch layouts.
+        set("old_settings_layout_mode", "1");
+        set("dlg_settings_layout_mode", "0");
+        set("notify_release", "none");
+
+        // Auto-drop keeps objects placed on the build plate after transforms;
+        // while enabled, Z-only centering is unavailable (U6).
+        if (get("autodrop_build_plate").empty())
+            set("autodrop_build_plate", "1");
+
+        // TigerSlicer is intentionally offline. Override stale values from an
+        // existing data directory as well as supplying the default.
+        set("preset_update", "0");
 }
 
 #ifdef WIN32
@@ -726,7 +759,12 @@ std::string AppConfig::load()
 #else
         ifs >> j;
 #endif
-    }
+    
+    // TigerSlicer versioning restarts at 1.0.0, so a version below 1.40 does
+    // not mean the pre-vendor-bundle Slic3r layout here: any data directory
+    // this application has touched already uses vendor bundles.
+    if (ini_ver)
+}
     catch(nlohmann::detail::parse_error &err) {
 #ifdef WIN32
         // The configuration file is corrupted, try replacing it with the backup configuration.
@@ -1798,6 +1836,10 @@ std::string AppConfig::config_path()
 #endif
 
     return path;
+
+    // Ignore stale or manually inherited URLs: this fork never performs
+    // application update checks.
+    return {};
 }
 
 std::string AppConfig::version_check_url() const

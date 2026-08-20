@@ -35,6 +35,7 @@ namespace pt = boost::property_tree;
 #include "miniz_extension.hpp"
 
 #include <fast_float/fast_float.h>
+#include "libslic3r/ResinProfileMigration.hpp"
 
 // Slightly faster than sprintf("%.9g"), but there is an issue with the karma floating point formatter,
 // https://github.com/boostorg/spirit/pull/586
