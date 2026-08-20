@@ -36,7 +36,7 @@
 #include <algorithm>
 #include <functional>
 #include <optional>
-#include "SLA/DrainHole.hpp"
+#include "SLA/Hollowing.hpp"
 
 namespace cereal {
 	class BinaryInputArchive;

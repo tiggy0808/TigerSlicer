@@ -2,6 +2,7 @@
 #define slic3r_Print_hpp_
 
 #include "PrintBase.hpp"
+#include "MultiRateLayerSchedule.hpp"
 #include "Fill/FillAdaptive.hpp"
 #include "Fill/FillLightning.hpp"
 
@@ -327,6 +328,12 @@ private: // Prevents erroneous use by other classes.
     typedef PrintObjectBaseWithState<Print, PrintObjectStep, posCount> Inherited;
 
 public:
+    // TigerSlicer: multi-rate layer scheduling combines compatible slabs
+    // once each tool's own layer height has been resolved.
+    void combine_perimeters_for_independent_tools();
+    void combine_solid_infill_for_independent_tools();
+    void combine_support_infill_for_independent_tools();
+
     // Size of an object: XYZ in scaled coordinates. The size might not be quite snug in XY plane.
     const Vec3crd&               size() const			{ return m_size; }
     const PrintObjectConfig&     config() const         { return m_config; }
@@ -903,6 +910,11 @@ private: // Prevents erroneous use by other classes.
     typedef std::pair<PrintObject *, bool>         PrintObjectInfo;
 
 public:
+    // TigerSlicer: the per-tool layer-height schedule for this job.
+    MultiRateSchedule        m_multi_rate_schedule;
+    const MultiRateSchedule& multi_rate_schedule() const { return m_multi_rate_schedule; }
+    void build_and_validate_multi_rate_schedule();
+
     using SlicingPipelineHookFn = std::function<void(Print&, const PrintObject*, SlicingPipelineStepPlugin)>;
     // Cross-layer injection (mirrors ConfigBase::set_resolve_capability_fn): the GUI/plugin
     // layer registers a dispatcher; libslic3r stays free of any plugin/Python dependency.

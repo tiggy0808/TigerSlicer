@@ -1351,7 +1351,7 @@ static std::string tigerslicer_validate(const Print &print)
             return _u8L("Independent tool layer heights require a printer profile with Multi-rate layer scheduling capable enabled.");
         if (m_config.wipe_tower)
             return _u8L("Independent tool layer heights cannot currently be used with a wipe tower. Disable one of these options.");
-        if (m_config.complete_objects)
+        if (m_config.print_sequence)
             return _u8L("Independent tool layer heights cannot currently be used with sequential printing.");
         if (m_config.spiral_vase)
             return _u8L("Independent tool layer heights cannot currently be used with Spiral Vase mode.");
@@ -1368,11 +1368,11 @@ static std::string tigerslicer_validate(const Print &print)
                 if (object->config().support_material_style == smsTree || object->config().support_material_style == smsOrganic)
                     return format(_u8L("Independent tool layer heights currently support grid and snug supports only; tree and organic supports are not yet safe on object %1%."),
                                   object->model_object()->name);
-                if (object->config().support_material_extruder.value <= 0 ||
-                    object->config().support_material_interface_extruder.value <= 0)
+                if (object->config().support_filament.value <= 0 ||
+                    object->config().support_interface_filament.value <= 0)
                     return format(_u8L("Independent tool layer heights require explicit physical extruders for support material and support interfaces on object %1%."),
                                   object->model_object()->name);
-                const unsigned int interface_tool = unsigned(object->config().support_material_interface_extruder.value - 1);
+                const unsigned int interface_tool = unsigned(object->config().support_interface_filament.value - 1);
                 if (interface_tool < m_config.filament_soluble.size() && m_config.filament_soluble.get_at(interface_tool))
                     return format(_u8L("Independent tool layer heights cannot currently be used with soluble support interfaces on object %1%."),
                                   object->model_object()->name);
@@ -1412,8 +1412,8 @@ static std::string tigerslicer_validate(const Print &print)
 
             if (object->has_support()) {
                 const std::array<std::pair<unsigned int, MultiRateFeature>, 2> support_tools {{
-                    { unsigned(object->config().support_material_extruder.value - 1), MultiRateFeature::Support },
-                    { unsigned(object->config().support_material_interface_extruder.value - 1), MultiRateFeature::SupportInterface }
+                    { unsigned(object->config().support_filament.value - 1), MultiRateFeature::Support },
+                    { unsigned(object->config().support_interface_filament.value - 1), MultiRateFeature::SupportInterface }
                 }};
                 for (const auto &[tool_id, feature] : support_tools) {
                     const ToolLayerPolicy policy = make_tool_layer_policy(
@@ -2398,30 +2398,30 @@ void Print::build_and_validate_multi_rate_schedule()
                 const PrintRegionConfig &config = region.region().config();
                 add_operations(region.perimeters(),
                     [](ExtrusionRole role) { return role.is_perimeter(); },
-                    object_id, region_id, unsigned(std::max(1, config.perimeter_extruder.value) - 1),
+                    object_id, region_id, unsigned(std::max(1, config.wall_filament.value) - 1),
                     MultiRateFeature::Walls, *layer);
                 add_operations(region.fills(),
                     [](ExtrusionRole role) { return role == ExtrusionRole::InternalInfill; },
-                    object_id, region_id, unsigned(std::max(1, config.infill_extruder.value) - 1),
+                    object_id, region_id, unsigned(std::max(1, config.sparse_infill_filament.value) - 1),
                     MultiRateFeature::SparseInfill, *layer);
                 add_operations(region.fills(),
                     [](ExtrusionRole role) {
                         return role == ExtrusionRole::SolidInfill || role == ExtrusionRole::InfillOverBridge;
                     },
-                    object_id, region_id, unsigned(std::max(1, config.solid_infill_extruder.value) - 1),
+                    object_id, region_id, unsigned(std::max(1, config.solid_infill_filament.value) - 1),
                     MultiRateFeature::SolidInfill, *layer);
                 add_operations(region.fills(),
                     [](ExtrusionRole role) {
                         return role == ExtrusionRole::TopSolidInfill || role == ExtrusionRole::Ironing ||
                                role == ExtrusionRole::BridgeInfill;
                     },
-                    object_id, region_id, unsigned(std::max(1, config.solid_infill_extruder.value) - 1),
+                    object_id, region_id, unsigned(std::max(1, config.solid_infill_filament.value) - 1),
                     MultiRateFeature::TopSurface, *layer);
             }
         }
 
-        const unsigned int support_tool = unsigned(std::max(1, object.config().support_material_extruder.value) - 1);
-        const unsigned int interface_tool = unsigned(std::max(1, object.config().support_material_interface_extruder.value) - 1);
+        const unsigned int support_tool = unsigned(std::max(1, object.config().support_filament.value) - 1);
+        const unsigned int interface_tool = unsigned(std::max(1, object.config().support_interface_filament.value) - 1);
         for (const SupportLayer *layer : object.support_layers()) {
             add_operations(layer->support_fills,
                 [](ExtrusionRole role) { return role == ExtrusionRole::SupportMaterial; },

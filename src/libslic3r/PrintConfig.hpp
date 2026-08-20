@@ -696,6 +696,30 @@ CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(ToolChangeOrderingType)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(PowerLossRecoveryMode)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SurfaceFillOrder)
 
+
+// --- TigerSlicer: types its own options are declared with -------
+// TigerSlicer: what kind of 5-axis machine this printer is
+enum class FiveAxisKinematics {
+    RotaryTable,     // tilt + spin rotary table (trunnion)
+    StewartPlatform, // hexapod bed, no-twist tilt toward any azimuth
+    Count,
+};
+
+enum ResinPrintHostType { rhtLocalHttp, rhtMSlicerSDCP };
+
+// What a generated MSLA support column stands on. Declared here rather than
+// pulled in from the engine header so PrintConfig keeps no dependency on the
+// MSlicer ABI; the values are static_asserted equal to ts_mslicer_support_base
+// in MSlicerResinJob.cpp, where the two actually meet.
+enum MSlicerSupportBaseKind {
+    msbNone = 0,
+    msbRaft = 1,
+    msbPads = 2,
+};
+
+CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(FiveAxisKinematics)
+CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(MSlicerSupportBaseKind)
+
 #undef CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS
 
 class DynamicPrintConfig;
@@ -1099,46 +1123,8 @@ protected: \
 
 // This object is mapped to Perl as Slic3r::Config::PrintObject.
 
-// --- TigerSlicer: types its own options are declared with -------
-// TigerSlicer: what kind of 5-axis machine this printer is
-enum class FiveAxisKinematics {
-    RotaryTable,     // tilt + spin rotary table (trunnion)
-    StewartPlatform, // hexapod bed, no-twist tilt toward any azimuth
-    Count,
-};
-
-enum ResinPrintHostType { rhtLocalHttp, rhtMSlicerSDCP };
-
-// What a generated MSLA support column stands on. Declared here rather than
-// pulled in from the engine header so PrintConfig keeps no dependency on the
-// MSlicer ABI; the values are static_asserted equal to ts_mslicer_support_base
-// in MSlicerResinJob.cpp, where the two actually meet.
-enum MSlicerSupportBaseKind {
-    msbNone = 0,
-    msbRaft = 1,
-    msbPads = 2,
-};
-
-    // Native MSLA support generation. Read by
-    // MSlicerResinJob::support_settings_from_config.
-    ((ConfigOptionFloat, msla_support_contact_penetration))
-    ((ConfigOptionFloat, msla_support_min_height))
-    ((ConfigOptionFloat, msla_support_min_overhang_area))
-    ((ConfigOptionEnum<MSlicerSupportBaseKind>, msla_support_base_kind))
-    ((ConfigOptionFloat, msla_support_base_diameter))
-    ((ConfigOptionFloat, msla_support_overhang_angle))
-    ((ConfigOptionFloat, msla_support_edge_angle_delta))
-    ((ConfigOptionInt, msla_support_precision))
-    ((ConfigOptionBool, msla_support_on_model))
-    ((ConfigOptionBool, msla_support_cross_bracing))
-    ((ConfigOptionFloat, msla_support_brace_spacing))
-    ((ConfigOptionBool, msla_support_adaptive_diameter))
-    ((ConfigOptionFloat, msla_support_max_pillar_diameter))
-    ((ConfigOptionBool, msla_support_manual_only))
 
 
-CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(FiveAxisKinematics)
-CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(MSlicerSupportBaseKind)
 
 PRINT_CONFIG_CLASS_DEFINE(
     PrintObjectConfig,
@@ -2155,6 +2141,22 @@ PRINT_CONFIG_CLASS_DEFINE(
 
     // Indirectly controls the minimum size of created cavities.
     ((ConfigOptionFloat, hollowing_closing_distance))
+    // Native MSLA support generation. Read by
+    // MSlicerResinJob::support_settings_from_config.
+    ((ConfigOptionFloat, msla_support_contact_penetration))
+    ((ConfigOptionFloat, msla_support_min_height))
+    ((ConfigOptionFloat, msla_support_min_overhang_area))
+    ((ConfigOptionEnum<MSlicerSupportBaseKind>, msla_support_base_kind))
+    ((ConfigOptionFloat, msla_support_base_diameter))
+    ((ConfigOptionFloat, msla_support_overhang_angle))
+    ((ConfigOptionFloat, msla_support_edge_angle_delta))
+    ((ConfigOptionInt, msla_support_precision))
+    ((ConfigOptionBool, msla_support_on_model))
+    ((ConfigOptionBool, msla_support_cross_bracing))
+    ((ConfigOptionFloat, msla_support_brace_spacing))
+    ((ConfigOptionBool, msla_support_adaptive_diameter))
+    ((ConfigOptionFloat, msla_support_max_pillar_diameter))
+    ((ConfigOptionBool, msla_support_manual_only))
 )
 
 enum SLAMaterialSpeed { slamsSlow, slamsFast };

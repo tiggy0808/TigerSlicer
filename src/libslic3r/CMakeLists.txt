@@ -122,8 +122,6 @@ set(lisbslic3r_sources    # --- TigerSlicer ------------------------------------
     ResinJobManifest.hpp
     ResinProfileMigration.cpp
     ResinProfileMigration.hpp
-    SLA/DrainHole.cpp
-    SLA/DrainHole.hpp
     SeamOptimizer.cpp
     SeamOptimizer.hpp
     SliceCache.cpp

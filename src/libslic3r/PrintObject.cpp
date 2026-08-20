@@ -646,7 +646,7 @@ void PrintObject::combine_perimeters_for_independent_tools()
 
     for (size_t region_id = 0; region_id < this->num_printing_regions(); ++ region_id) {
         const PrintRegion &region = this->printing_region(region_id);
-        const unsigned int tool_id = unsigned(std::max(1, region.config().perimeter_extruder.value) - 1);
+        const unsigned int tool_id = unsigned(std::max(1, region.config().wall_filament.value) - 1);
         if (! print_config.extruder_independent_walls.get_at(tool_id))
             continue;
 
@@ -4615,7 +4615,7 @@ void PrintObject::combine_infill()
         }
     }
 
-        const double infill_nozzle_diameter = this->print()->config().nozzle_diameter.get_at(region.config().infill_extruder.value - 1);
+        const double infill_nozzle_diameter = this->print()->config().nozzle_diameter.get_at(region.config().sparse_infill_filament.value - 1);
         const double nozzle_diameter = std::min(infill_nozzle_diameter,
         double       max_combine_layer_height                      = configured_automatic_combination ?
                                                                     std::min(automatic_infill_combination_max_layer_height, nozzle_diameter) : nozzle_diameter;
@@ -4626,7 +4626,7 @@ void PrintObject::combine_infill()
                                        independent_max_layer_height;
         }
 
-        const size_t       infill_extruder_idx            = size_t(std::max(1, region.config().infill_extruder.value) - 1);
+        const size_t       infill_extruder_idx            = size_t(std::max(1, region.config().sparse_infill_filament.value) - 1);
         const double       preferred_infill_layer_height  = Slicing::preferred_layer_height(
             this->print()->config(), unsigned(infill_extruder_idx), this->slicing_parameters().layer_height);
         const bool         independent_infill_combination = this->print()->config().independent_tool_layer_heights.value &&
@@ -4644,7 +4644,7 @@ void PrintObject::combine_solid_infill_for_independent_tools()
 
     for (size_t region_id = 0; region_id < this->num_printing_regions(); ++ region_id) {
         const PrintRegion &region = this->printing_region(region_id);
-        const unsigned int tool_id = unsigned(std::max(1, region.config().solid_infill_extruder.value) - 1);
+        const unsigned int tool_id = unsigned(std::max(1, region.config().solid_infill_filament.value) - 1);
         if (! print_config.extruder_independent_solid_infill.get_at(tool_id))
             continue;
 
@@ -4794,7 +4794,7 @@ void PrintObject::combine_support_infill_for_independent_tools()
     if (! print_config.independent_tool_layer_heights.value || this->has_raft() || m_support_layers.size() < 2)
         return;
 
-    const int configured_tool = m_config.support_material_extruder.value;
+    const int configured_tool = m_config.support_filament.value;
     if (configured_tool <= 0)
         return;
     const unsigned int tool_id = unsigned(configured_tool - 1);

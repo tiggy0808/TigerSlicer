@@ -438,7 +438,6 @@ PresetBundle::PresetBundle(const PresetBundle &rhs)
 {
     *this = rhs;
 
-            "host_type", "resin_host_type", "print_host", "printhost_apikey", "printhost_cafile"})
 }
 
 PresetBundle& PresetBundle::operator=(const PresetBundle &rhs)

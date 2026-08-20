@@ -11,6 +11,8 @@
 
 namespace Slic3r {
 
+class Flow;   // TigerSlicer: set_flow() restates a path's flow
+
 class ExPolygon;
 using ExPolygons = std::vector<ExPolygon>;
 class ExtrusionEntityCollection;
@@ -307,11 +309,7 @@ public:
     void set_force_no_extrusion(bool no_extrusion) { m_no_extrusion = no_extrusion; }
     // Restate this path's flow - the multi-rate layer scheduler
     // changes a path's layer height after it has been generated.
-    void set_flow(const Flow &flow) {
-        m_attributes.mm3_per_mm = flow.mm3_per_mm();
-        m_attributes.width      = flow.width();
-        m_attributes.height     = flow.height();
-    }
+    void set_flow(const Flow &flow);
 
     void set_extrusion_role(ExtrusionRole extrusion_role) { m_role = extrusion_role; }
     void set_reverse() override { m_can_reverse = false; }

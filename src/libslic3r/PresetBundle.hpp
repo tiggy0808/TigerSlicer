@@ -170,6 +170,10 @@ struct PresetBundleMetadata
 class PresetBundle
 {
 public:
+    // TigerSlicer's own filament library, named by material rather than by
+    // brand. When installed it is the only filament library the
+    // configuration wizard offers.
+    static const char *TIGERSLICER_FILAMENT_BUNDLE;
     static DynamicPrintConfig construct_full_config(Preset                         &in_printer_preset,
                                                     Preset                         &in_print_preset,
                                                     const DynamicPrintConfig       &project_config,
