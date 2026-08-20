@@ -1,0 +1,7 @@
+min_slic3r_version = 1.0.0
+1.3.1 TigerSlicer 1.0 rebaseline of the shipped profiles.
+min_slic3r_version = 0.0.0
+1.3.0 Adds the Phrozen Sonic and Sonic Mini, Voxelab Ceres 8.9 and Polaris 5.5, and Wanhao CGR Mini Mono.
+1.2.0 Adds 56 Elegoo, Phrozen, Creality LD, EPAX, Peopoly, Voxelab, and Uniformation MSLA machines.
+1.1.0 Adds generic 2K/6K/8K/10K MSLA panels and the Elegoo Saturn 3 Ultra.
+1.0.0 Initial TigerSlicer MSlicer-backed generic MSLA profile.

@@ -1,0 +1,404 @@
+use std::{
+    fs,
+    net::Ipv4Addr,
+    str::FromStr,
+    sync::{Arc, atomic::Ordering},
+    time::Duration,
+};
+
+use chrono::{DateTime, Utc};
+use common::{misc::human_duration, slice::format::RasterFormat, units::Miliseconds};
+use const_format::concatcp;
+use egui::{
+    Align, CollapsingHeader, ComboBox, Context, DragValue, FontSelection, Layout, OutputCommand,
+    ProgressBar, RichText, Separator, Spinner, Style, TextEdit, Ui, text::LayoutJob, vec2,
+};
+use egui_phosphor::regular::{COPY, NETWORK, PLUGS, PRINTER, STOP, TRASH_SIMPLE, UPLOAD_SIMPLE};
+use remote_print::status::{FileTransferStatus, PrintInfoStatus};
+use rfd::FileDialog;
+use tracing::info;
+
+use crate::{
+    app::{App, config::ContentType},
+    task::{PrinterConnect, PrinterScan},
+    ui::{
+        components::grid,
+        popup::{Popup, PopupIcon},
+        state::RemotePrintConnectStatus,
+    },
+};
+
+const PORTS_DESCRIPTION: &str = "The default service ports can be changed while remote print is disabled. Zero means a random port will be picked.";
+const WEBHOOK_DESCRIPTION: &str =
+    "Once a print is finished, a webhook (HTTP POST) can be sent to a service of your choice.";
+
+enum Action {
+    None,
+    Remove(usize),
+    UploadFile { mainboard_id: String },
+}
+
+pub fn ui(app: &mut App, ui: &mut Ui, ctx: &Context) {
+    if !app.remote_print.is_initialized() {
+        ui.heading("Initialization");
+        ui.label("Remote print services have not been initialized. This feature is disabled by default for security reasons.");
+        ui.add_space(8.0);
+
+        ui.vertical_centered(|ui| {
+            if ui.button(concatcp!(NETWORK, " Initialize")).clicked() {
+                app.remote_print().init();
+
+                let timeout = Duration::from_secs_f32(app.config.remote_print.timeout);
+                app.remote_print.set_network_timeout(timeout); // todo: move into init function
+            }
+        });
+    } else {
+        let mqtt = app.remote_print.mqtt();
+        let mut action = Action::None;
+
+        ui.heading("Printers");
+        let mut printers = app.remote_print.printers();
+        if printers.is_empty() {
+            ui.label("No printers have been added yet.");
+        }
+
+        for (i, printer) in printers.iter_mut().enumerate() {
+            let client = mqtt.get_client(&printer.mainboard_id);
+            let attributes = &client.attributes;
+
+            ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
+                if ui.button(TRASH_SIMPLE).on_hover_text("Delate").clicked() {
+                    action = Action::Remove(i);
+                }
+
+                if ui.button(UPLOAD_SIMPLE).on_hover_text("Upload").clicked() {
+                    action = Action::UploadFile {
+                        mainboard_id: attributes.mainboard_id.clone(),
+                    };
+                }
+
+                let mut job = LayoutJob::default();
+                RichText::new(&attributes.name).strong().append_to(
+                    &mut job,
+                    &Style::default(),
+                    FontSelection::Default,
+                    Align::Min,
+                );
+                RichText::new(format!(" ({})", attributes.mainboard_id))
+                    .monospace()
+                    .append_to(
+                        &mut job,
+                        &Style::default(),
+                        FontSelection::Default,
+                        Align::Min,
+                    );
+
+                let last_update = client.last_update.load(Ordering::Relaxed);
+                let last_update = DateTime::from_timestamp(last_update, 0).unwrap();
+                if (Utc::now() - last_update).num_seconds() > 15 {
+                    RichText::new(concatcp!("  ", PLUGS)).strong().append_to(
+                        &mut job,
+                        &Style::default(),
+                        FontSelection::Default,
+                        Align::Min,
+                    );
+                }
+
+                CollapsingHeader::new(job)
+                    .default_open(true)
+                    .show(ui, |ui| {
+                        let status = client.status.lock();
+
+                        let print_info = &status.print_info;
+                        let printing = print_info.status.is_printing();
+                        if printing {
+                            ui.horizontal(|ui| {
+                                ui.label("Printing");
+                                ui.monospace(&print_info.filename);
+                                ui.label(format!("({:?})", print_info.status));
+                            });
+
+                            if print_info.total_ticks != 0 {
+                                let eta = human_duration(Miliseconds::new(
+                                    (print_info.total_ticks - print_info.current_ticks) as f32,
+                                ));
+                                ui.label(format!("ETA: {eta}"));
+                            }
+
+                            ui.add(
+                                ProgressBar::new(
+                                    print_info.current_layer as f32 / print_info.total_layer as f32,
+                                )
+                                .text(format!(
+                                    "{}/{}",
+                                    print_info.current_layer, print_info.total_layer
+                                ))
+                                .desired_width(ui.available_width()),
+                            );
+                            ui.add_space(8.0);
+                        }
+
+                        if print_info.status == PrintInfoStatus::Complete {
+                            let print_time =
+                                human_duration(Miliseconds::new(print_info.total_ticks as f32));
+                            ui.horizontal(|ui| {
+                                ui.label("Finished printing");
+                                ui.monospace(&print_info.filename);
+                                ui.label(format!("in {print_time}"));
+                            });
+                        }
+
+                        let file_transfer = &status.file_transfer_info;
+                        if file_transfer.status == FileTransferStatus::None
+                            && file_transfer.file_total_size != 0
+                        {
+                            ui.add_space(8.0);
+                            ui.horizontal(|ui| {
+                                ui.label("Transferring");
+                                ui.monospace(&file_transfer.filename);
+                            });
+                            ui.add(
+                                ProgressBar::new(
+                                    file_transfer.download_offset as f32
+                                        / file_transfer.file_total_size as f32,
+                                )
+                                .show_percentage()
+                                .desired_width(ui.available_width()),
+                            );
+                            ui.add_space(8.0);
+                        }
+
+                        if file_transfer.status == FileTransferStatus::Done && !printing {
+                            ui.add_space(8.0);
+                            ui.horizontal(|ui| {
+                                ui.label("File transfer of");
+                                ui.monospace(&file_transfer.filename);
+                                ui.label("is complete.");
+                            });
+                            if ui.button(concatcp!(PRINTER, " Print")).clicked() {
+                                app.remote_print
+                                    .print(&attributes.mainboard_id, &file_transfer.filename)
+                                    .unwrap();
+                            }
+                        }
+                    });
+            });
+        }
+        drop(printers);
+
+        ui.add_space(8.0);
+        ui.heading("Add Printer");
+        ui.label("Only Chitu mainboard printers are supported.");
+
+        if app.state.remote_print_connecting != RemotePrintConnectStatus::None {
+            ui.horizontal(|ui| {
+                ui.add(Spinner::new());
+                match app.state.remote_print_connecting {
+                    RemotePrintConnectStatus::Connecting => {
+                        ui.label("Connecting to printer…");
+                    }
+                    RemotePrintConnectStatus::Scanning => {
+                        ui.label("Scanning for printers…");
+                    }
+                    _ => {}
+                };
+            });
+        }
+
+        ui.add_enabled_ui(
+            app.state.remote_print_connecting == RemotePrintConnectStatus::None,
+            |ui| {
+                ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
+                    let scan = ui.button(concatcp!(NETWORK, " Scan"));
+                    let height = scan.rect.height();
+                    if scan.clicked() {
+                        app.state.remote_print_connecting = RemotePrintConnectStatus::Scanning;
+                        app.tasks.add(PrinterScan::new(
+                            &app.remote_print,
+                            app.config.remote_print.broadcast_address,
+                        ));
+                    }
+
+                    ui.add_sized(vec2(2.0, height), Separator::default());
+                    if ui.button(concatcp!(PLUGS, " Connect")).clicked() {
+                        if let Ok(address) = Ipv4Addr::from_str(&app.state.working_address) {
+                            app.state.remote_print_connecting =
+                                RemotePrintConnectStatus::Connecting;
+                            app.tasks
+                                .add(PrinterConnect::new(&app.remote_print, address));
+                        } else {
+                            app.popup.open(Popup::simple(
+                                "Remote Print Error",
+                                PopupIcon::Error,
+                                format!(
+                                    "The entered address `{}` is invalid.",
+                                    app.state.working_address,
+                                ),
+                            ));
+                            app.state.working_address.clear();
+                        }
+                    }
+
+                    ui.add_sized(
+                        vec2(ui.available_width(), height),
+                        TextEdit::singleline(&mut app.state.working_address)
+                            .hint_text("192.168.1.233")
+                            .desired_width(ui.available_width()),
+                    );
+                });
+            },
+        );
+
+        match action {
+            Action::Remove(i) => app.remote_print.remove_printer(i).unwrap(),
+            Action::UploadFile { mainboard_id } => upload_file(app, mainboard_id),
+            Action::None => {}
+        }
+    }
+
+    ui.add_space(8.0);
+    if app.remote_print.is_initialized() {
+        ui.button(concatcp!(STOP, " Disable Remote Print"))
+            .clicked()
+            .then(|| app.remote_print.shutdown());
+        ui.add_space(8.0);
+    }
+
+    ui.collapsing("Services", |ui| {
+        ui.label(PORTS_DESCRIPTION);
+        let initialized = app.remote_print.is_initialized();
+
+        let mut ports = app.remote_print.ports();
+        let (mqtt, http, udp) = if let Some(ports) = ports.as_mut() {
+            (&mut ports.0, &mut ports.1, &mut ports.2)
+        } else {
+            let cfg = &mut app.config.remote_print;
+            (&mut cfg.mqtt_port, &mut cfg.http_port, &mut cfg.udp_port)
+        };
+
+        ui.add_space(8.0);
+        grid("ports").show(ui, |ui| {
+            for (proto, port) in [("MQTT", mqtt), ("HTTP", http), ("UDP", udp)] {
+                ui.label(proto);
+                ui.horizontal(|ui| {
+                    ui.add_enabled(!initialized, DragValue::new(port));
+                    if initialized && ui.button(COPY).clicked() {
+                        ctx.send_cmd(OutputCommand::CopyText(port.to_string()));
+                    }
+                    ui.take_available_width();
+                });
+                ui.end_row();
+            }
+        });
+    });
+
+    ui.collapsing("Webhook", |ui| {
+        ui.horizontal_wrapped(|ui| {
+            ui.label(WEBHOOK_DESCRIPTION);
+            ui.label("In the body, you can use the formatters");
+            ui.code("%file%");
+            ui.label("for the file name and");
+            ui.code("%printer%");
+            ui.label("for the printer name");
+        });
+        ui.add_space(16.0);
+
+        let webhook = &mut app.config.remote_print.webhook;
+        grid("webhook").show(ui, |ui| {
+            ui.label("Event");
+            ComboBox::from_id_salt("event")
+                .selected_text(["Never", "Print Completion"][webhook.enabled as usize])
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(&mut webhook.enabled, false, "Never");
+                    ui.selectable_value(&mut webhook.enabled, true, "Print Completion");
+                });
+            ui.end_row();
+
+            ui.label("Content Type");
+            ComboBox::from_id_salt("content_type")
+                .selected_text(webhook.content_type.name())
+                .show_ui(ui, |ui| {
+                    for content_type in ContentType::ALL {
+                        ui.selectable_value(
+                            &mut webhook.content_type,
+                            *content_type,
+                            content_type.name(),
+                        );
+                    }
+                });
+            ui.end_row();
+
+            ui.label("URL");
+            ui.text_edit_singleline(&mut webhook.url);
+            ui.end_row();
+
+            ui.label("Body");
+            ui.text_edit_singleline(&mut webhook.body);
+            ui.end_row();
+        });
+    });
+
+    ui.collapsing("Config", |ui| {
+        let config = &mut app.config.remote_print;
+
+        ui.checkbox(&mut config.alert_completion, "Send toast on print complete");
+
+        ui.checkbox(
+            &mut config.init_at_startup,
+            "Initialize remote print at startup",
+        );
+
+        let last_status_proxy = config.status_proxy;
+        ui.checkbox(&mut config.status_proxy, "Enable HTTP status proxy");
+
+        if last_status_proxy != config.status_proxy {
+            (app.remote_print.http()).set_proxy_enabled(config.status_proxy);
+        }
+
+        let last_timeout = config.timeout;
+        ui.horizontal(|ui| {
+            ui.add(
+                DragValue::new(&mut config.timeout)
+                    .suffix("s")
+                    .max_decimals(1)
+                    .speed(0.1)
+                    .range(0.1..=60.0),
+            );
+            ui.label("Network timeout");
+        });
+
+        if app.remote_print.is_initialized() && last_timeout != config.timeout {
+            app.remote_print
+                .set_network_timeout(Duration::from_secs_f32(config.timeout));
+        }
+    });
+}
+
+fn upload_file(app: &mut App, mainboard_id: String) {
+    if let Some(file) = FileDialog::new()
+        .add_filter("Sliced Model", &["goo", "ctb"])
+        .pick_file()
+    {
+        let Some(format) = file
+            .extension()
+            .and_then(|x| x.to_str())
+            .and_then(RasterFormat::from_extension)
+        else {
+            app.popup.open(Popup::simple(
+                "Invalid File",
+                PopupIcon::Error,
+                "Unreconized file format. Only .goo and .ctb are supported.",
+            ));
+            return;
+        };
+
+        info!("Uploading local file {file:?} to printer `{mainboard_id}`");
+        let data = Arc::new(fs::read(&file).unwrap());
+
+        let file_name = file.file_name().unwrap().to_string_lossy();
+        let file_name = file_name.rsplit_once('.').map(|x| x.0).unwrap_or_default();
+        app.remote_print
+            .upload(&mainboard_id, data, file_name.to_owned(), format)
+            .unwrap();
+    }
+}

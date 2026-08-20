@@ -1,0 +1,38 @@
+[package]
+name = "slicer"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "slicer"
+path = "bin/main.rs"
+
+[[bench]]
+name = "benchmark"
+harness = false
+
+[dependencies]
+common.workspace = true
+ctb_format.workspace = true
+goo_format.workspace = true
+mesh_format.workspace = true
+nanodlp_format.workspace = true
+
+anyhow.workspace = true
+clap.workspace = true
+clone-macro.workspace = true
+const_format.workspace = true
+image.workspace = true
+imageproc.workspace = true
+itertools.workspace = true
+nalgebra.workspace = true
+num-integer.workspace = true
+ordered-float.workspace = true
+parking_lot.workspace = true
+rayon.workspace = true
+serde.workspace = true
+svg.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true

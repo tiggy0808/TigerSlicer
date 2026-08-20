@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<component type="desktop">
+	<id>com.connorcode.mslicer</id>
+	<name>mslicer</name>
+
+	<metadata_license>CC0-1.0</metadata_license>
+	<project_license>GPL-3.0</project_license>
+	<launchable type="desktop-id">com.connorcode.mslicer.desktop</launchable>
+	<content_rating type="oars-1.1" />
+
+	<url type="homepage">https://mslicer.com</url>
+	<url type="vcs-browser">https://github.com/connorslade/mslicer</url>
+	<url type="bugtracker">https://github.com/connorslade/mslicer/issues</url>
+	<update_contact>connor@connorcode.com</update_contact>
+	<developer id="com.connorcode">
+		<name>Connor Slade</name>
+	</developer>
+
+	<summary>MSLA slicer</summary>
+	<description>
+		<p>
+		    A high-performance, open-source slicer for MSLA resin printers.
+		    Compatible with printers that support any of the following file formats: Chitu (.ctb), Elegoo (.goo), or NanoDLP (.nanodlp).
+		</p>
+	</description>
+	<keywords>
+		<keyword>3d printing</keyword>
+	</keywords>
+
+	<screenshots>
+		<screenshot type="default">
+			<image type="source">https://mslicer.com/supported-dragon.png</image>
+			<caption>Slicing the stanford dragon with supports.</caption>
+		</screenshot>
+	</screenshots>
+
+	<releases>
+        <release version="0.8.0" date="2026-06-30">
+            <description>
+     			<ul>
+     			    <li>Fix 'First Layers' setting disappearing</li>
+                    <li>Don't send print completion alert on connection</li>
+                    <li>Remote print UI refresh</li>
+                    <li>Show when remote printer is disconnected</li>
+                    <li>PCB tool (Load and rasterize gerber files to expose photoresist)</li>
+                    <li>Load multiple models at once through file dialog</li>
+                    <li>Exposure remapping</li>
+                    <li>Send print completion notifs from async thread (Fixes bug on some linux systems)</li>
+                    <li>Allow picking slice preview coordinate space (screen space or world space)</li>
+                    <li>Automatic model layout (Quick layout uses a single pass, Advanced layout uses simulated annealing to find better layouts  )</li>
+                    <li>Slice preview view direction selector (lcd screen vs build plate)</li>
+                    <li>Support for Spacenav input (3Dconnexion 3D input device)</li>
+                    <li>Initial camera distance increased</li>
+                    <li>Fix model properties getting pushed off screen by lots of model entries</li>
+                    <li>Create model collections for organization</li>
+                    <li>Split mesh with multiple shells into separate models</li>
+                    <li>Selection keyboard shortcuts</li>
+                    <li>Select old text when renaming model</li>
+                </ul>
+            </description>
+        </release>
+	    <release version="0.7.0" date="2026-05-07">
+			<description>
+    			<ul>
+    			    <li>Optimize slicing complex layers</li>
+    			    <li>Allow clicking models in the viewport to select them</li>
+    			    <li>Rerender annotations when updated (island detection finishes)</li>
+    			    <li>Allow dragging to reorder models in Models panel</li>
+    			    <li>Automatic support generation progress</li>
+    			    <li>Internal exposure test tool</li>
+    			    <li>Remote print preferred service ports</li>
+    			    <li>Remote print will use limited broadcast by default to find printers on the network</li>
+    			    <li>Remote print default broadcast address changed to `255.255.255.255`</li>
+    			    <li>Fix crash on macOS (Observed on macOS Sequoia on a laptop with a touch bar)</li>
+    			    <li>Separate slicing from layer encoding</li>
+    			    <li>Native 3D anti-aliasing! Uses supersampling anti-aliasing (SSAA).</li>
+    			    <li>Fix scanning for printers never ending on linux</li>
+    			    <li>Select save format when exporting, not before slicing</li>
+    			    <li>Modify printer presets within mslicer</li>
+    			    <li>Optimized tools with new slicer/encoder separation</li>
+    			    <li>Fix light direction calculation with nonzero target point</li>
+    			    <li>Encode file in async task</li>
+    			    <li>Fix crash when slicing without ever seeing workspace</li>
+    			    <li>Send custom webhooks on print completion</li>
+    			    <li>Customable exposure delay</li>
+    			    <li>Correctly interpolate between first and normal layer exposures in transition layers</li>
+				</ul>
+			</description>
+		</release>
+    	<release version="0.6.0" date="2026-03-23">
+            <description>
+                <ul>
+                    <li>New logo/icon (gnome inspired)</li>
+                    <li>Better packaging for MacOS (.app bundle) and Windows (.rc file)</li>
+                    <li>Keyboard shortcuts use ⌘ on MacOS</li>
+                    <li>Fix panic caused by race condition</li>
+                    <li>Show annotated layers on slice preview slider</li>
+                    <li>Show project file name in window title</li>
+                    <li>Cleanup slice preview scaling</li>
+                    <li>Cleanup model panel UI</li>
+                    <li>Remove accidental doc-tests in stl.rs, which blocking nixpkgs-update build</li>
+                    <li>Make slices at middle of layer height (not bottom)</li>
+                    <li>Fix volume stored in .nanodlp files</li>
+                    <li>Add exposure PWM control to slice config (#21)</li>
+                    <li>Fix layers rendering flipped in slice preview  (#20)</li>
+                    <li>Use standard unit (mm/min) for lift/retract speeds and slice height (#22)</li>
+                    <li>Replace about panel with a first time popup that links to the documentation</li>
+                    <li>Show individual model volume (before slicing)</li>
+                    <li>Model specific relative exposures (#18)</li>
+                    <li>Correctly overwrite render settings when generating preview images</li>
+                    <li>Pick between Perspective or Orthographic camera projections</li>
+                    <li>Camera pitch is no longer locked between (-90°, 90°)</li>
+                    <li>Exposure test generator (#24)</li>
+                    <li>Button to create new project</li>
+                    <li>Fix numerical precision issues introduced when converting units</li>
+                    <li>Replace tasks panel with top bar widget</li>
+                </ul>
+            </description>
+        </release>   
+    	<release version="0.5.0" date="2026-02-21">
+            <description>
+                <ul>
+                    <li>Detect and show warnings for non-manifold meshes and meshes that extend outside the printable volume</li>
+                    <li>Visualize overhanging faces and vertices</li>
+                    <li>Basic (unfinished) manually placed support routing</li>
+                    <li>Use async tasks for more operations: Loading meshes, Saving and loading projects, Building acceleration structures, File pick/save dialogs, Exporting sliced files (mostly needed for compressing .nanodlp).</li>
+                    <li>Color backfaces grey in rendered view</li>
+                    <li>Don't show multiple copies of layer in slice preview when panning far to the right</li>
+                    <li>Printer presets (print volume, resolution)</li>
+                    <li>Reduce memory usage of loaded models</li>
+                    <li>Reuse GPU buffers when possible (instead of reallocating)</li>
+                    <li>Don't duplicate mesh data in project save file</li>
+                    <li>Custom project and mesh (de)serialization with progress monitoring</li>
+                    <li>Added task panel to view the progress of running async tasks</li>
+                    <li>Run post processing operations asynchronously with their own progress bars</li>
+                    <li>Added support for the NanoDLP format (.nanodlp)</li>
+                    <li>Allow setting/updating default slice config ([#5](https://github.com/connorslade/mslicer/issues/5))</li>
+                    <li>Remember the file that was opened for future save operations</li>
+                    <li>Track changes to settings for undo and redo (under edit in the top bar)</li>
+                    <li>Use metric prefixes for slice config draggers</li>
+                    <li>Allow using any supported output format with the CLI slicer</li>
+                    <li>More robust slicing (include scanline boundary hits)</li>
+                    <li>Show resin volume usage and estimated print time under slice preview</li>
+                    <li>Island detection task</li>
+                    <li>Fix invalid unit and color space transformations with type safe systems</li>
+                    <li>Use the 'windows' subsystem on Windows</li>
+                    <li>Remove unfinished support for translucent models</li>
+                    <li>Remove inconsistent slice preview pixel outlines (for now)</li>
+                </ul>
+            </description>
+        </release>    
+        <release version="0.4.0" date="2025-11-25">
+            <description>
+                <ul>
+                    <li>Added support for the encrypted Chitu format (.ctb)</li>
+                </ul>
+            </description>
+        </release>
+        <release version="0.3.0" date="2025-11-15">
+            <description>
+                <ul>
+                    <li>Added support for SVGs as an output format</li>
+                    <li>Don't show normals for hidden models</li>
+                    <li>Always open Viewport window on startup</li>
+                    <li>Show outlines around the pixels when zoomed into the slice preview</li>
+                    <li>Recompute mesh normals by default (also removed the normal operations button)</li>
+                    <li>Generated meshes (supports) now have correct normals and face winding order</li>
+                </ul>
+            </description>
+        </release>
+	    <release version="0.2.1" date="2025-04-13">
+			<description>
+			    <ul>
+					<li>Clamp grid size</li>
+					<li>Fix intermittent crash due to mismatched texture formats between egui and renderer pipelines</li>
+				</ul>
+			</description>
+		</release>
+    	<release version="0.2.1" date="2025-04-13">
+            <description>
+                <ul>
+                    <li>Don't produce invalid results when models extend beyond build volume</li>
+                    <li>Made the slicer system usable as a standalone CLI application</li>
+                </ul>
+            </description>
+       	</release>
+		<release version="0.2.0" date="2025-02-19">
+            <description>
+                <ul>
+                    <li>Convert slice operation window to a dockable panel</li>
+                    <li>Render parts of models that go beyond the print volume red</li>
+                    <li>Remove the Stats panel and merge it into the Workspace panel</li>
+                    <li>Add documentation into the About panel</li>
+                    <li>Add random triangle color mesh render mode</li>
+                    <li>Persist panel layout between sessions. I also added a button to reset the UI layout in the Workspace panel.</li>
+                </ul>
+            </description>
+       	</release>
+		<release version="0.1.0" date="2025-02-12">
+			<description>
+				<p>Initial release.</p>
+			</description>
+		</release>
+	</releases>
+
+	<categories>
+		<category>Utility</category>
+		<category>Engineering</category>
+	</categories>
+
+	<branding>
+		<color type="primary" scheme_preference="light">#99c1f1</color>
+		<color type="primary" scheme_preference="dark">#3584e4</color>
+	</branding>
+
+	<provides>
+		<binary>mslicer</binary>
+	</provides>
+
+	<recommends>
+		<control>keyboard</control>
+		<control>pointing</control>
+	</recommends>
+</component>

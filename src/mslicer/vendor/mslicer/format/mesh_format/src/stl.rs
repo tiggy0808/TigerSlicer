@@ -1,0 +1,130 @@
+use std::collections::HashMap;
+
+use anyhow::Result;
+use common::{progress::Progress, serde::Deserializer};
+use nalgebra::Vector3;
+
+use crate::{
+    Mesh,
+    util::{WHITESPACE, tokenize},
+};
+
+pub fn parse<T: Deserializer>(des: &mut T, progress: Progress) -> Result<Mesh> {
+    des.advance_by(80);
+    let tri_count = des.read_u32_le();
+    let is_ascii = des.size() != 84 + 50 * tri_count as usize;
+    des.jump_to(0);
+
+    match is_ascii {
+        true => ascii::parse(des, progress),
+        false => binary::parse(des, progress),
+    }
+}
+
+/// From Wikipedia :eyes:
+/// ```plain
+/// UINT8[80]    – Header                 - 80 bytes
+/// UINT32       – Number of triangles    - 04 bytes
+/// foreach triangle                      - 50 bytes
+///     REAL32[3] – Normal vector         - 12 bytes
+///     REAL32[3] – Vertex 1              - 12 bytes
+///     REAL32[3] – Vertex 2              - 12 bytes
+///     REAL32[3] – Vertex 3              - 12 bytes
+///     UINT16    – Attribute byte count  - 02 bytes
+/// end
+/// ```
+mod binary {
+    use super::*;
+
+    pub fn parse<T: Deserializer>(des: &mut T, progress: Progress) -> Result<Mesh> {
+        des.advance_by(80); // skip header
+        let tri_count = des.read_u32_le();
+        progress.set_total(tri_count as u64);
+
+        let mut verts = HashMap::new();
+        let mut faces = Vec::new();
+        for i in 0..tri_count {
+            progress.set_complete(i as u64);
+            des.advance_by(4 * 3);
+            faces.push([
+                vert_idx(&mut verts, des_vec3f_bin(des)),
+                vert_idx(&mut verts, des_vec3f_bin(des)),
+                vert_idx(&mut verts, des_vec3f_bin(des)),
+            ]);
+            des.advance_by(2);
+        }
+
+        Ok(finish(verts, faces))
+    }
+}
+
+/// ```plain
+/// solid name
+/// facet normal ni nj nk
+///     outer loop
+///         vertex v1x v1y v1z
+///         vertex v2x v2y v2z
+///         vertex v3x v3y v3z
+///     endloop
+/// endfacet
+/// endsolid name
+/// ```
+mod ascii {
+    use super::*;
+
+    pub fn parse<T: Deserializer>(des: &mut T, progress: Progress) -> Result<Mesh> {
+        progress.set_total(des.size() as u64);
+
+        let mut verts = HashMap::new();
+        let mut faces = Vec::new();
+
+        let mut builder = [Vector3::zeros(); 3];
+        let mut component = 9;
+
+        tokenize(des, &WHITESPACE, progress, |token| {
+            if component < 9 {
+                let Ok(value) = token.parse::<f32>() else {
+                    return Ok(());
+                };
+
+                builder[component / 3][component % 3] = value;
+                component += 1;
+                return Ok(());
+            }
+
+            match token {
+                "vertex" => component = 0,
+                "endloop" => {
+                    faces.push([
+                        vert_idx(&mut verts, builder[0]),
+                        vert_idx(&mut verts, builder[1]),
+                        vert_idx(&mut verts, builder[2]),
+                    ]);
+                }
+                _ => {}
+            }
+
+            Ok(())
+        })?;
+
+        Ok(finish(verts, faces))
+    }
+}
+
+fn vert_idx(verts: &mut HashMap<Vector3<u32>, u32>, vert: Vector3<f32>) -> u32 {
+    let size = verts.len() as u32;
+    *verts.entry(vert.map(f32::to_bits)).or_insert(size)
+}
+
+fn finish(verts: HashMap<Vector3<u32>, u32>, faces: Vec<[u32; 3]>) -> Mesh {
+    let mut verts = verts.into_iter().collect::<Vec<_>>();
+    verts.sort_by_key(|(_vert, idx)| *idx);
+    let verts = (verts.into_iter())
+        .map(|(vert, _idx)| vert.map(f32::from_bits))
+        .collect();
+    Mesh { verts, faces }
+}
+
+fn des_vec3f_bin<T: Deserializer>(des: &mut T) -> Vector3<f32> {
+    Vector3::new(des.read_f32_le(), des.read_f32_le(), des.read_f32_le())
+}

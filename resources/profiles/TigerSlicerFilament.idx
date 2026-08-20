@@ -1,0 +1,4 @@
+min_slic3r_version = 1.0.0
+1.0.1 TigerSlicer 1.0 rebaseline of the shipped profiles.
+min_slic3r_version = 0.0.0
+1.0.0 Initial TigerSlicer filament library, named by material.

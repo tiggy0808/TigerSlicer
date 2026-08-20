@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=mslicer
+GenericName=MSLA slicer
+Comment=A high-performance open-source slicer for MSLA resin printers.
+Exec=mslicer
+Terminal=false
+Icon=com.connorcode.mslicer
+Categories=Engineering;Printing;

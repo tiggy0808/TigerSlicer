@@ -305,6 +305,14 @@ public:
     //BBS:
     bool is_force_no_extrusion() const { return m_no_extrusion; }
     void set_force_no_extrusion(bool no_extrusion) { m_no_extrusion = no_extrusion; }
+    // Restate this path's flow - the multi-rate layer scheduler
+    // changes a path's layer height after it has been generated.
+    void set_flow(const Flow &flow) {
+        m_attributes.mm3_per_mm = flow.mm3_per_mm();
+        m_attributes.width      = flow.width();
+        m_attributes.height     = flow.height();
+    }
+
     void set_extrusion_role(ExtrusionRole extrusion_role) { m_role = extrusion_role; }
     void set_reverse() override { m_can_reverse = false; }
     bool can_reverse() const override { return m_can_reverse; }
