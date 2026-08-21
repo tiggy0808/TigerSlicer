@@ -376,7 +376,7 @@ void SupportsView::build_settings_panel(wxWindow *parent)
         group->m_on_change = [this](const t_config_option_key &opt_key, const boost::any &value) {
             on_option_changed(opt_key, value);
         };
-        Option option = group->get_option("output_filename_format");
+        Option option = group->get_option("filename_format");
         option.opt.full_width = true;
         group->append_single_option_line(option);
         if (group->activate() && group->sizer != nullptr) {

@@ -1444,6 +1444,7 @@ static std::vector<std::string> s_Preset_printer_options {
 
 static std::vector<std::string> s_Preset_sla_print_options {
     // TigerSlicer
+    "slicing_mode",
     "resin_print_schema_version",
     "resin_print_migration_required",
     "resin_print_migration_diagnostics",
