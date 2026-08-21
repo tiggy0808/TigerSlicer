@@ -334,6 +334,12 @@ set(SLIC3R_GUI_SOURCES
     GUI/LinuxDisplayBackend.cpp
     GUI/LinuxDisplayBackend.hpp
     GUI/MainFrame.cpp
+    GUI/PrinterConnectionsPanel.cpp
+    GUI/PrinterConnectionsPanel.hpp
+    GUI/ResinRasterPreview.cpp
+    GUI/ResinRasterPreview.hpp
+    GUI/SupportsView.cpp
+    GUI/SupportsView.hpp
     GUI/MainFrame.hpp
     GUI/MarkdownTip.cpp
     GUI/MarkdownTip.hpp
@@ -732,6 +738,13 @@ set(SLIC3R_GUI_SOURCES
     Utils/PresetUpdater.hpp
     Utils/PrintHost.cpp
     Utils/PrintHost.hpp
+    Utils/ConnectionsViewModel.cpp
+    Utils/ConnectionsViewModel.hpp
+    Utils/MSlicerSDCPHost.cpp
+    Utils/MSlicerSDCPHost.hpp
+    Utils/PrinterDiscovery.cpp
+    Utils/PrinterDiscovery.hpp
+    Utils/PrinterDiscoveryModel.cpp
     Utils/Process.cpp
     Utils/Process.hpp
     Utils/ProfileDescription.hpp

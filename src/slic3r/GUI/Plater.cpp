@@ -74,6 +74,7 @@
 #include "libslic3r/SLA/ReprojectPointsOnMesh.hpp"
 #include "libslic3r/Polygon.hpp"
 #include "libslic3r/Print.hpp"
+#include "libslic3r/MSlicerResinJob.hpp"
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/SLAPrint.hpp"
 #include "libslic3r/Utils.hpp"
@@ -19973,6 +19974,192 @@ void Plater::update_title_dirty_status()
     p->update_title_dirty_status();
 }
 
+
+
+// TigerSlicer: MSLA prepared supports ---------------------------------------
+
+bool Plater::lift_models_for_msla_supports(const DynamicPrintConfig &config)
+{
+    // A model sitting on the plate has its underside overhangs at plate level,
+    // where no support tip fits, so generation would find nothing to hold.
+    // Lift it just enough that the lowest contact clears both rules at once.
+    const double clearance = config.opt_float("msla_support_min_height") +
+                             config.opt_float("support_head_width");
+    std::vector<std::pair<ModelObject *, double>> lifts;
+    for (ModelObject *object : p->model.objects) {
+        if (!object->printable || MSlicerResinJob::is_prepared_support_object(*object))
+            continue;
+        double lowest = std::numeric_limits<double>::max();
+        for (size_t index = 0; index < object->instances.size(); ++index)
+            if (object->instances[index]->is_printable())
+                lowest = std::min(lowest, object->instance_bounding_box(index).min.z());
+        if (lowest < clearance && lowest != std::numeric_limits<double>::max())
+            lifts.emplace_back(object, clearance - lowest);
+    }
+    if (lifts.empty())
+        return false;
+
+    TakeSnapshot snapshot(this, std::string("Lift Models for MSLA Supports"));
+    for (const auto &[object, lift] : lifts) {
+        for (ModelInstance *instance : object->instances)
+            instance->set_offset(Z, instance->get_offset(Z) + lift);
+        object->invalidate_bounding_box();
+    }
+    p->update(static_cast<unsigned int>(priv::UpdateParams::FORCE_FULL_SCREEN_REFRESH));
+    return true;
+}
+
+bool Plater::prepare_msla_supports()
+{
+    if (printer_technology() != ptSLA)
+        return false;
+    // No enable switch to consult: asking for supports is what generates them.
+    DynamicPrintConfig config = wxGetApp().preset_bundle->full_config();
+    try {
+        wxBusyCursor busy;
+        MSlicerResinJob::validate_model_input(p->model, config);
+        lift_models_for_msla_supports(config);
+        MSlicerResinJob job(MSlicerResinJob::settings_from_config(config));
+        job.add_model(p->model, false);
+        // Manually placed points ride along with automatic detection, or
+        // replace it when the profile says manual only.
+        job.set_manual_support_points(
+            MSlicerResinJob::gather_manual_support_points(p->model),
+            config.opt_bool("msla_support_manual_only"));
+        indexed_triangle_set supports =
+            job.generate_supports(MSlicerResinJob::support_settings_from_config(config));
+
+        if (supports.indices.empty()) {
+            // An empty prepared object must never exist; nothing overhangs,
+            // so nothing was prepared.
+            remove_prepared_msla_supports();
+            show_info(this,
+                _L("No support geometry was generated: nothing on the plate needs a support "
+                   "at the current settings.\n\n"
+                   "Supports stay unprepared. Turn supports off to slice this plate as it "
+                   "is, or change the model or the detection settings and generate again."),
+                _L("Generate MSLA Supports"));
+            return false;
+        }
+
+        TakeSnapshot snapshot(this, std::string("Generate MSLA Supports"));
+        get_ui_job_worker().cancel_all();
+        for (size_t index = p->model.objects.size(); index-- > 0;) {
+            if (MSlicerResinJob::is_prepared_support_object(*p->model.objects[index])) {
+                p->model.delete_object(index);
+                p->sidebar->obj_list()->delete_object_from_list(index);
+            }
+        }
+
+        ModelObject *support_object = p->model.add_object(
+            "Generated MSLA Supports",
+            MSlicerResinJob::prepared_support_input_file(),
+            TriangleMesh(std::move(supports)));
+        support_object->add_instance();
+        const size_t support_index = p->model.objects.size() - 1;
+        p->sidebar->obj_list()->add_object_to_list(support_index, false);
+        p->object_list_changed();
+        p->update(static_cast<unsigned int>(priv::UpdateParams::FORCE_BACKGROUND_PROCESSING_UPDATE) |
+                  static_cast<unsigned int>(priv::UpdateParams::FORCE_FULL_SCREEN_REFRESH));
+        return true;
+    } catch (const std::exception &error) {
+        show_error(this, error.what());
+        return false;
+    }
+}
+
+bool Plater::auto_orient_for_msla_supports()
+{
+    if (printer_technology() != ptSLA)
+        return false;
+    const DynamicPrintConfig config = wxGetApp().preset_bundle->full_config();
+    try {
+        wxBusyCursor busy;
+        const double angle = config.opt_float("msla_support_overhang_angle");
+        // Whether the plate carried supports decides whether it should carry
+        // them again after the rotation. Read before anything is removed.
+        const bool had_supports = MSlicerResinJob::has_prepared_supports(p->model);
+        bool rotated_any = false;
+        TakeSnapshot snapshot(this, std::string("Auto-orient for MSLA Supports"));
+        for (ModelObject *object : p->model.objects) {
+            if (!object->printable || MSlicerResinJob::is_prepared_support_object(*object))
+                continue;
+            const indexed_triangle_set mesh = object->raw_indexed_triangle_set();
+            if (mesh.empty() || object->instances.empty())
+                continue;
+            // Each object is scored alone, in its own current orientation, so
+            // the suggestion is per object and relative.
+            MSlicerResinJob job(MSlicerResinJob::settings_from_config(config));
+            job.add_mesh(mesh, object->instances.front()->get_matrix());
+            const Vec3d suggestion = job.suggest_orientation(angle);
+            if (suggestion.isApprox(Vec3d::Zero(), 1e-6))
+                continue;
+            for (ModelInstance *instance : object->instances) {
+                const Transform3d combined = Geometry::rotation_transform(suggestion) *
+                    Geometry::rotation_transform(instance->get_rotation());
+                instance->set_rotation(Geometry::extract_euler_angles(combined));
+            }
+            object->ensure_on_bed();
+            rotated_any = true;
+        }
+        if (!rotated_any) {
+            show_info(this,
+                _L("Every object already sits at its best orientation for supports: no "
+                   "candidate orientation would leave less overhanging area to hold up."),
+                _L("Auto-orient for MSLA Supports"));
+            return false;
+        }
+        // The rotation is a model edit; a prepared support mesh no longer
+        // describes the model it was generated from.
+        remove_prepared_msla_supports();
+        p->update(static_cast<unsigned int>(priv::UpdateParams::FORCE_BACKGROUND_PROCESSING_UPDATE) |
+                  static_cast<unsigned int>(priv::UpdateParams::FORCE_FULL_SCREEN_REFRESH));
+        if (had_supports)
+            wxGetApp().CallAfter([this]() { prepare_msla_supports(); });
+        return true;
+    } catch (const std::exception &error) {
+        show_error(this, error.what());
+        return false;
+    }
+}
+
+void Plater::remove_prepared_msla_supports()
+{
+    bool removed = false;
+    for (size_t index = p->model.objects.size(); index-- > 0;) {
+        if (MSlicerResinJob::is_prepared_support_object(*p->model.objects[index])) {
+            if (!removed)
+                take_snapshot(std::string("Remove Generated MSLA Supports"));
+            p->model.delete_object(index);
+            p->sidebar->obj_list()->delete_object_from_list(index);
+            removed = true;
+        }
+    }
+    if (removed) {
+        p->object_list_changed();
+        p->update(static_cast<unsigned int>(priv::UpdateParams::FORCE_BACKGROUND_PROCESSING_UPDATE) |
+                  static_cast<unsigned int>(priv::UpdateParams::FORCE_FULL_SCREEN_REFRESH));
+    }
+}
+
+void Plater::msla_support_option_changed(const std::string &opt_key)
+{
+    if (printer_technology() != ptSLA || !MSlicerResinJob::is_support_option(opt_key))
+        return;
+
+    // Every control that edits a support option funnels through here. When
+    // the Supports workspace is showing, its panel must follow whichever of
+    // them changed the preset; reload_settings() guards against re-entry.
+    ScopeGuard refresh_supports_panel([this]() {
+        if (m_msla_supports_refresh)
+            m_msla_supports_refresh();
+    });
+
+    // A generation parameter changed: an already-prepared mesh was generated
+    // from the previous values, so it is dropped rather than sliced as if it
+    // still described the current settings.
+    remove_prepared_msla_supports();
+}
 
 wxMenu* Plater::plate_menu()            { return p->menus.plate_menu();             }
 wxMenu* Plater::object_menu()           { return p->menus.object_menu();            }

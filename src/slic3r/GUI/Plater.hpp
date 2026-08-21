@@ -545,6 +545,17 @@ public:
     void on_change_color_mode(SimpleEvent& evt);
 	void eject_drive();
 
+    // TigerSlicer: MSLA prepared supports
+    bool lift_models_for_msla_supports(const DynamicPrintConfig &config);
+    bool prepare_msla_supports();
+    void remove_prepared_msla_supports();
+    bool auto_orient_for_msla_supports();
+    void msla_support_option_changed(const std::string &opt_key);
+    // The Supports workspace registers itself so option edits made elsewhere
+    // can refresh its panel; null whenever the view does not exist.
+    void set_msla_supports_view_refresh(std::function<void()> refresh) { m_msla_supports_refresh = std::move(refresh); }
+    std::function<void()> m_msla_supports_refresh;
+
     void take_snapshot(const std::string &snapshot_name);
     //void take_snapshot(const wxString &snapshot_name);
     void take_snapshot(const std::string &snapshot_name, UndoRedo::SnapshotType snapshot_type);

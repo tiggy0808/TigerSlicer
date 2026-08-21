@@ -1024,6 +1024,8 @@ wxDEFINE_EVENT(EVT_GLCANVAS_OBJECT_SELECT, SimpleEvent);
 wxDEFINE_EVENT(EVT_GLCANVAS_PLATE_NAME_CHANGE, SimpleEvent);
 wxDEFINE_EVENT(EVT_GLCANVAS_PLATE_SELECT, SimpleEvent);
 wxDEFINE_EVENT(EVT_GLCANVAS_RIGHT_CLICK, RBtnEvent);
+wxDEFINE_EVENT(EVT_GLCANVAS_MSLA_PLACE_POINT, Vec2dEvent);
+wxDEFINE_EVENT(EVT_GLCANVAS_MSLA_DELETE_POINT, Vec2dEvent);
 wxDEFINE_EVENT(EVT_GLCANVAS_PLATE_RIGHT_CLICK, RBtnPlateEvent);
 wxDEFINE_EVENT(EVT_GLCANVAS_REMOVE_OBJECT, SimpleEvent);
 wxDEFINE_EVENT(EVT_GLCANVAS_ARRANGE, SimpleEvent);
@@ -4268,6 +4270,20 @@ void GLCanvas3D::on_mouse(wxMouseEvent& evt)
         return;
     }
 #endif
+
+    // TigerSlicer: manual MSLA point placement consumes plain clicks so they
+    // do not start camera drags or selection changes; every other interaction
+    // (wheel zoom, middle-button moves, hover) falls through unchanged.
+    if (m_msla_point_placement) {
+        if (evt.LeftDown()) {
+            post_event(Vec2dEvent(EVT_GLCANVAS_MSLA_PLACE_POINT, pos.cast<double>()));
+            return;
+        }
+        if (evt.RightDown()) {
+            post_event(Vec2dEvent(EVT_GLCANVAS_MSLA_DELETE_POINT, pos.cast<double>()));
+            return;
+        }
+    }
 
     for (GLVolume* volume : m_volumes.volumes) {
         volume->force_sinking_contours = false;

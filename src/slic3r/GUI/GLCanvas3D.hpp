@@ -156,6 +156,9 @@ using HeightProfileSmoothEvent = Event<HeightProfileSmoothingParams>;
 
 wxDECLARE_EVENT(EVT_GLCANVAS_SCHEDULE_BACKGROUND_PROCESS, SimpleEvent);
 wxDECLARE_EVENT(EVT_GLCANVAS_RIGHT_CLICK, RBtnEvent);
+// TigerSlicer: manual MSLA support point placement
+wxDECLARE_EVENT(EVT_GLCANVAS_MSLA_PLACE_POINT, Vec2dEvent);
+wxDECLARE_EVENT(EVT_GLCANVAS_MSLA_DELETE_POINT, Vec2dEvent);
 wxDECLARE_EVENT(EVT_GLCANVAS_PLATE_RIGHT_CLICK, RBtnPlateEvent);
 wxDECLARE_EVENT(EVT_GLCANVAS_REMOVE_OBJECT, SimpleEvent);
 wxDECLARE_EVENT(EVT_GLCANVAS_ARRANGE, SimpleEvent);
@@ -583,6 +586,10 @@ private:
     bool m_dynamic_background_enabled;
     bool m_multisample_allowed;
     bool m_moving;
+    // TigerSlicer: while armed, plain clicks on the canvas place/delete
+    // manual MSLA support points instead of starting drags or selections.
+    bool m_msla_point_placement { false };
+    bool m_msla_manual_point_markers { false };
     bool m_tab_down;
     bool m_camera_movement;
     //BBS: add toolpath outside
@@ -877,6 +884,10 @@ public:
         m_hover_volume_idxs.clear();
     }
     void enable_moving(bool enable) { m_moving_enabled = enable; }
+    void enable_msla_point_placement(bool enable) { m_msla_point_placement = enable; }
+    bool is_msla_point_placement_enabled() const { return m_msla_point_placement; }
+    void enable_msla_manual_point_markers(bool enable) { m_msla_manual_point_markers = enable; }
+    bool are_msla_manual_point_markers_enabled() const { return m_msla_manual_point_markers; }
     void enable_gizmos(bool enable) { m_gizmos.set_enabled(enable); }
     void enable_selection(bool enable) { m_selection.set_enabled(enable); }
     void enable_main_toolbar(bool enable) { m_main_toolbar.set_enabled(enable); }
