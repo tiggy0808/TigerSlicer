@@ -698,13 +698,6 @@ CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SurfaceFillOrder)
 
 
 // --- TigerSlicer: types its own options are declared with -------
-// TigerSlicer: what kind of 5-axis machine this printer is
-enum class FiveAxisKinematics {
-    RotaryTable,     // tilt + spin rotary table (trunnion)
-    StewartPlatform, // hexapod bed, no-twist tilt toward any azimuth
-    Count,
-};
-
 enum ResinPrintHostType { rhtLocalHttp, rhtMSlicerSDCP };
 
 // What a generated MSLA support column stands on. Declared here rather than
@@ -717,7 +710,6 @@ enum MSlicerSupportBaseKind {
     msbPads = 2,
 };
 
-CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(FiveAxisKinematics)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(MSlicerSupportBaseKind)
 
 #undef CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS
@@ -1753,23 +1745,6 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloats,   filament_dev_drying_softening_temperature))
     ((ConfigOptionFloats,   filament_dev_drying_cooling_temperature))
     // TigerSlicer: 5-axis printing
-    ((ConfigOptionBool,                five_axis_printing))
-    ((ConfigOptionEnum<FiveAxisKinematics>, five_axis_kinematics))
-    ((ConfigOptionFloat,               five_axis_max_yaw))
-    ((ConfigOptionString,              five_axis_stewart_pose_gcode))
-    ((ConfigOptionString,              five_axis_tilt_word))
-    ((ConfigOptionString,              five_axis_rotary_word))
-    ((ConfigOptionFloat,               five_axis_tilt_min))
-    ((ConfigOptionFloat,               five_axis_tilt_max))
-    ((ConfigOptionBool,                five_axis_rotary_continuous))
-    ((ConfigOptionFloat,               five_axis_pivot_offset_z))
-    ((ConfigOptionFloat,               five_axis_table_diameter))
-    ((ConfigOptionFloat,               five_axis_ab_feedrate))
-    ((ConfigOptionFloat,               five_axis_z_clearance))
-    ((ConfigOptionFloat,               five_axis_park_x))
-    ((ConfigOptionFloat,               five_axis_park_y))
-    ((ConfigOptionFloat,               five_axis_min_bed_clearance))
-    ((ConfigOptionString,              five_axis_reorient_gcode))
 )
 
 // This object is mapped to Perl as Slic3r::Config::Print.

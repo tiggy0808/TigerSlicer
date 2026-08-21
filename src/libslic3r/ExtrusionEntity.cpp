@@ -16,9 +16,10 @@ namespace Slic3r {
 // TigerSlicer: restate a path's flow after its layer height changed.
 void ExtrusionPath::set_flow(const Flow &flow)
 {
-    m_attributes.mm3_per_mm = flow.mm3_per_mm();
-    m_attributes.width      = flow.width();
-    m_attributes.height     = flow.height();
+    // Orca keeps these as direct members rather than an attributes struct.
+    this->mm3_per_mm = flow.mm3_per_mm();
+    this->width      = float(flow.width());
+    this->height     = float(flow.height());
 }
     
 static const double slope_inner_outer_wall_gap = 0.4;

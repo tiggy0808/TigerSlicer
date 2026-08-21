@@ -2,6 +2,7 @@
 
 #include "libslic3r.h"
 #include "Slicing.hpp"
+#include "MultiRateLayerSchedule.hpp"
 #include "SlicingAdaptive.hpp"
 #include "PrintConfig.hpp"
 #include "Model.hpp"
@@ -59,6 +60,41 @@ coordf_t Slicing::max_layer_height_from_nozzle(const DynamicPrintConfig &print_c
     return std::max(min_layer_height, (max_layer_height == 0.) ? (0.75 * nozzle_dmr) : max_layer_height);
 }
 
+// --- TigerSlicer: multi-rate layer scheduling helpers ---------------
+coordf_t Slicing::preferred_layer_height(const PrintConfig &print_config, unsigned int extruder_idx, coordf_t fallback_layer_height)
+{
+    if (! print_config.independent_tool_layer_heights.value || extruder_idx >= print_config.nozzle_diameter.size())
+        return fallback_layer_height;
+
+    const coordf_t preferred = print_config.extruder_preferred_layer_height.get_at(extruder_idx);
+    return preferred > 0. ? preferred : fallback_layer_height;
+}
+
+coordf_t Slicing::object_layer_height(const PrintConfig &print_config,
+                                      const std::vector<unsigned int> &object_extruders,
+                                      coordf_t fallback_layer_height)
+{
+    if (! print_config.independent_tool_layer_heights.value)
+        return fallback_layer_height;
+
+    if (object_extruders.empty())
+        return preferred_layer_height(print_config, 0, fallback_layer_height);
+
+    coordf_t synchronized_height = std::numeric_limits<coordf_t>::max();
+    for (unsigned int extruder_idx : object_extruders)
+        synchronized_height = std::min(synchronized_height,
+                                       preferred_layer_height(print_config, extruder_idx, fallback_layer_height));
+    return synchronized_height;
+}
+
+bool Slicing::layer_height_ratio_is_integral(coordf_t coarse_height, coordf_t synchronization_height)
+{
+    if (coarse_height <= 0. || synchronization_height <= 0.)
+        return false;
+    const coordf_t ratio = coarse_height / synchronization_height;
+    return std::abs(ratio - std::round(ratio)) <= 1e-6;
+}
+
 SlicingParameters SlicingParameters::create_from_config(
     const PrintConfig               &print_config,
     const PrintObjectConfig         &object_config,
@@ -105,7 +141,7 @@ SlicingParameters SlicingParameters::create_from_config(
 
     SlicingParameters params;
 
-    params.layer_height               = object_config.layer_height.value;
+    params.layer_height               = Slicing::object_layer_height(print_config, object_extruders, object_config.layer_height.value);
     params.first_print_layer_height   = initial_layer_print_height;
     params.first_object_layer_height  = initial_layer_print_height;
     params.object_print_z_min         = 0.0;
@@ -130,6 +166,20 @@ SlicingParameters SlicingParameters::create_from_config(
             max_layer_height_from_nozzle(print_config, object_config.support_filament), 
             max_layer_height_from_nozzle(print_config, object_config.support_interface_filament));
         params.max_suport_layer_height = params.max_layer_height;
+        if (print_config.independent_tool_layer_heights.value && params.base_raft_layers == 0) {
+            const unsigned int support_tool_id = unsigned(std::max(1, object_config.support_filament.value) - 1);
+            const coordf_t support_target = print_config.extruder_independent_support.get_at(support_tool_id) ?
+                make_tool_layer_policy(print_config, support_tool_id, object_config.layer_height.value).target_height(params.layer_height) :
+                params.layer_height;
+            const unsigned int interface_tool_id = unsigned(std::max(1, object_config.support_interface_filament.value) - 1);
+            const coordf_t interface_target = print_config.extruder_independent_support_interface.get_at(interface_tool_id) ?
+                make_tool_layer_policy(print_config, interface_tool_id, object_config.layer_height.value).target_height(params.layer_height) :
+                params.layer_height;
+            // Generate the native support geometry on the finest participating grid.
+            // Stable base-only spans are coarsened after interface/contact geometry is
+            // known, so a coarse base tool can never thicken a fine interface layer.
+            params.max_suport_layer_height = std::min({ params.max_suport_layer_height, support_target, interface_target });
+        }
     }
 
     if (object_extruders.empty()) {
@@ -144,6 +194,36 @@ SlicingParameters SlicingParameters::create_from_config(
 
     params.min_layer_height = std::min(params.min_layer_height, params.layer_height);
     params.max_layer_height = std::max(params.max_layer_height, params.layer_height);
+
+    if (print_config.independent_tool_layer_heights.value && params.base_raft_layers == 0 &&
+        object_extruders.size() <= 1 && ! object_config.enable_support.value &&
+        object_config.enforce_support_layers.value == 0) {
+        coordf_t first_layer_minimum = 0.;
+        coordf_t first_layer_maximum = std::numeric_limits<coordf_t>::max();
+        auto include_first_layer_tool = [&](unsigned int tool_id) {
+            if (tool_id >= print_config.nozzle_diameter.size())
+                return;
+            const ToolLayerPolicy policy = make_tool_layer_policy(
+                print_config, tool_id, object_config.layer_height.value);
+            first_layer_minimum = std::max(first_layer_minimum, policy.minimum_height);
+            first_layer_maximum = std::min(first_layer_maximum, policy.maximum_height);
+        };
+        if (object_extruders.empty())
+            include_first_layer_tool(0);
+        else
+            for (unsigned int tool_id : object_extruders)
+                include_first_layer_tool(tool_id);
+
+        // The first layer is a synchronization barrier, but it still has to be
+        // printable by every physical tool that may own geometry on that plane.
+        // Resolve the global first-layer request into their common legal range.
+        if (first_layer_minimum <= first_layer_maximum + EPSILON) {
+            const coordf_t resolved_first_layer_height = std::clamp(
+                initial_layer_print_height, first_layer_minimum, first_layer_maximum);
+            params.first_print_layer_height = resolved_first_layer_height;
+            params.first_object_layer_height = resolved_first_layer_height;
+        }
+    }
 
     /* -------------------------------------------------- */
     /*                ORCA: Gap assignment                */

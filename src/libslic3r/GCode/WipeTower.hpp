@@ -522,6 +522,7 @@ private:
     Vec2f m_bed_bottom_left; // bottom-left corner coordinates (for rectangular beds)
 
     float m_first_layer_flow_ratio;
+	float m_max_nozzle_diameter = 0.f; // Widest nozzle among configured tools; the tower line width follows it.
 	float m_perimeter_width = 0.4f * Width_To_Nozzle_Ratio; // Width of an extrusion line, also a perimeter spacing for 100% infill.
     float m_nozzle_change_perimeter_width = 0.4f * Width_To_Nozzle_Ratio;
 	float m_extrusion_flow = 0.038f; //0.029f;// Extrusion flow is derived from m_perimeter_width, layer height and filament diameter.

@@ -2340,11 +2340,6 @@ double ModelObject::get_instance_min_z(size_t instance_idx) const
     if (min_z == DBL_MAX)
         min_z = 0;
     return min_z + inst->get_offset(Z);
-
-        // A volume whose mesh has one facet or none never got a convex hull
-        // (see the ModelVolume constructor); dereferencing it would crash.
-        if (!v->get_convex_hull_shared_ptr())
-            continue;
 }
 
 double ModelObject::get_instance_max_z(size_t instance_idx) const
@@ -2367,9 +2362,6 @@ double ModelObject::get_instance_max_z(size_t instance_idx) const
 
     return max_z + inst->get_offset(Z);
 
-        // See get_instance_min_z: a hull-less volume must be skipped, not read.
-        if (!v->get_convex_hull_shared_ptr())
-            continue;
 }
 
 unsigned int ModelObject::update_instances_print_volume_state(const BuildVolume &build_volume)

@@ -22,6 +22,8 @@ option(BUILD_SHARED_LIBS "Build shared libs" OFF)
 option(USE_SLIC3R_CONSOLE_LOG "Enable console logging in RelWithDebInfo builds" OFF)
 
 set(lisbslic3r_sources    # --- TigerSlicer ------------------------------------------------
+    Feature/FullSpectrum/VirtualExtruder.cpp
+    Feature/FullSpectrum/VirtualExtruder.hpp
     AdaptiveLayers.cpp
     AdaptiveLayers.hpp
     AutoOutcomeFeedback.cpp
@@ -56,12 +58,6 @@ set(lisbslic3r_sources    # --- TigerSlicer ------------------------------------
     FdmAutoPlan.hpp
     FinalFileVerification.cpp
     FinalFileVerification.hpp
-    FiveAxis.cpp
-    FiveAxis.hpp
-    FiveAxisCompose.cpp
-    FiveAxisCompose.hpp
-    FiveAxisPrint.cpp
-    FiveAxisPrint.hpp
     FlowCurves.cpp
     FlowCurves.hpp
     GcodeTwin.cpp
@@ -726,6 +722,7 @@ set(OCCT_LIBS
 
 target_link_libraries(libslic3r
     PUBLIC
+        prusa_fdm_mixer
         Eigen3::Eigen
         admesh
         libigl

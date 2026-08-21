@@ -557,11 +557,13 @@ void PrintObject::make_perimeters()
     m_print->throw_if_canceled();
     BOOST_LOG_TRIVIAL(debug) << "Generating perimeters in parallel - end";
 
-    this->set_done(posPerimeters);
-}
-
+    // TigerSlicer: once perimeters exist, merge compatible walls for tools
+    // running their own layer heights.
     this->combine_perimeters_for_independent_tools();
     m_print->throw_if_canceled();
+
+    this->set_done(posPerimeters);
+}
 
 namespace {
 
@@ -583,7 +585,7 @@ bool multi_rate_wall_paths_are_compatible(const ExtrusionEntity &lhs, const Extr
         for (size_t idx = 0; idx < lhs_loop->paths.size(); ++ idx) {
             const ExtrusionPath &a = lhs_loop->paths[idx];
             const ExtrusionPath &b = rhs_loop->paths[idx];
-            if (a.role() != b.role() || ! a.role().is_perimeter() || a.role().is_bridge() ||
+            if (a.role() != b.role() || ! is_perimeter(a.role()) || is_bridge(a.role()) ||
                 std::abs(a.length() - b.length()) > scaled<double>(0.001))
                 return false;
         }
@@ -596,7 +598,7 @@ bool multi_rate_wall_paths_are_compatible(const ExtrusionEntity &lhs, const Extr
         for (size_t idx = 0; idx < lhs_multipath->paths.size(); ++ idx) {
             const ExtrusionPath &a = lhs_multipath->paths[idx];
             const ExtrusionPath &b = rhs_multipath->paths[idx];
-            if (a.role() != b.role() || ! a.role().is_perimeter() || a.role().is_bridge() ||
+            if (a.role() != b.role() || ! is_perimeter(a.role()) || is_bridge(a.role()) ||
                 std::abs(a.length() - b.length()) > scaled<double>(0.001))
                 return false;
         }
@@ -605,7 +607,7 @@ bool multi_rate_wall_paths_are_compatible(const ExtrusionEntity &lhs, const Extr
     if (const auto *lhs_path = dynamic_cast<const ExtrusionPath *>(&lhs)) {
         const auto *rhs_path = dynamic_cast<const ExtrusionPath *>(&rhs);
         return rhs_path != nullptr && lhs_path->role() == rhs_path->role() &&
-               lhs_path->role().is_perimeter() && ! lhs_path->role().is_bridge() &&
+               is_perimeter(lhs_path->role()) && ! is_bridge(lhs_path->role()) &&
                std::abs(lhs_path->length() - rhs_path->length()) <= scaled<double>(0.001);
     }
     return false;
@@ -613,11 +615,11 @@ bool multi_rate_wall_paths_are_compatible(const ExtrusionEntity &lhs, const Extr
 
 bool multi_rate_wall_collections_are_compatible(const LayerRegion &lhs, const LayerRegion &rhs)
 {
-    const ExPolygons lhs_slices = union_ex(lhs.slices().surfaces);
-    const ExPolygons rhs_slices = union_ex(rhs.slices().surfaces);
+    const ExPolygons lhs_slices = union_ex(lhs.slices.surfaces);
+    const ExPolygons rhs_slices = union_ex(rhs.slices.surfaces);
     if (! diff_ex(lhs_slices, rhs_slices).empty() || ! diff_ex(rhs_slices, lhs_slices).empty())
         return false;
-    return multi_rate_wall_paths_are_compatible(lhs.perimeters(), rhs.perimeters());
+    return multi_rate_wall_paths_are_compatible(lhs.perimeters, rhs.perimeters);
 }
 
 void set_multi_rate_wall_flow(ExtrusionEntity &entity, const LayerRegion &layer_region, coordf_t height)
@@ -627,12 +629,12 @@ void set_multi_rate_wall_flow(ExtrusionEntity &entity, const LayerRegion &layer_
             set_multi_rate_wall_flow(*child, layer_region, height);
     } else if (auto *loop = dynamic_cast<ExtrusionLoop *>(&entity)) {
         for (ExtrusionPath &path : loop->paths)
-            path.set_flow(layer_region.flow(path.role().is_external_perimeter() ? frExternalPerimeter : frPerimeter, height));
+            path.set_flow(layer_region.flow(is_external_perimeter(path.role()) ? frExternalPerimeter : frPerimeter, height));
     } else if (auto *multipath = dynamic_cast<ExtrusionMultiPath *>(&entity)) {
         for (ExtrusionPath &path : multipath->paths)
-            path.set_flow(layer_region.flow(path.role().is_external_perimeter() ? frExternalPerimeter : frPerimeter, height));
+            path.set_flow(layer_region.flow(is_external_perimeter(path.role()) ? frExternalPerimeter : frPerimeter, height));
     } else if (auto *path = dynamic_cast<ExtrusionPath *>(&entity)) {
-        path->set_flow(layer_region.flow(path->role().is_external_perimeter() ? frExternalPerimeter : frPerimeter, height));
+        path->set_flow(layer_region.flow(is_external_perimeter(path->role()) ? frExternalPerimeter : frPerimeter, height));
     }
 }
 
@@ -646,7 +648,8 @@ void PrintObject::combine_perimeters_for_independent_tools()
 
     for (size_t region_id = 0; region_id < this->num_printing_regions(); ++ region_id) {
         const PrintRegion &region = this->printing_region(region_id);
-        const unsigned int tool_id = unsigned(std::max(1, region.config().wall_filament.value) - 1);
+        const int wall_fid = region.config().outer_wall_filament_id.value;
+        const unsigned int tool_id = wall_fid >= 1 ? unsigned(wall_fid - 1) : 0u;  // 0 inherits
         if (! print_config.extruder_independent_walls.get_at(tool_id))
             continue;
 
@@ -658,8 +661,8 @@ void PrintObject::combine_perimeters_for_independent_tools()
         // The first print layer is a forced synchronization/adhesion layer. Build
         // candidate runs only from subsequent fine layers.
         for (size_t begin_idx = 1; begin_idx < m_layers.size();) {
-            LayerRegion &first_region = *m_layers[begin_idx]->m_regions[region_id];
-            if (first_region.perimeters().empty()) {
+            LayerRegion &first_region = *m_layers[begin_idx]->get_region(int(region_id));
+            if (first_region.perimeters.empty()) {
                 ++ begin_idx;
                 continue;
             }
@@ -668,9 +671,9 @@ void PrintObject::combine_perimeters_for_independent_tools()
             size_t end_idx = begin_idx;
             bool compatible = true;
             for (; end_idx < m_layers.size(); ++ end_idx) {
-                LayerRegion &candidate_region = *m_layers[end_idx]->m_regions[region_id];
+                LayerRegion &candidate_region = *m_layers[end_idx]->get_region(int(region_id));
                 combined_height += m_layers[end_idx]->height;
-                if (candidate_region.perimeters().empty() ||
+                if (candidate_region.perimeters.empty() ||
                     ! multi_rate_wall_collections_are_compatible(first_region, candidate_region)) {
                     compatible = false;
                     break;
@@ -687,16 +690,14 @@ void PrintObject::combine_perimeters_for_independent_tools()
                 continue;
             }
 
-            LayerRegion &destination = *m_layers[end_idx]->m_regions[region_id];
-            for (ExtrusionEntity *entity : destination.m_perimeters.entities)
+            LayerRegion &destination = *m_layers[end_idx]->get_region(int(region_id));
+            for (ExtrusionEntity *entity : destination.perimeters.entities)
                 set_multi_rate_wall_flow(*entity, destination, combined_height);
             for (size_t layer_idx = begin_idx; layer_idx < end_idx; ++ layer_idx) {
                 Layer &source_layer = *m_layers[layer_idx];
-                source_layer.m_regions[region_id]->m_perimeters.clear();
-                for (LayerSlice &slice : source_layer.lslices_ex)
-                    for (LayerIsland &island : slice.islands)
-                        if (island.perimeters.region() == region_id)
-                            island.perimeters = LayerExtrusionRange(uint32_t(region_id), ExtrusionRange(0, 0));
+                // Orca keeps no per-island extrusion ranges; clearing the
+                // region's collection removes the merged walls entirely.
+                source_layer.get_region(int(region_id))->perimeters.clear();
             }
 
             begin_idx = end_idx + 1;
@@ -2041,7 +2042,7 @@ void PrintObject::detect_surfaces_type()
         if (interface_shells) {
             // Move surfaces_new to layerm->slices.surfaces
             for (size_t idx_layer = 0; idx_layer < num_layers; ++ idx_layer)
-                m_layers[idx_layer]->m_regions[region_id]->slices.surfaces = std::move(surfaces_new[idx_layer]);
+                m_layers[idx_layer]->get_region(int(region_id))->slices.surfaces = std::move(surfaces_new[idx_layer]);
         }
 
         if (spiral_mode) {
@@ -2049,7 +2050,7 @@ void PrintObject::detect_surfaces_type()
 	        	// Turn the last bottom layer infill to a top infill, so it will be extruded with a proper pattern.
 	        	m_layers[num_layers - 1]->m_regions[region_id]->slices.set_type(stTop);
 	        for (size_t i = num_layers; i < m_layers.size(); ++ i)
-	        	m_layers[i]->m_regions[region_id]->slices.set_type(stInternal);
+	        	m_layers[i]->get_region(int(region_id))->slices.set_type(stInternal);
         }
         
         // ==================================================================================================
@@ -2074,7 +2075,7 @@ void PrintObject::detect_surfaces_type()
             tbb::parallel_for(tbb::blocked_range<size_t>(0, last), [this, region_id, &bridge_polys_per_layer](const tbb::blocked_range<size_t> &range) {
                 for (size_t i = range.begin(); i < range.end(); ++i) {
                     m_print->throw_if_canceled();
-                    const Surfaces &bot_surfs = m_layers[i]->m_regions[region_id]->slices.surfaces;
+                    const Surfaces &bot_surfs = m_layers[i]->get_region(int(region_id))->slices.surfaces;
                     for (const Surface &sbot : bot_surfs) {
                         if (sbot.surface_type == stBottomBridge) {
                             polygons_append(bridge_polys_per_layer[i], to_polygons(sbot));
@@ -2104,7 +2105,7 @@ void PrintObject::detect_surfaces_type()
                     new_surfaces.reserve(top_surfs.size());
                     
                     //filtering parameters here. Filter bridges that are less than 2x external walls and 2xN internal perimeters wide.
-                    LayerRegion *layerm = m_layers[i]->m_regions[region_id];
+                    LayerRegion *layerm = m_layers[i]->get_region(int(region_id));
                     int number_of_internal_walls = std::max(0, layerm->m_region->config().wall_loops - 1); // number of internal walls, clamped to a minimum of 0 as a safety precaution
                     float        offset_distance = layerm->flow(frExternalPerimeter).scaled_width() // shrink down by external perimeter width (effectively filtering out 2x external perimeters wide bridges)
                                                     + ((layerm->flow(frPerimeter).scaled_width()) * number_of_internal_walls); // shrink down by number of external walls * width of them, effectively filtering out 2x internal perimeter wide bridges
@@ -2206,7 +2207,7 @@ void PrintObject::detect_surfaces_type()
             for (size_t region_id = 0; region_id < this->num_printing_regions(); ++region_id) {
                 tbb::parallel_for( tbb::blocked_range<size_t>(0, m_layers.size()), [this, region_id](const tbb::blocked_range<size_t> &range) {
                     for (size_t idx_layer = range.begin(); idx_layer < range.end(); ++idx_layer) {
-                        Surfaces &surfs = m_layers[idx_layer]->m_regions[region_id]->slices.surfaces;
+                        Surfaces &surfs = m_layers[idx_layer]->get_region(int(region_id))->slices.surfaces;
                         for (Surface &s : surfs) {
                             if (s.surface_type == stInternalAfterExternalBridge) {
                                 s.surface_type = stBottomBridge;
@@ -2228,7 +2229,7 @@ void PrintObject::detect_surfaces_type()
             [this, region_id](const tbb::blocked_range<size_t>& range) {
                 for (size_t idx_layer = range.begin(); idx_layer < range.end(); ++ idx_layer) {
                     m_print->throw_if_canceled();
-                    LayerRegion *layerm = m_layers[idx_layer]->m_regions[region_id];
+                    LayerRegion *layerm = m_layers[idx_layer]->get_region(int(region_id));
                     layerm->slices_to_fill_surfaces_clipped();
 #ifdef SLIC3R_DEBUG_SLICE_PROCESSING
                     layerm->export_region_fill_surfaces_to_svg_debug("1_detect_surfaces_type-final");
@@ -4498,8 +4499,19 @@ void PrintObject::combine_infill()
     // Work on each region separately.
     for (size_t region_id = 0; region_id < this->num_printing_regions(); ++ region_id) {
         const PrintRegion &region = this->printing_region(region_id);
+        // TigerSlicer: a tool marked for independent infill combines layers up
+        // to its own preferred height even when the user left combination off.
+        // Orca's filament ids are 1-based with 0 meaning "inherit" (tool 0).
+        const int    infill_fid  = region.config().sparse_infill_filament_id.value;
+        const size_t infill_tool = infill_fid >= 1 ? size_t(infill_fid - 1) : size_t(0);
+        const double preferred_infill_layer_height = Slicing::preferred_layer_height(
+            this->print()->config(), unsigned(infill_tool), this->slicing_parameters().layer_height);
+        const bool   independent_infill_combination =
+            this->print()->config().independent_tool_layer_heights.value &&
+            this->print()->config().extruder_independent_infill.get_at(infill_tool) &&
+            preferred_infill_layer_height > this->slicing_parameters().layer_height + EPSILON;
         //BBS
-        const bool enable_combine_infill = region.config().infill_combination.value;
+        const bool enable_combine_infill = region.config().infill_combination.value || independent_infill_combination;
         if (enable_combine_infill == false || region.config().sparse_infill_density == 0.)
             continue;
 
@@ -4518,6 +4530,10 @@ void PrintObject::combine_infill()
         //Orca: Limit combination of infill to up to infill_combination_max_layer_height
         const double infill_combination_max_layer_height = region.config().infill_combination_max_layer_height.get_abs_value(nozzle_diameter);
         nozzle_diameter = infill_combination_max_layer_height > 0 ? std::min(infill_combination_max_layer_height, nozzle_diameter) : nozzle_diameter;
+        // TigerSlicer: an independent tool never combines past its own
+        // preferred layer height.
+        if (independent_infill_combination)
+            nozzle_diameter = std::min(nozzle_diameter, preferred_infill_layer_height);
         
         // define the combinations
         std::vector<size_t> combine(m_layers.size(), 0);
@@ -4614,26 +4630,6 @@ void PrintObject::combine_infill()
             }
         }
     }
-
-        const double infill_nozzle_diameter = this->print()->config().nozzle_diameter.get_at(region.config().sparse_infill_filament.value - 1);
-        const double nozzle_diameter = std::min(infill_nozzle_diameter,
-        double       max_combine_layer_height                      = configured_automatic_combination ?
-                                                                    std::min(automatic_infill_combination_max_layer_height, nozzle_diameter) : nozzle_diameter;
-        if (independent_infill_combination) {
-            const double independent_max_layer_height = std::min(infill_nozzle_diameter, preferred_infill_layer_height);
-            max_combine_layer_height = configured_automatic_combination ?
-                                       std::min(max_combine_layer_height, independent_max_layer_height) :
-                                       independent_max_layer_height;
-        }
-
-        const size_t       infill_extruder_idx            = size_t(std::max(1, region.config().sparse_infill_filament.value) - 1);
-        const double       preferred_infill_layer_height  = Slicing::preferred_layer_height(
-            this->print()->config(), unsigned(infill_extruder_idx), this->slicing_parameters().layer_height);
-        const bool         independent_infill_combination = this->print()->config().independent_tool_layer_heights.value &&
-                                                            this->print()->config().extruder_independent_infill.get_at(infill_extruder_idx) &&
-                                                            preferred_infill_layer_height > this->slicing_parameters().layer_height + EPSILON;
-        const bool         configured_automatic_combination = region.config().automatic_infill_combination;
-        const bool         automatic_infill_combination  = configured_automatic_combination || independent_infill_combination;
 }
 
 void PrintObject::combine_solid_infill_for_independent_tools()
@@ -4644,7 +4640,8 @@ void PrintObject::combine_solid_infill_for_independent_tools()
 
     for (size_t region_id = 0; region_id < this->num_printing_regions(); ++ region_id) {
         const PrintRegion &region = this->printing_region(region_id);
-        const unsigned int tool_id = unsigned(std::max(1, region.config().solid_infill_filament.value) - 1);
+        const int fid = region.config().internal_solid_filament_id.value;
+        const unsigned int tool_id = fid >= 1 ? unsigned(fid - 1) : 0u;  // 0 inherits the object's filament
         if (! print_config.extruder_independent_solid_infill.get_at(tool_id))
             continue;
 
@@ -4685,11 +4682,11 @@ void PrintObject::combine_solid_infill_for_independent_tools()
             std::vector<LayerRegion *> layer_regions;
             layer_regions.reserve(num_layers_to_combine);
             for (size_t idx = layer_idx + 1 - num_layers_to_combine; idx <= layer_idx; ++ idx)
-                layer_regions.emplace_back(m_layers[idx]->m_regions[region_id]);
+                layer_regions.emplace_back(m_layers[idx]->get_region(int(region_id)));
 
-            ExPolygons intersection = to_expolygons(layer_regions.front()->fill_surfaces().filter_by_type(stInternalSolid));
+            ExPolygons intersection = to_expolygons(layer_regions.front()->fill_surfaces.filter_by_type(stInternalSolid));
             for (size_t idx = 1; idx < layer_regions.size() && ! intersection.empty(); ++ idx)
-                intersection = intersection_ex(layer_regions[idx]->fill_surfaces().filter_by_type(stInternalSolid), intersection);
+                intersection = intersection_ex(layer_regions[idx]->fill_surfaces.filter_by_type(stInternalSolid), intersection);
             if (intersection.empty())
                 continue;
 
@@ -4707,16 +4704,16 @@ void PrintObject::combine_solid_infill_for_independent_tools()
                 polygons_append(intersection_with_clearance, offset(expolygon, clearance_offset));
 
             for (LayerRegion *layer_region : layer_regions) {
-                Polygons internal_solid = to_polygons(std::move(layer_region->fill_surfaces().filter_by_type(stInternalSolid)));
-                layer_region->m_fill_surfaces.remove_type(stInternalSolid);
-                layer_region->m_fill_surfaces.append(diff_ex(internal_solid, intersection_with_clearance), stInternalSolid);
+                Polygons internal_solid = to_polygons(std::move(layer_region->fill_surfaces.filter_by_type(stInternalSolid)));
+                layer_region->fill_surfaces.remove_type(stInternalSolid);
+                layer_region->fill_surfaces.append(diff_ex(internal_solid, intersection_with_clearance), stInternalSolid);
                 if (layer_region == layer_regions.back()) {
                     Surface combined_surface(stInternalSolid, ExPolygon());
                     combined_surface.thickness = combined_height;
                     combined_surface.thickness_layers = static_cast<unsigned short>(layer_regions.size());
-                    layer_region->m_fill_surfaces.append(intersection, combined_surface);
+                    layer_region->fill_surfaces.append(intersection, combined_surface);
                 } else {
-                    layer_region->m_fill_surfaces.append(
+                    layer_region->fill_surfaces.append(
                         intersection_ex(internal_solid, intersection_with_clearance), stInternalVoid);
                 }
             }
@@ -4811,8 +4808,8 @@ void PrintObject::combine_support_infill_for_independent_tools()
     size_t run_begin = 1; // The first support layer is always a synchronization barrier.
     while (run_begin < m_support_layers.size()) {
         SupportLayer *first = m_support_layers[run_begin];
-        if (extrusion_entity_contains_role(first->support_fills, ExtrusionRole::SupportMaterialInterface) ||
-            ! extrusion_entity_contains_role(first->support_fills, ExtrusionRole::SupportMaterial)) {
+        if (extrusion_entity_contains_role(first->support_fills, erSupportMaterialInterface) ||
+            ! extrusion_entity_contains_role(first->support_fills, erSupportMaterial)) {
             ++ run_begin;
             continue;
         }
@@ -4822,8 +4819,8 @@ void PrintObject::combine_support_infill_for_independent_tools()
         size_t destination_idx = run_begin;
         for (; run_end < m_support_layers.size(); ++ run_end) {
             SupportLayer *layer = m_support_layers[run_end];
-            if (extrusion_entity_contains_role(layer->support_fills, ExtrusionRole::SupportMaterialInterface) ||
-                ! extrusion_entity_contains_role(layer->support_fills, ExtrusionRole::SupportMaterial))
+            if (extrusion_entity_contains_role(layer->support_fills, erSupportMaterialInterface) ||
+                ! extrusion_entity_contains_role(layer->support_fills, erSupportMaterial))
                 break;
             if (! support_base_occupancy_is_identical(*first, *layer))
                 break;
@@ -4837,13 +4834,12 @@ void PrintObject::combine_support_infill_for_independent_tools()
             combined_height <= policy.maximum_height + EPSILON) {
             SupportLayer *destination = m_support_layers[destination_idx];
             Flow combined_flow = support_material_flow(this, float(combined_height));
-            set_extrusion_role_flow(destination->support_fills, ExtrusionRole::SupportMaterial, combined_flow);
+            set_extrusion_role_flow(destination->support_fills, erSupportMaterial, combined_flow);
             for (size_t idx = run_begin; idx < destination_idx; ++ idx) {
                 SupportLayer *lower = m_support_layers[idx];
-                erase_extrusion_role(lower->support_fills, ExtrusionRole::SupportMaterial);
+                erase_extrusion_role(lower->support_fills, erSupportMaterial);
                 if (lower->support_fills.empty()) {
                     lower->support_islands.clear();
-                    lower->support_islands_bboxes.clear();
                 }
             }
             run_begin = destination_idx + 1;

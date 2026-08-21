@@ -215,6 +215,21 @@ namespace Slicing {
 	// it should not be smaller than the minimum layer height.
 	// Nozzle index is 1 based.
 	coordf_t max_layer_height_from_nozzle(const DynamicPrintConfig &print_config, int idx_nozzle);
+
+	// TigerSlicer: multi-rate layer scheduling.
+	// Resolve a physical extruder's preferred layer height (0-based index);
+	// a configured value of zero inherits fallback_layer_height.
+	coordf_t preferred_layer_height(const PrintConfig &print_config, unsigned int extruder_idx, coordf_t fallback_layer_height);
+
+	// The synchronized slicing grid for an object: a single-tool object uses
+	// its preferred height, an interacting multi-tool object the smallest, so
+	// every coarser height can end on synchronization planes.
+	coordf_t object_layer_height(const PrintConfig &print_config,
+	                             const std::vector<unsigned int> &object_extruders,
+	                             coordf_t fallback_layer_height);
+
+	// True when coarse_height is an integer number of synchronization layers.
+	bool layer_height_ratio_is_integral(coordf_t coarse_height, coordf_t synchronization_height);
 } // namespace Slicing
 
 } // namespace Slic3r

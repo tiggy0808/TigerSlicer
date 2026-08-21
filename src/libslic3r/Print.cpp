@@ -429,6 +429,20 @@ bool Print::invalidate_state_by_config_options(const ConfigOptionResolver & /* n
             osteps.emplace_back(posSimplifySupportPath);
             steps.emplace_back(psSkirtBrim);
         }
+        else if (opt_key == "independent_tool_layer_heights"
+            || opt_key == "multi_rate_layer_height_capable"
+            || opt_key == "extruder_preferred_layer_height"
+            || opt_key == "extruder_layer_height_ratio"
+            || opt_key == "extruder_independent_walls"
+            || opt_key == "extruder_independent_infill"
+            || opt_key == "extruder_independent_solid_infill"
+            || opt_key == "extruder_independent_top_surfaces"
+            || opt_key == "extruder_independent_support"
+            || opt_key == "extruder_independent_support_interface") {
+            // TigerSlicer: the multi-rate schedule shapes every layer, so
+            // changing it re-slices the objects from the start.
+            osteps.emplace_back(posSlice);
+        }
         else if (opt_key == "z_hop_types") {
             osteps.emplace_back(posDetectOverhangsForLift);
         } else {
@@ -448,37 +462,6 @@ bool Print::invalidate_state_by_config_options(const ConfigOptionResolver & /* n
             invalidated |= object->invalidate_step(ostep);
 
     return invalidated;
-
-            || opt_key == "independent_tool_layer_heights"
-            || opt_key == "multi_rate_layer_height_capable"
-            || opt_key == "extruder_preferred_layer_height"
-            || opt_key == "extruder_layer_height_ratio"
-            || opt_key == "extruder_independent_walls"
-            || opt_key == "extruder_independent_infill"
-            || opt_key == "extruder_independent_solid_infill"
-            || opt_key == "extruder_independent_top_surfaces"
-            || opt_key == "extruder_independent_support"
-            || opt_key == "extruder_independent_support_interface"
-
-        "wipe_tower_acceleration",
-        // TigerSlicer: 5-axis settings only affect external G-code composition
-        "five_axis_printing",
-        "five_axis_kinematics",
-        "five_axis_max_yaw",
-        "five_axis_stewart_pose_gcode",
-        "five_axis_tilt_word",
-        "five_axis_rotary_word",
-        "five_axis_tilt_min",
-        "five_axis_tilt_max",
-        "five_axis_rotary_continuous",
-        "five_axis_pivot_offset_z",
-        "five_axis_table_diameter",
-        "five_axis_ab_feedrate",
-        "five_axis_z_clearance",
-        "five_axis_park_x",
-        "five_axis_park_y",
-        "five_axis_min_bed_clearance",
-        "five_axis_reorient_gcode"
 }
 
 void Print::set_calib_params(const Calib_Params& params) {
@@ -1344,18 +1327,18 @@ StringObjectException Print::check_multi_filament_valid(const Print& print)
 static std::string tigerslicer_validate(const Print &print)
 {
     const PrintConfig   &m_config  = print.config();
-    const PrintObjectPtrs &m_objects = print.objects();
+    const ConstPrintObjectPtrsAdaptor m_objects = print.objects();
     (void) m_config; (void) m_objects;
     if (m_config.independent_tool_layer_heights) {
         if (! m_config.multi_rate_layer_height_capable)
             return _u8L("Independent tool layer heights require a printer profile with Multi-rate layer scheduling capable enabled.");
-        if (m_config.wipe_tower)
+        if (m_config.enable_prime_tower)
             return _u8L("Independent tool layer heights cannot currently be used with a wipe tower. Disable one of these options.");
-        if (m_config.print_sequence)
+        if (m_config.print_sequence == PrintSequence::ByObject)
             return _u8L("Independent tool layer heights cannot currently be used with sequential printing.");
-        if (m_config.spiral_vase)
+        if (m_config.spiral_mode)
             return _u8L("Independent tool layer heights cannot currently be used with Spiral Vase mode.");
-        if (! m_virtual_extruders.empty())
+        if (! print.virtual_extruders().empty())
             return _u8L("Independent tool layer heights cannot currently be used with Full Spectrum virtual extruders.");
 
         std::vector<coordf_t> object_synchronization_heights;
@@ -1365,7 +1348,8 @@ static std::string tigerslicer_validate(const Print &print)
                 return format(_u8L("Independent tool layer heights cannot currently be used with a raft on object %1%."),
                               object->model_object()->name);
             if (object->has_support()) {
-                if (object->config().support_material_style == smsTree || object->config().support_material_style == smsOrganic)
+                if (is_tree(object->config().support_type.value) ||
+                    object->config().support_style.value == smsTreeOrganic)
                     return format(_u8L("Independent tool layer heights currently support grid and snug supports only; tree and organic supports are not yet safe on object %1%."),
                                   object->model_object()->name);
                 if (object->config().support_filament.value <= 0 ||
@@ -1429,7 +1413,7 @@ static std::string tigerslicer_validate(const Print &print)
             }
         }
 
-        auto multi_rate_xy_clearance = [this](const PrintObject &object) {
+        auto multi_rate_xy_clearance = [&m_config](const PrintObject &object) {
             coordf_t clearance = std::max(coordf_t(0.), m_config.extruder_clearance_radius.value);
             for (unsigned int tool_id : object.object_extruders()) {
                 if (tool_id >= m_config.nozzle_diameter.size())
@@ -1468,16 +1452,6 @@ static std::string tigerslicer_validate(const Print &print)
             }
         }
     }
-
-            } else if (std::abs((filament_diam - first_filament_diam) / first_filament_diam) > 0.1 &&
-                       m_config.single_extruder_multi_material) {
-                // One nozzle fed by several filaments can only ever be fed one
-                // diameter, so this stays refused. A printer whose tools each
-                // have their own hotend may legitimately carry different
-                // diameters; the tower converts volume to E per tool.
-                return _u8L("The wipe tower is only supported if all extruders use filaments of the same diameter. "
-                            "This printer shares one nozzle between its filaments ('single_extruder_multi_material'), "
-                            "so they must all be the same diameter.");
     return std::string();
 }
 
@@ -2337,10 +2311,10 @@ void collect_multi_rate_heights(const ExtrusionEntity &entity,
         // Bridge flow is modeled as a circular strand whose visualization
         // height equals its diameter. Its occupied scheduling slab remains the
         // current planar layer, not that diameter.
-        const bool circular_bridge_flow = std::abs(path.width() - path.height()) <= EPSILON;
-        const bool surface_finishing_flow = path.role() == ExtrusionRole::Ironing;
-        const coordf_t height = path.role().is_bridge() || circular_bridge_flow || surface_finishing_flow ?
-            planar_layer_height : path.height();
+        const bool circular_bridge_flow = std::abs(path.width - path.height) <= EPSILON;
+        const bool surface_finishing_flow = path.role() == erIroning;
+        const coordf_t height = is_bridge(path.role()) || circular_bridge_flow || surface_finishing_flow ?
+            planar_layer_height : path.height;
         if (height <= EPSILON)
             return;
         if (std::none_of(heights.begin(), heights.end(), [height](coordf_t other) {
@@ -2396,26 +2370,32 @@ void Print::build_and_validate_multi_rate_schedule()
             for (size_t region_id = 0; region_id < layer->regions().size(); ++ region_id) {
                 const LayerRegion &region = *layer->regions()[region_id];
                 const PrintRegionConfig &config = region.region().config();
-                add_operations(region.perimeters(),
-                    [](ExtrusionRole role) { return role.is_perimeter(); },
-                    object_id, region_id, unsigned(std::max(1, config.wall_filament.value) - 1),
+                // Orca's per-feature filament ids are 1-based with 0 meaning
+                // "inherit the object's filament"; apply() bakes an object
+                // override into these ids, so inherit resolves to tool 0.
+                auto tool_of = [](int filament_id) {
+                    return filament_id >= 1 ? unsigned(filament_id - 1) : 0u;
+                };
+                add_operations(region.perimeters,
+                    [](ExtrusionRole role) { return is_perimeter(role); },
+                    object_id, region_id, tool_of(config.outer_wall_filament_id.value),
                     MultiRateFeature::Walls, *layer);
-                add_operations(region.fills(),
-                    [](ExtrusionRole role) { return role == ExtrusionRole::InternalInfill; },
-                    object_id, region_id, unsigned(std::max(1, config.sparse_infill_filament.value) - 1),
+                add_operations(region.fills,
+                    [](ExtrusionRole role) { return role == erInternalInfill; },
+                    object_id, region_id, tool_of(config.sparse_infill_filament_id.value),
                     MultiRateFeature::SparseInfill, *layer);
-                add_operations(region.fills(),
+                add_operations(region.fills,
                     [](ExtrusionRole role) {
-                        return role == ExtrusionRole::SolidInfill || role == ExtrusionRole::InfillOverBridge;
+                        return role == erSolidInfill;
                     },
-                    object_id, region_id, unsigned(std::max(1, config.solid_infill_filament.value) - 1),
+                    object_id, region_id, tool_of(config.internal_solid_filament_id.value),
                     MultiRateFeature::SolidInfill, *layer);
-                add_operations(region.fills(),
+                add_operations(region.fills,
                     [](ExtrusionRole role) {
-                        return role == ExtrusionRole::TopSolidInfill || role == ExtrusionRole::Ironing ||
-                               role == ExtrusionRole::BridgeInfill;
+                        return role == erTopSolidInfill || role == erIroning ||
+                               role == erBridgeInfill;
                     },
-                    object_id, region_id, unsigned(std::max(1, config.solid_infill_filament.value) - 1),
+                    object_id, region_id, tool_of(config.top_surface_filament_id.value),
                     MultiRateFeature::TopSurface, *layer);
             }
         }
@@ -2424,10 +2404,10 @@ void Print::build_and_validate_multi_rate_schedule()
         const unsigned int interface_tool = unsigned(std::max(1, object.config().support_interface_filament.value) - 1);
         for (const SupportLayer *layer : object.support_layers()) {
             add_operations(layer->support_fills,
-                [](ExtrusionRole role) { return role == ExtrusionRole::SupportMaterial; },
+                [](ExtrusionRole role) { return role == erSupportMaterial; },
                 object_id, 0, support_tool, MultiRateFeature::Support, *layer);
             add_operations(layer->support_fills,
-                [](ExtrusionRole role) { return role == ExtrusionRole::SupportMaterialInterface; },
+                [](ExtrusionRole role) { return role == erSupportMaterialInterface; },
                 object_id, 0, interface_tool, MultiRateFeature::SupportInterface, *layer);
         }
     }
@@ -6211,7 +6191,7 @@ ExtrusionLayers FakeWipeTower::getTrueExtrusionLayersFromWipeTower() const
         ExtrusionPaths paths;
         paths.reserve(it->second.size());
         for (auto &polyline : it->second) {
-            ExtrusionPath path(ExtrusionRole::erWipeTower, 0.0, 0.0, layer_heights[index]);
+            ExtrusionPath path(erWipeTower, 0.0, 0.0, layer_heights[index]);
             path.polyline = Polyline3(polyline);
             Point3 trans3(trans, 0);
             for (auto &p : path.polyline.points) p += trans3;

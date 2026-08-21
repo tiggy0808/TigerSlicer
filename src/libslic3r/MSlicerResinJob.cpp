@@ -181,8 +181,8 @@ ts_mslicer_format MSlicerResinJob::format_from_config(const DynamicPrintConfig &
 
 void MSlicerResinJob::validate_model_input(const Model &model, const DynamicPrintConfig &config)
 {
-    if (config.opt_enum<sla::SupportTreeType>("support_tree_type") != sla::SupportTreeType::Default)
-        throw std::invalid_argument("Automatic MSLA supports currently support only the Default tree type. Select Default before slicing.");
+    // Orca offers no SLA tree-type selection - the default tree is the only
+    // one - so the guard PrusaSlicer needed here has nothing to refuse.
     if (config.opt_int("support_points_density_relative") <= 0)
         throw std::invalid_argument("Automatic MSLA support-point density must be greater than zero.");
     if (config.opt_bool("pad_enable"))
@@ -355,12 +355,16 @@ indexed_triangle_set MSlicerResinJob::prepared_object_mesh(const ModelObject &ob
         hollow_cfg.quality          = merged.opt_float("hollowing_quality");
         hollow_cfg.closing_distance = merged.opt_float("hollowing_closing_distance");
 
-        sla::InteriorPtr interior = sla::generate_interior(mesh, hollow_cfg);
+        // Orca's hollowing speaks TriangleMesh rather than the raw triangle
+        // set; wrap, hollow, and unwrap.
+        TriangleMesh hollow_mesh_wrap(mesh);
+        sla::InteriorPtr interior = sla::generate_interior(hollow_mesh_wrap, hollow_cfg);
         if (!interior || get_mesh(*interior).empty())
             throw std::invalid_argument(
                 "Hollowing produced no interior for \"" + object.name +
                 "\". The walls may be thinner than the configured shell; reduce the wall thickness or disable hollowing.");
-        sla::hollow_mesh(mesh, *interior, sla::hfRemoveInsideTriangles);
+        sla::hollow_mesh(hollow_mesh_wrap, *interior, sla::hfRemoveInsideTriangles);
+        mesh = std::move(hollow_mesh_wrap.its);
     }
 
     drill_drain_holes(mesh, object.sla_drain_holes);

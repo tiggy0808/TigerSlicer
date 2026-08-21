@@ -76,27 +76,26 @@ std::vector<ObjectID> MSlicerResinPrint::print_object_ids() const
     return ids;
 }
 
-std::string MSlicerResinPrint::validate(std::vector<std::string> *) const
+StringObjectException MSlicerResinPrint::validate(std::vector<StringObjectException> *, Polygons *, std::vector<std::pair<Polygon, float>> *) const
 {
     try {
         if (const std::string error = validate_resin_profile_contract(m_full_print_config); !error.empty())
-            return error;
+            return { error };
         MSlicerResinJob::validate_model_input(m_model, m_full_print_config);
         MSlicerResinJob::validate(MSlicerResinJob::settings_from_config(m_full_print_config));
         (void)MSlicerResinJob::format_from_config(m_full_print_config);
         if (empty())
-            return "The Resin project has no printable model instance fully inside the build volume.";
+            return { "The Resin project has no printable model instance fully inside the build volume." };
         // No support gate: MSLA supports exist when they have been generated
         // in the Supports workspace and not otherwise. There is no separate
         // switch that could disagree with what is on the plate.
         return {};
     } catch (const std::exception &error) {
-        return error.what();
+        return { error.what() };
     }
 }
 
-PrintBase::ApplyStatus MSlicerResinPrint::apply(const Model &model, DynamicPrintConfig config,
-                                                 std::vector<std::string> *, const DynamicPrintConfig *)
+PrintBase::ApplyStatus MSlicerResinPrint::apply(const Model &model, DynamicPrintConfig config, bool /*extruder_applied*/)
 {
     std::lock_guard<std::mutex> lock(state_mutex());
     if (same_native_resin_input(m_model, model) &&
@@ -124,10 +123,10 @@ void MSlicerResinPrint::set_task(const TaskParams &params)
         throw InvalidArgument("Partial legacy SLA processing steps are unavailable with the MSlicer Resin engine.");
 }
 
-void MSlicerResinPrint::process()
+void MSlicerResinPrint::process(long long *, bool)
 {
     throw_if_canceled();
-    if (const std::string error = validate(); !error.empty())
+    if (const std::string error = validate().string; !error.empty())
         throw SlicingError(error);
     throw_if_canceled();
     set_status(0, "Preparing MSlicer Resin input");

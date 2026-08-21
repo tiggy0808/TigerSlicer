@@ -759,11 +759,6 @@ std::string AppConfig::load()
 #else
         ifs >> j;
 #endif
-    
-    // TigerSlicer versioning restarts at 1.0.0, so a version below 1.40 does
-    // not mean the pre-vendor-bundle Slic3r layout here: any data directory
-    // this application has touched already uses vendor bundles.
-    if (ini_ver)
 }
     catch(nlohmann::detail::parse_error &err) {
 #ifdef WIN32

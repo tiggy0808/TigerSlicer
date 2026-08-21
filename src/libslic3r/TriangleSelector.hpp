@@ -5,6 +5,7 @@
 
 
 #include <cfloat>
+#include <map>
 #include "Point.hpp"
 #include "TriangleMesh.hpp"
 
@@ -341,6 +342,8 @@ public:
 
     // Set facet of the mesh to a given state. Only works for original triangles.
     void set_facet(int facet_idx, EnforcerBlockerType state);
+    // TigerSlicer: bulk-rewrite painted states, used when virtual extruder ids collapse onto physical ones.
+    void remap_states(const std::map<EnforcerBlockerType, EnforcerBlockerType>& remap);
 
     // Clear everything and make the tree empty.
     void reset();

@@ -3,6 +3,7 @@
 
 #include "PrintBase.hpp"
 #include "MultiRateLayerSchedule.hpp"
+#include "Feature/FullSpectrum/VirtualExtruder.hpp"
 #include "Fill/FillAdaptive.hpp"
 #include "Fill/FillLightning.hpp"
 
@@ -130,6 +131,7 @@ public:
     // Identifier of this PrintRegion in the list of Print::m_print_regions.
     int                         print_region_id() const throw() { return m_print_region_id; }
     int                         print_object_region_id() const throw() { return m_print_object_region_id; }
+    std::optional<unsigned int> source_virtual_extruder_id() const throw() { return m_source_virtual_extruder_id; }
 	// 1-based extruder identifier for this region and role.
 	unsigned int 				extruder(FlowRole role) const;
     Flow                        flow(const PrintObject &object, FlowRole role, double layer_height, bool first_layer = false) const;
@@ -148,6 +150,7 @@ public:
     void                        set_config(PrintRegionConfig &&config) { m_config = std::move(config); m_config_hash = m_config.hash(); }
     void                        config_apply_only(const ConfigBase &other, const t_config_option_keys &keys, bool ignore_nonexistent = false)
                                         { m_config.apply_only(other, keys, ignore_nonexistent); m_config_hash = m_config.hash(); }
+    void                        set_source_virtual_extruder_id(std::optional<unsigned int> v) throw() { m_source_virtual_extruder_id = v; }
 private:
     friend Print;
     friend void print_region_ref_inc(PrintRegion&);
@@ -159,9 +162,10 @@ private:
     int                m_print_region_id { -1 };
     int                m_print_object_region_id { -1 };
     int                m_ref_cnt { 0 };
+    std::optional<unsigned int> m_source_virtual_extruder_id;
 };
 
-inline bool operator==(const PrintRegion &lhs, const PrintRegion &rhs) { return lhs.config_hash() == rhs.config_hash() && lhs.config() == rhs.config(); }
+inline bool operator==(const PrintRegion &lhs, const PrintRegion &rhs) { return lhs.config_hash() == rhs.config_hash() && lhs.config() == rhs.config() && lhs.source_virtual_extruder_id() == rhs.source_virtual_extruder_id(); }
 inline bool operator!=(const PrintRegion &lhs, const PrintRegion &rhs) { return ! (lhs == rhs); }
 
 template<typename T>
@@ -910,10 +914,15 @@ private: // Prevents erroneous use by other classes.
     typedef std::pair<PrintObject *, bool>         PrintObjectInfo;
 
 public:
-    // TigerSlicer: the per-tool layer-height schedule for this job.
-    MultiRateSchedule        m_multi_rate_schedule;
-    const MultiRateSchedule& multi_rate_schedule() const { return m_multi_rate_schedule; }
+    // TigerSlicer: the per-tool layer-height schedule and the Full Spectrum
+    // virtual extruders configured for this job.
+    const MultiRateSchedule&              multi_rate_schedule() const { return m_multi_rate_schedule; }
+    const FullSpectrum::VirtualExtruders& virtual_extruders()   const { return m_virtual_extruders; }
     void build_and_validate_multi_rate_schedule();
+private:
+    MultiRateSchedule              m_multi_rate_schedule;
+    FullSpectrum::VirtualExtruders m_virtual_extruders;
+public:
 
     using SlicingPipelineHookFn = std::function<void(Print&, const PrintObject*, SlicingPipelineStepPlugin)>;
     // Cross-layer injection (mirrors ConfigBase::set_resolve_capability_fn): the GUI/plugin
