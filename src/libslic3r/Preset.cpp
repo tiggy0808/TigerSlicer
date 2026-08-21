@@ -1407,6 +1407,7 @@ static std::vector<std::string> s_Preset_machine_limits_options {
 
 static std::vector<std::string> s_Preset_printer_options {
     // TigerSlicer
+    "multi_rate_layer_height_capable",
     "extruder_preferred_layer_height",
     "extruder_layer_height_ratio",
     "printer_technology",
@@ -1443,6 +1444,14 @@ static std::vector<std::string> s_Preset_printer_options {
 
 static std::vector<std::string> s_Preset_sla_print_options {
     // TigerSlicer
+    "resin_print_schema_version",
+    "resin_print_migration_required",
+    "resin_print_migration_diagnostics",
+    "mslicer_bottom_layers",
+    "mslicer_transition_layers",
+    "mslicer_supersample",
+    "support_tree_type",
+    "support_enforcers_only",
     "msla_support_adaptive_diameter",
     "msla_support_base_diameter",
     "msla_support_base_kind",
@@ -1504,6 +1513,23 @@ static std::vector<std::string> s_Preset_sla_print_options {
 };
 
 static std::vector<std::string> s_Preset_sla_material_options {
+    // TigerSlicer
+    "resin_material_schema_version",
+    "resin_material_migration_required",
+    "resin_material_migration_diagnostics",
+    "mslicer_normal_wait_time",
+    "mslicer_bottom_wait_time",
+    "mslicer_normal_pwm",
+    "mslicer_bottom_pwm",
+    "mslicer_normal_lift_distance",
+    "mslicer_normal_lift_speed",
+    "mslicer_normal_retract_distance",
+    "mslicer_normal_retract_speed",
+    "mslicer_bottom_lift_distance",
+    "mslicer_bottom_lift_speed",
+    "mslicer_bottom_retract_distance",
+    "mslicer_bottom_retract_speed",
+    "zcorrection_layers",
     "material_colour",
     "material_type",
     "initial_layer_height",
@@ -1525,6 +1551,14 @@ static std::vector<std::string> s_Preset_sla_material_options {
 };
 
 static std::vector<std::string> s_Preset_sla_printer_options {
+    // TigerSlicer
+    "resin_printer_schema_version",
+    "resin_printer_migration_required",
+    "resin_printer_migration_diagnostics",
+    "resin_host_type",
+    "resin_supported_formats",
+    "sla_archive_format",
+    "sla_output_precision",
     "printer_technology",
     "printable_area","bed_custom_texture", "bed_custom_model", "printable_height",
     "display_width", "display_height", "display_pixels_x", "display_pixels_y",

@@ -8269,6 +8269,14 @@ void PrintConfigDef::init_extruder_option_keys()
         "deretraction_speed",
         "extruder_colour",
         "extruder_offset",
+        "extruder_preferred_layer_height",
+        "extruder_layer_height_ratio",
+        "extruder_independent_walls",
+        "extruder_independent_infill",
+        "extruder_independent_solid_infill",
+        "extruder_independent_top_surfaces",
+        "extruder_independent_support",
+        "extruder_independent_support_interface",
         "extruder_printable_height",
         "extruder_type",
         "long_retractions_when_cut",
@@ -8845,6 +8853,25 @@ void PrintConfigDef::init_sla_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(5.0));
 
+    // TigerSlicer: strategy selector kept as a plain string on the Orca base
+    // (Prusa's branching tree generator does not exist here; MSlicer builds
+    // its own supports). Profiles carrying "branching" still load.
+    def = this->add("support_tree_type", coString);
+    def->label = L("Support tree type");
+    def->category = L("Supports");
+    def->tooltip = L("Support tree building strategy");
+    def->gui_type = ConfigOptionDef::GUIType::select_open;
+    def->enum_values = { "default", "branching" };
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionString("default"));
+
+    def = this->add("support_enforcers_only", coBool);
+    def->label = L("Support only in enforced regions");
+    def->category = L("Supports");
+    def->tooltip = L("Only create support if it lies in a support enforcer.");
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionBool(false));
+
     def = this->add("support_points_density_relative", coInt);
     //def->label = L("");
     //def->category = L("");
@@ -9014,6 +9041,14 @@ void PrintConfigDef::init_sla_params()
     def->enum_labels.push_back(" ");
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionEnum<SLAMaterialSpeed>(slamsFast));
+
+    def = this->add("zcorrection_layers", coInt);
+    def->label = L("Z compensation");
+    def->category = L("Advanced");
+    def->tooltip = L("Number of layers to Z correct to avoid cross layer bleed");
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionInt(0));
 
     // --- TigerSlicer -------------------------------------------
     def = this->add("resin_host_type", coEnum);

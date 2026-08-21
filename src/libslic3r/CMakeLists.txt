@@ -723,6 +723,7 @@ set(OCCT_LIBS
 target_link_libraries(libslic3r
     PUBLIC
         prusa_fdm_mixer
+        tigerslicer_mslicer_cpp
         Eigen3::Eigen
         admesh
         libigl

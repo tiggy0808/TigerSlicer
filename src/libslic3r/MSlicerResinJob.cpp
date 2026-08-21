@@ -57,7 +57,7 @@ MSlicerResinSettings MSlicerResinJob::settings_from_config(const DynamicPrintCon
     settings.resolution_y = uint32_t(std::max(0, config.opt_int("display_pixels_y")));
     settings.platform_x_mm = float(config.opt_float("display_width"));
     settings.platform_y_mm = float(config.opt_float("display_height"));
-    settings.platform_z_mm = float(config.opt_float("max_print_height"));
+    settings.platform_z_mm = float(config.opt_float("printable_height"));
     settings.layer_height_mm = float(config.opt_float("layer_height"));
     settings.supersample = uint8_t(std::clamp(config.opt_int("mslicer_supersample"), 1, 4));
     settings.portrait = config.opt_enum<SLADisplayOrientation>("display_orientation") == sladoPortrait;

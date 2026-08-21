@@ -749,7 +749,7 @@ TEST_CASE("native MSlicer Resin print owns apply process and output naming", "[m
     config.set_key_value("display_pixels_y", new ConfigOptionInt(48));
     config.set_key_value("display_width", new ConfigOptionFloat(32.));
     config.set_key_value("display_height", new ConfigOptionFloat(24.));
-    config.set_key_value("max_print_height", new ConfigOptionFloat(20.));
+    config.set_key_value("printable_height", new ConfigOptionFloat(20.));
     config.set_key_value("layer_height", new ConfigOptionFloat(1.));
     config.set_key_value("supports_enable", new ConfigOptionBool(false));
     config.set_key_value("pad_enable", new ConfigOptionBool(false));
@@ -766,7 +766,7 @@ TEST_CASE("native MSlicer Resin print owns apply process and output naming", "[m
     CHECK(print.apply(model, config) == PrintBase::APPLY_STATUS_UNCHANGED);
     model.objects.front()->instances.front()->set_offset(X, 1.);
     CHECK(print.apply(model, config) == PrintBase::APPLY_STATUS_INVALIDATED);
-    CHECK(print.validate().empty());
+    CHECK(print.validate().string.empty());
     CHECK_FALSE(print.empty());
     CHECK(print.output_filename() == "cube.goo");
     print.process();
@@ -780,7 +780,7 @@ TEST_CASE("native MSlicer Resin print owns apply process and output naming", "[m
     config.set_key_value("support_points_density_relative", new ConfigOptionInt(10000));
     model.objects.front()->instances.front()->set_offset(Z, 5.);
     CHECK(print.apply(model, config) == PrintBase::APPLY_STATUS_INVALIDATED);
-    CHECK(print.validate().empty());
+    CHECK(print.validate().string.empty());
 
     MSlicerResinJob preparation(MSlicerResinJob::settings_from_config(config));
     preparation.add_model(model, false);
@@ -794,7 +794,7 @@ TEST_CASE("native MSlicer Resin print owns apply process and output naming", "[m
     support_object->add_instance();
 
     CHECK(print.apply(model, config) == PrintBase::APPLY_STATUS_INVALIDATED);
-    CHECK(print.validate().empty());
+    CHECK(print.validate().string.empty());
     print.process();
     REQUIRE(print.job() != nullptr);
     CHECK(MSlicerResinJob::has_prepared_supports(model));

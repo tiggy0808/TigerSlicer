@@ -2043,6 +2043,8 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat, support_object_elevation))/*= 5.0*/
 
     /////// Following options influence automatic support points placement:
+    ((ConfigOptionString, support_tree_type))
+    ((ConfigOptionBool, support_enforcers_only))
     ((ConfigOptionInt, support_points_density_relative))
     ((ConfigOptionFloat, support_points_minimal_distance))
 
@@ -2151,6 +2153,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat,                       material_correction_y))
     ((ConfigOptionFloat,                       material_correction_z))
     ((ConfigOptionEnum<SLAMaterialSpeed>,      material_print_speed))
+    ((ConfigOptionInt,                         zcorrection_layers))
     ((ConfigOptionInt,                         resin_material_schema_version))
     ((ConfigOptionBool,                        resin_material_migration_required))
     ((ConfigOptionStrings,                     resin_material_migration_diagnostics))
