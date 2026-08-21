@@ -149,7 +149,7 @@ void AMSMaterialsSetting::create_panel_normal(wxWindow* parent)
 
     // make the style the same with disable m_input_k_val, FIXME
     m_readonly_filament = new TextInput(parent, wxEmptyString, "", "", wxDefaultPosition, AMS_MATERIALS_SETTING_COMBOX_WIDTH, wxTE_CENTRE | wxTE_PROCESS_ENTER);
-    m_readonly_filament->SetBorderColor(StateColor(std::make_pair(0xDBDBDB, (int)StateColor::Focused), std::make_pair(0x009688, (int)StateColor::Hovered),
+    m_readonly_filament->SetBorderColor(StateColor(std::make_pair(0xDBDBDB, (int)StateColor::Focused), std::make_pair(0xD98BA8, (int)StateColor::Hovered),
         std::make_pair(0xDBDBDB, (int)StateColor::Normal)));
     m_readonly_filament->SetFont(::Label::Body_14);
     m_readonly_filament->SetLabelColor(AMS_MATERIALS_SETTING_GREY800);
@@ -1665,11 +1665,11 @@ ColorPickerPopup::ColorPickerPopup(wxWindow* parent)
     m_def_colors.push_back(wxColour("#FFFFFF"));
     m_def_colors.push_back(wxColour("#fff144"));
     m_def_colors.push_back(wxColour("#DCF478"));
-    m_def_colors.push_back(wxColour("#0ACC38"));
-    m_def_colors.push_back(wxColour("#057748"));
+    m_def_colors.push_back(wxColour("#D98BA8"));
+    m_def_colors.push_back(wxColour("#9B5874"));
     m_def_colors.push_back(wxColour("#0d6284"));
-    m_def_colors.push_back(wxColour("#0EE2A0"));
-    m_def_colors.push_back(wxColour("#76D9F4"));
+    m_def_colors.push_back(wxColour("#F6A5C1"));
+    m_def_colors.push_back(wxColour("#F6A5C1"));
     m_def_colors.push_back(wxColour("#46a8f9"));
     m_def_colors.push_back(wxColour("#2850E0"));
     m_def_colors.push_back(wxColour("#443089"));

@@ -1352,8 +1352,8 @@ void ConfirmBeforeSendDialog::edit_cancel_button_txt(const wxString& txt, bool s
 
     if (switch_green)
     {
-        StateColor btn_bg_green(std::pair<wxColour, int>(wxColour(0, 137, 123), StateColor::Pressed),
-                                std::pair<wxColour, int>(wxColour(38, 166, 154), StateColor::Hovered),
+        StateColor btn_bg_green(std::pair<wxColour, int>(wxColour(217, 139, 168), StateColor::Pressed),
+                                std::pair<wxColour, int>(wxColour(217, 139, 168), StateColor::Hovered),
                                 std::pair<wxColour, int>(AMS_CONTROL_BRAND_COLOUR, StateColor::Normal));
         m_button_cancel->SetBackgroundColor(btn_bg_green);
         m_button_cancel->SetBorderColor(*wxWHITE);
@@ -1523,7 +1523,7 @@ InputIpAddressDialog::InputIpAddressDialog(wxWindow *parent)
 
     /*other*/
     m_test_right_msg = new Label(this, Label::Body_13, wxEmptyString, LB_AUTO_WRAP);
-    m_test_right_msg->SetForegroundColour(wxColour(38, 166, 154));
+    m_test_right_msg->SetForegroundColour(wxColour(217, 139, 168));
     m_test_right_msg->Hide();
 
     m_test_wrong_msg = new Label(this, Label::Body_13, wxEmptyString, LB_AUTO_WRAP);

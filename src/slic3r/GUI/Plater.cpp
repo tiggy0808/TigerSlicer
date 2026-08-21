@@ -6520,10 +6520,10 @@ wxColour Plater::get_next_color_for_filament()
     // refs to https://www.ebaomonthly.com/window/photo/lesson/colorList.htm
     wxColour colors[FILAMENT_SYSTEM_COLORS_NUM] = {
         // ORCA updated all color palette
-        wxColour("#00C1AE"),
+        wxColour("#D98BA8"),
         wxColour("#F4E2C1"),
         wxColour("#ED1C24"),
-        wxColour("#00FF7F"),
+        wxColour("#F6A5C1"),
         wxColour("#F26722"),
         wxColour("#FFEB31"),
         wxColour("#7841CE"),
@@ -6535,7 +6535,7 @@ wxColour Plater::get_next_color_for_filament()
         wxColour("#FA8173"),
         wxColour("#800000"),
         wxColour("#F7B763"),
-        wxColour("#A4C41E"),
+        wxColour("#F6A5C1"),
     };
     return colors[curr_color_filamenet++ % FILAMENT_SYSTEM_COLORS_NUM];
 }
@@ -11861,7 +11861,7 @@ void Plater::priv::set_project_name(const wxString& project_name)
     if (!m_project_name.IsEmpty())
         wxGetApp().mainframe->update_title_colour_after_set_title();
 #else
-    wxGetApp().mainframe->SetTitle(m_project_name + " - OrcaSlicer");
+    wxGetApp().mainframe->SetTitle(m_project_name + " - TigerSlicer");
     wxGetApp().mainframe->topbar()->SetTitle(m_project_name);
 #endif
 }
@@ -11881,7 +11881,7 @@ void Plater::priv::update_title_dirty_status()
     wxGetApp().mainframe->SetTitle(title);
     wxGetApp().mainframe->update_title_colour_after_set_title();
 #else
-    wxGetApp().mainframe->SetTitle(title + " - OrcaSlicer");
+    wxGetApp().mainframe->SetTitle(title + " - TigerSlicer");
     wxGetApp().mainframe->topbar()->SetTitle(title);
 #endif    
 }

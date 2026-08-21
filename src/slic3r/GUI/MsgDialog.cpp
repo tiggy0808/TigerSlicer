@@ -866,7 +866,7 @@ void FilamentWarningDialog::BuildContent()
             messages_sizer->Add(text, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(5));
         } else {
             Label *link = new Label(this, message + " " + _L("Please refer to Wiki before use->"));
-            link->SetForegroundColour(wxColour(8, 153, 46));
+            link->SetForegroundColour(wxColour(217, 139, 168));
             link->SetFont(::Label::Body_12);
             link->Wrap(FromDIP(400));
             link->Bind(wxEVT_ENTER_WINDOW, [this](auto &e) { SetCursor(wxCURSOR_HAND); });

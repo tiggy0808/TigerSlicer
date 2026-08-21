@@ -24,7 +24,7 @@ enum class AssemblyMode : unsigned char {
     FACE_FACE,
     POINT_POINT,
 };
-static const Slic3r::ColorRGBA SELECTED_1ST_COLOR = {0.25f, 0.75f, 0.75f, 1.0f};
+static const Slic3r::ColorRGBA SELECTED_1ST_COLOR = {0.96f, 0.65f, 0.76f, 1.0f};
 static const Slic3r::ColorRGBA SELECTED_2ND_COLOR = {0.75f, 0.25f, 0.75f, 1.0f};
 static const Slic3r::ColorRGBA NEUTRAL_COLOR      = {0.5f, 0.5f, 0.5f, 1.0f};
 static const Slic3r::ColorRGBA HOVER_COLOR        = ColorRGBA::GREEN();

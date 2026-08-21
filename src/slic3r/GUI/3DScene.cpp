@@ -365,7 +365,7 @@ ColorRGBA color_from_model_volume(const ModelVolume& model_volume)
 #if ENABLE_MODIFIERS_ALWAYS_TRANSPARENT
         return GLVolume::MODEL_MIDIFIER_COL;
 #else
-		color = { 0.2f, 1.0f, 0.2f, 1.0f };
+		color = { 0.96f, 0.65f, 0.76f, 1.0f };
 #endif // ENABLE_MODIFIERS_ALWAYS_TRANSPARENT
     else if (model_volume.is_support_blocker())
         return GLVolume::SUPPORT_BLOCKER_COL;

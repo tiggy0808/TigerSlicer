@@ -23,7 +23,7 @@ StepCtrlBase::StepCtrlBase(wxWindow *      parent,
     , font_tip(Label::Body_14)
     , clr_bar(0xACACAC)
     , clr_step(0xACACAC)
-    , clr_text(std::make_pair(0x009688, (int) StateColor::Checked),
+    , clr_text(std::make_pair(0xD98BA8, (int) StateColor::Checked),
             std::make_pair(0x6B6B6B, (int) StateColor::Normal))
     , clr_tip(0x828280)
 {
@@ -406,7 +406,7 @@ void FilamentStepIndicator::doRender(wxDC& dc)
     }
 
     dc.SetFont(::Label::Head_16);
-    dc.SetTextForeground(wxColour(0, 150, 136));
+    dc.SetTextForeground(wxColour(217, 139, 168));
     int circleX = 20;
     int circleY = 20;
     wxSize sz = dc.GetTextExtent(L"Loading");

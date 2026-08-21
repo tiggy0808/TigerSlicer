@@ -267,7 +267,7 @@ void wgtDeviceNozzleRackHotendUpdate::CreateGui()
     m_version_new_label = new Label(info_panel);
     m_version_new_label->SetFont(Label::Body_12);
     m_version_new_label->SetBackgroundColour(WGT_DEVICE_NOZZLE_RACK_HOTEND_UPDATE_DEFAULT_BG);
-    m_version_new_label->SetForegroundColour(wxColour(0, 168, 84)); // Green
+    m_version_new_label->SetForegroundColour(wxColour(217, 139, 168)); // Green
 
     version_h_sizer->Add(m_version_label, 0, wxALIGN_CENTER_VERTICAL);
     version_h_sizer->Add(m_version_new_label, 0, wxALIGN_CENTER_VERTICAL);

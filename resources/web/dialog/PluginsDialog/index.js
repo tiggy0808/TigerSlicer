@@ -1228,7 +1228,7 @@ function RenderDescription(plugin) {
   node.replaceChildren();
 
   // Descriptions come from the plugin's Python header; a cloud plugin that is not installed yet has
-  // no header, so link to OrcaCloud instead.
+  // no header, so link to TigerCloud instead.
   const description = String(plugin?.description || "").trim();
   if (description && description !== "No description.") {
     node.textContent = description;
@@ -1237,7 +1237,7 @@ function RenderDescription(plugin) {
 
   const isCloud = plugin && (plugin.source === "mine" || plugin.source === "subscribed" || plugin.source === "orphaned");
   if (isCloud && String(plugin?.sharing_token || "")) {
-    node.appendChild(document.createTextNode("View on OrcaCloud "));
+    node.appendChild(document.createTextNode("View on TigerCloud "));
     const link = document.createElement("a");
     link.href = "#";
     link.className = "plugin-cloud-link";
@@ -1375,7 +1375,7 @@ function RenderDetailSummary(container, plugin) {
   if (plugin.orphaned === true) {
     const warning = document.createElement("div");
     warning.className = "detail-description detail-warning-text";
-    warning.textContent = "Orphaned: This plugin is no longer subscribed or available in OrcaCloud. The local copy remains installed and can still be used.";
+    warning.textContent = "Orphaned: This plugin is no longer subscribed or available in TigerCloud. The local copy remains installed and can still be used.";
     container.appendChild(warning);
   }
 

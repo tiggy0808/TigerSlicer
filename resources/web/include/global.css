@@ -36,8 +36,8 @@
   
 @media (prefers-color-scheme: dark) { 
 :root {
-	--main-color			: #00675B;
-	--main-color-hover		: #008172;
+	--main-color			: #9B5874;
+	--main-color-hover		: #9B5874;
 	--main-color-fixed		: #F6A5C1;
 	--bg-color				: #2D2D31;
 	--bg-color-secondary	: #36363B;

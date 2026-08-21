@@ -219,7 +219,7 @@ void GLGizmoPainterBase::render_cursor_circle()
         }
 #endif // !SLIC3R_OPENGL_ES
         const float step_size = 2.0f * float(PI) / float(steps_count);
-        init_data.color  = { 0.0f, 1.0f, 0.3f, 1.0f };
+        init_data.color  = { 0.96f, 0.65f, 0.76f, 1.0f };
         init_data.reserve_vertices(steps_count);
         init_data.reserve_indices(steps_count);
 
