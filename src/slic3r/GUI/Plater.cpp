@@ -75,6 +75,8 @@
 #include "libslic3r/Polygon.hpp"
 #include "libslic3r/Print.hpp"
 #include "libslic3r/MSlicerResinJob.hpp"
+#include "FullSpectrumDialog.hpp"
+#include "libslic3r/TriangleSelector.hpp"
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/SLAPrint.hpp"
 #include "libslic3r/Utils.hpp"
@@ -20042,6 +20044,117 @@ void Plater::update_title_dirty_status()
 }
 
 
+
+// TigerSlicer: Full Spectrum virtual extruders --------------------------------
+
+namespace {
+
+// After edits, virtual extruder ids are renumbered to sit contiguously above
+// the physical filaments; every reference in the model follows the new ids.
+bool renumber_virtual_extruders(Plater &plater, unsigned int num_physical, bool with_snapshot = false)
+{
+    Model &model = plater.model();
+    if (model.virtual_extruders.empty())
+        return false;
+
+    std::map<unsigned int, unsigned int> remap;
+    unsigned int next_id = num_physical + 1;
+    for (FullSpectrum::VirtualExtruder &ve : model.virtual_extruders) {
+        if (ve.id != next_id) {
+            remap[ve.id] = next_id;
+            ve.id        = next_id;
+        }
+        ++next_id;
+    }
+    if (remap.empty())
+        return false;
+
+    if (with_snapshot)
+        plater.take_snapshot(std::string("Renumber virtual extruders"));
+
+    for (ModelObject *object : model.objects) {
+        if (object == nullptr)
+            continue;
+        if (object->config.has("extruder"))
+            if (auto it = remap.find(static_cast<unsigned int>(object->config.extruder())); it != remap.end())
+                object->config.set_key_value("extruder", new ConfigOptionInt(int(it->second)));
+        for (ModelVolume *volume : object->volumes) {
+            if (volume == nullptr)
+                continue;
+            if (volume->config.has("extruder"))
+                if (auto it = remap.find(static_cast<unsigned int>(volume->config.extruder())); it != remap.end())
+                    volume->config.set_key_value("extruder", new ConfigOptionInt(int(it->second)));
+            if (volume->is_mm_painted()) {
+                bool needs = false;
+                const std::vector<bool> &used = volume->mmu_segmentation_facets.get_data().used_states;
+                for (const auto &[old_id, new_id] : remap)
+                    if (old_id < used.size() && used[old_id]) { needs = true; break; }
+                if (needs) {
+                    TriangleSelector selector(volume->mesh());
+                    selector.deserialize(volume->mmu_segmentation_facets.get_data(), false);
+                    std::map<EnforcerBlockerType, EnforcerBlockerType> state_remap;
+                    for (const auto &[old_id, new_id] : remap)
+                        state_remap[EnforcerBlockerType(old_id)] = EnforcerBlockerType(new_id);
+                    selector.remap_states(state_remap);
+                    volume->mmu_segmentation_facets.set(selector);
+                }
+            }
+        }
+    }
+    return true;
+}
+
+} // namespace
+
+void Plater::open_full_spectrum_dialog()
+{
+    if (GLCanvas3D *canvas = this->canvas3D(); canvas != nullptr)
+        canvas->reset_all_gizmos();
+    FullSpectrumDialog dialog(static_cast<wxWindow *>(wxGetApp().mainframe), p->model,
+                              wxGetApp().preset_bundle->full_config());
+    if (dialog.ShowModal() != wxID_OK)
+        return;
+
+    take_snapshot(std::string("Update virtual extruders"));
+    Model &model = p->model;
+    const unsigned int num_physical = static_cast<unsigned int>(
+        wxGetApp().preset_bundle->filament_presets.size());
+
+    for (unsigned int removed_id : dialog.removed_ids()) {
+        for (ModelObject *object : model.objects) {
+            if (object == nullptr) continue;
+            if (object->config.has("extruder") && object->config.extruder() == int(removed_id))
+                object->config.erase("extruder");
+            for (ModelVolume *volume : object->volumes) {
+                if (volume == nullptr) continue;
+                if (volume->config.has("extruder") && volume->config.extruder() == int(removed_id))
+                    volume->config.erase("extruder");
+                if (volume->is_mm_painted()) {
+                    const auto &used = volume->mmu_segmentation_facets.get_data().used_states;
+                    if (removed_id < used.size() && used[removed_id]) {
+                        TriangleSelector selector(volume->mesh());
+                        selector.deserialize(volume->mmu_segmentation_facets.get_data(), false);
+                        selector.remap_states({{EnforcerBlockerType(removed_id), EnforcerBlockerType::NONE}});
+                        volume->mmu_segmentation_facets.set(selector);
+                    }
+                }
+            }
+        }
+    }
+    model.virtual_extruders = FullSpectrum::normalize_virtual_extruders(
+        dialog.result_virtual_extruders());
+
+    renumber_virtual_extruders(*this, num_physical);
+
+    for (size_t obj_idx = 0; obj_idx < model.objects.size(); ++obj_idx)
+        wxGetApp().obj_list()->update_info_items(obj_idx);
+
+    schedule_background_process();
+    wxGetApp().obj_list()->update_objects_list_filament_column(num_physical);
+    wxGetApp().obj_list()->Refresh();
+    if (GLCanvas3D *canvas = this->canvas3D(); canvas != nullptr)
+        canvas->reload_scene(true);
+}
 
 // TigerSlicer: MSLA prepared supports ---------------------------------------
 

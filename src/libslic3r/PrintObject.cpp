@@ -3880,8 +3880,13 @@ static void clamp_exturder_to_default(ConfigOptionInt &opt, size_t num_extruders
         opt.value = 1;
 }
 
-static void clamp_feature_filament_to_valid(ConfigOptionInt &opt, size_t num_extruders)
+static void clamp_feature_filament_to_valid(ConfigOptionInt &opt, size_t num_extruders,
+                                            const FullSpectrum::VirtualExtruders &virtual_extruders = {})
 {
+    // TigerSlicer: virtual extruder ids live above the physical range on
+    // purpose; they must survive the clamp.
+    if (opt.value > (int)num_extruders && FullSpectrum::is_virtual_extruder(static_cast<unsigned int>(opt.value), virtual_extruders))
+        return;
     if (opt.value <= 0 || opt.value > (int)num_extruders)
         opt.value = 1;
 }
@@ -3992,7 +3997,9 @@ static void apply_to_print_region_config(PrintRegionConfig &out, const DynamicPr
     }
 }
 
-PrintRegionConfig region_config_from_model_volume(const PrintRegionConfig &default_or_parent_region_config, const DynamicPrintConfig *layer_range_config, const ModelVolume &volume, size_t num_extruders, std::vector<int>& variant_index)
+PrintRegionConfig region_config_from_model_volume(const PrintRegionConfig &default_or_parent_region_config, const DynamicPrintConfig *layer_range_config, const ModelVolume &volume, size_t num_extruders, std::vector<int>& variant_index,
+                                                  const FullSpectrum::VirtualExtruders &virtual_extruders = {},
+                                                  std::optional<unsigned int> *out_source_virtual_extruder_id = nullptr)
 {
     PrintRegionConfig config = default_or_parent_region_config;
     FeatureFilamentOverrideMask feature_overrides;
@@ -4022,13 +4029,22 @@ PrintRegionConfig region_config_from_model_volume(const PrintRegionConfig &defau
         assert(volume.is_model_part());
     	apply_to_print_region_config(config, *layer_range_config, feature_overrides, variant_index);
     }
+    // TigerSlicer: remember which virtual extruder produced this region
+    // before the physical clamp can disturb the ids.
+    {
+        const std::optional<unsigned int> source_virtual =
+            FullSpectrum::source_virtual_extruder_in_region_config(config, virtual_extruders);
+        if (out_source_virtual_extruder_id != nullptr)
+            *out_source_virtual_extruder_id = source_virtual;
+    }
+
     // Resolve feature defaults and clamp invalid extruders to index 1.
-    clamp_feature_filament_to_valid(config.sparse_infill_filament_id, num_extruders);
-    clamp_feature_filament_to_valid(config.outer_wall_filament_id, num_extruders);
-    clamp_feature_filament_to_valid(config.inner_wall_filament_id, num_extruders);
-    clamp_feature_filament_to_valid(config.internal_solid_filament_id, num_extruders);
-    clamp_feature_filament_to_valid(config.top_surface_filament_id, num_extruders);
-    clamp_feature_filament_to_valid(config.bottom_surface_filament_id, num_extruders);
+    clamp_feature_filament_to_valid(config.sparse_infill_filament_id, num_extruders, virtual_extruders);
+    clamp_feature_filament_to_valid(config.outer_wall_filament_id, num_extruders, virtual_extruders);
+    clamp_feature_filament_to_valid(config.inner_wall_filament_id, num_extruders, virtual_extruders);
+    clamp_feature_filament_to_valid(config.internal_solid_filament_id, num_extruders, virtual_extruders);
+    clamp_feature_filament_to_valid(config.top_surface_filament_id, num_extruders, virtual_extruders);
+    clamp_feature_filament_to_valid(config.bottom_surface_filament_id, num_extruders, virtual_extruders);
     if (config.sparse_infill_density.value < 0.00011f)
         // Switch of infill for very low infill rates, also avoid division by zero in infill generator for these very low rates.
         // See GH issue #5910.

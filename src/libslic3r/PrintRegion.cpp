@@ -1,5 +1,6 @@
 #include "Exception.hpp"
 #include "Print.hpp"
+#include "Feature/FullSpectrum/VirtualExtruder.hpp"
 
 namespace Slic3r {
 
@@ -68,12 +69,19 @@ coordf_t PrintRegion::bridging_height_avg(const PrintConfig &print_config) const
     return this->nozzle_dmr_avg(print_config) * sqrt(m_config.bridge_flow.value);
 }
 
-void PrintRegion::collect_object_printing_extruders(const PrintConfig &print_config, const PrintRegionConfig &region_config, const bool has_brim, std::vector<unsigned int> &object_extruders)
+void PrintRegion::collect_object_printing_extruders(const PrintConfig &print_config, const PrintRegionConfig &region_config, const bool has_brim, std::vector<unsigned int> &object_extruders, const FullSpectrum::VirtualExtruders &virtual_extruders)
 {
     // These checks reflect the same logic used in the GUI for enabling/disabling extruder selection fields.
     // BBS
     auto num_extruders = (int)print_config.filament_diameter.size();
-    auto emplace_extruder = [num_extruders, &object_extruders](int extruder_id) {
+    auto emplace_extruder = [num_extruders, &object_extruders, &virtual_extruders](int extruder_id) {
+        // TigerSlicer: a virtual extruder id resolves to every physical
+        // extruder it mixes, so all of them count as printing this region.
+        if (extruder_id > num_extruders && FullSpectrum::is_virtual_extruder(static_cast<unsigned int>(extruder_id), virtual_extruders)) {
+            for (unsigned int physical_1based : FullSpectrum::expand_virtual_extruders_1based({ static_cast<unsigned int>(extruder_id) }, virtual_extruders))
+                object_extruders.emplace_back(physical_1based - 1);
+            return;
+        }
     	int i = std::max(0, extruder_id - 1);
         object_extruders.emplace_back((i >= num_extruders) ? 0 : i);
     };
@@ -106,7 +114,7 @@ void PrintRegion::collect_object_printing_extruders(const Print &print, std::vec
     assert(this->config().top_surface_filament_id <= num_extruders);
     assert(this->config().bottom_surface_filament_id <= num_extruders);
 #endif
-    collect_object_printing_extruders(print.config(), this->config(), print.has_brim(), object_extruders);
+    collect_object_printing_extruders(print.config(), this->config(), print.has_brim(), object_extruders, print.virtual_extruders());
 }
 
 }

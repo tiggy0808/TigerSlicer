@@ -1,4 +1,5 @@
 #include "../libslic3r.h"
+#include "Feature/FullSpectrum/VirtualExtruder.hpp"
 #include "../Exception.hpp"
 #include "../Model.hpp"
 #include "../Preset.hpp"
@@ -209,6 +210,8 @@ const std::string _3MF_COVER_FILE = "/Auxiliaries/.thumbnails/thumbnail_3mf.png"
 const std::string BBS_PRINT_CONFIG_FILE = "Metadata/print_profile.config";
 const std::string BBS_PROJECT_CONFIG_FILE = "Metadata/project_settings.config";
 const std::string BBS_MODEL_CONFIG_FILE = "Metadata/model_settings.config";
+// TigerSlicer: virtual extruder (Full Spectrum) definitions ride in the project.
+const std::string FULL_SPECTRUM_CONFIG_FILE = "Metadata/tiger_slicer_full_spectrum.json";
 const std::string BBS_MODEL_CONFIG_RELS_FILE = "Metadata/_rels/model_settings.config.rels";
 const std::string SLICE_INFO_CONFIG_FILE = "Metadata/slice_info.config";
 const std::string FILAMENT_SEQUENCE_FILE = "Metadata/filament_sequence.json";
@@ -1990,6 +1993,15 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 else if (!dont_load_config && boost::algorithm::iequals(name, CUSTOM_GCODE_PER_PRINT_Z_FILE)) {
                     // extract slic3r layer config ranges file
                     _extract_custom_gcode_per_print_z_from_archive(archive, stat);
+                }
+                else if (!dont_load_config && boost::algorithm::iequals(name, FULL_SPECTRUM_CONFIG_FILE)) {
+                    // TigerSlicer: virtual extruder definitions
+                    if (stat.m_uncomp_size > 0) {
+                        std::string buffer((size_t)stat.m_uncomp_size, 0);
+                        if (mz_zip_reader_extract_file_to_mem(&archive, stat.m_filename, (void*)buffer.data(), (size_t)stat.m_uncomp_size, 0) != 0)
+                            model.virtual_extruders = FullSpectrum::normalize_virtual_extruders(
+                                FullSpectrum::deserialize_virtual_extruders_from_json(buffer).virtual_extruders);
+                    }
                 }
                 else if (boost::algorithm::iequals(name, BBS_MODEL_CONFIG_FILE)) {
                     // extract slic3r model config file
@@ -6441,6 +6453,22 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             // Adds custom gcode per height file ("Metadata/Prusa_Slicer_custom_gcode_per_print_z.xml").
             // All custom gcode per height of whole Model are stored here
             if (!_add_custom_gcode_per_print_z_file_to_archive(archive, model, config)) { return false; }
+
+            // TigerSlicer: persist the virtual extruder definitions with the project.
+            if (!model.virtual_extruders.empty() && config != nullptr) {
+                const ConfigOptionStrings *filament_colour_opt = config->option<ConfigOptionStrings>("filament_colour");
+                std::vector<std::string> colors;
+                if (filament_colour_opt != nullptr)
+                    colors = filament_colour_opt->values;
+                for (std::string &color : colors)
+                    if (color.empty())
+                        color = "#808080";
+                const std::string json = FullSpectrum::serialize_virtual_extruders_to_json(colors, model.virtual_extruders);
+                if (!mz_zip_writer_add_mem(&archive, FULL_SPECTRUM_CONFIG_FILE.c_str(), json.data(), json.size(), MZ_DEFAULT_COMPRESSION)) {
+                    add_error("Unable to add " + FULL_SPECTRUM_CONFIG_FILE + " to archive");
+                    return false;
+                }
+            }
 
             // BBS progress point
             BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ":" << __LINE__ << boost::format(", before add project_settings\n");

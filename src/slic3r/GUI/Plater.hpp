@@ -551,6 +551,8 @@ public:
     void remove_prepared_msla_supports();
     bool auto_orient_for_msla_supports();
     void msla_support_option_changed(const std::string &opt_key);
+    // TigerSlicer: Full Spectrum virtual extruders (color mixing) editor.
+    void open_full_spectrum_dialog();
     // The Supports workspace registers itself so option edits made elsewhere
     // can refresh its panel; null whenever the view does not exist.
     void set_msla_supports_view_refresh(std::function<void()> refresh) { m_msla_supports_refresh = std::move(refresh); }

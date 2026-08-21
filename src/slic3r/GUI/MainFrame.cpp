@@ -2741,6 +2741,15 @@ static void add_common_publish_menu_items(wxMenu* publish_menu, MainFrame* mainF
 
 static void add_common_view_menu_items(wxMenu* view_menu, MainFrame* mainFrame, std::function<bool(void)> can_change_view)
 {
+    // TigerSlicer: workspace entries.
+    append_menu_item(view_menu, wxID_ANY, _L("MSLA Supports Workspace"), _L("Open the MSLA support preparation workspace"),
+        [mainFrame](wxCommandEvent&) { if (mainFrame->plater() != nullptr) mainFrame->plater()->select_view_3D("Supports"); },
+        "", nullptr, [can_change_view]() { return can_change_view(); }, mainFrame);
+    append_menu_item(view_menu, wxID_ANY, _L("Virtual Extruders - Color Mixing"), _L("Define virtual extruders that blend or grade between filaments"),
+        [mainFrame](wxCommandEvent&) { if (mainFrame->plater() != nullptr) mainFrame->plater()->open_full_spectrum_dialog(); },
+        "", nullptr, [can_change_view]() { return can_change_view(); }, mainFrame);
+    view_menu->AppendSeparator();
+
     // The camera control accelerators are captured by GLCanvas3D::on_char().
     append_menu_item(view_menu, wxID_ANY, _L("Default View") + "\t" + ctrl + "0", _L("Default View"), [mainFrame](wxCommandEvent&) {
         mainFrame->select_view("plate");

@@ -9,6 +9,7 @@
 #include "Layer.hpp"
 #include "MultiMaterialSegmentation.hpp"
 #include "Print.hpp"
+#include "Feature/FullSpectrum/VirtualExtruder.hpp"
 //BBS
 #include "ShortestPath.hpp"
 #include "libslic3r/Feature/Interlocking/InterlockingGenerator.hpp"
@@ -876,6 +877,20 @@ static inline void apply_mm_segmentation(PrintObject &print_object, ThrowOnCance
     // Returns MM segmentation based on painting in MM segmentation gizmo
     std::vector<std::vector<ExPolygons>> segmentation = multi_material_segmentation_by_painting(print_object, throw_on_cancel);
     assert(segmentation.size() == print_object.layer_count());
+
+    // TigerSlicer: painted virtual extruders resolve to physical ones layer
+    // by layer, honouring each virtual extruder's mixing plan or gradient.
+    if (!print_object.print()->virtual_extruders().empty()) {
+        std::vector<double> print_z_per_layer(segmentation.size());
+        for (size_t layer_id = 0; layer_id < segmentation.size(); ++layer_id)
+            print_z_per_layer[layer_id] = print_object.get_layer(int(layer_id))->print_z;
+        FullSpectrum::remap_virtual_extruders_to_physical(
+            segmentation,
+            print_z_per_layer,
+            print_object.print()->num_physical_extruders(),
+            print_object.print()->virtual_extruders());
+    }
+
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, segmentation.size(), std::max(segmentation.size() / 128, size_t(1))),
         [&print_object, &segmentation, throw_on_cancel](const tbb::blocked_range<size_t> &range) {
@@ -1238,6 +1253,15 @@ void PrintObject::slice_volumes()
 
         BOOST_LOG_TRIVIAL(debug) << "Slicing volumes - Fuzzy skin segmentation";
         apply_fuzzy_skin_segmentation(*this, [print]() { print->throw_if_canceled(); });
+    }
+
+    // TigerSlicer: whole regions assigned to a virtual extruder move their
+    // slices onto the physical target region resolved for each layer.
+    if (!m_print->virtual_extruders().empty()) {
+        FullSpectrum::remap_virtual_region_slices_to_physical(
+            *this,
+            m_print->num_physical_extruders(),
+            m_print->virtual_extruders());
     }
 
     InterlockingGenerator::generate_interlocking_structure(this, [print]() { print->throw_if_canceled(); });

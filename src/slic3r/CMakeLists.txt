@@ -334,6 +334,14 @@ set(SLIC3R_GUI_SOURCES
     GUI/LinuxDisplayBackend.cpp
     GUI/LinuxDisplayBackend.hpp
     GUI/MainFrame.cpp
+    GUI/FullSpectrumDialog.cpp
+    GUI/FullSpectrumDialog.hpp
+    GUI/ColorUtils.cpp
+    GUI/ColorUtils.hpp
+    GUI/Widgets/BarycentricRatioPicker.cpp
+    GUI/Widgets/BarycentricRatioPicker.hpp
+    GUI/Widgets/GradientRatioBar.cpp
+    GUI/Widgets/GradientRatioBar.hpp
     GUI/PrinterConnectionsPanel.cpp
     GUI/PrinterConnectionsPanel.hpp
     GUI/ResinRasterPreview.cpp

@@ -525,7 +525,8 @@ std::vector<unsigned int> Print::object_extruders() const
         }
     }
     sort_remove_duplicates(extruders);
-    return extruders;
+    // TigerSlicer: virtual extruder ids expand to their physical components.
+    return FullSpectrum::expand_virtual_extruders_0based(extruders, m_virtual_extruders);
 }
 
 // returns 0-based indices of used extruders

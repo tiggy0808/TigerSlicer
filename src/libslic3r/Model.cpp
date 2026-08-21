@@ -58,6 +58,7 @@ const std::vector<std::string> CONST_FILAMENTS = {
     GlobalSpeedMap Model::printSpeedMap{};
 Model& Model::assign_copy(const Model &rhs)
 {
+    this->virtual_extruders = rhs.virtual_extruders;
     this->copy_id(rhs);
     // copy materials
     this->clear_materials();
@@ -110,6 +111,7 @@ Model& Model::assign_copy(const Model &rhs)
 
 Model& Model::assign_copy(Model &&rhs)
 {
+    this->virtual_extruders = std::move(rhs.virtual_extruders);
     this->copy_id(rhs);
 	// Move materials, adjust the parent pointer.
     this->clear_materials();

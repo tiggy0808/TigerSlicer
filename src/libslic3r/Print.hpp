@@ -142,7 +142,7 @@ public:
 
     // Collect 0-based extruder indices used to print this region's object.
 	void                        collect_object_printing_extruders(const Print &print, std::vector<unsigned int> &object_extruders) const;
-	static void                 collect_object_printing_extruders(const PrintConfig &print_config, const PrintRegionConfig &region_config, const bool has_brim, std::vector<unsigned int> &object_extruders);
+	static void                 collect_object_printing_extruders(const PrintConfig &print_config, const PrintRegionConfig &region_config, const bool has_brim, std::vector<unsigned int> &object_extruders, const FullSpectrum::VirtualExtruders &virtual_extruders = {});
 
 // Methods modifying the PrintRegion's state:
 public:
@@ -917,6 +917,7 @@ public:
     // TigerSlicer: the per-tool layer-height schedule and the Full Spectrum
     // virtual extruders configured for this job.
     const MultiRateSchedule&              multi_rate_schedule() const { return m_multi_rate_schedule; }
+    unsigned int num_physical_extruders() const { return static_cast<unsigned int>(m_config.filament_diameter.size()); }
     const FullSpectrum::VirtualExtruders& virtual_extruders()   const { return m_virtual_extruders; }
     void build_and_validate_multi_rate_schedule();
 private:
