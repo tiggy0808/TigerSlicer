@@ -1,1 +1,15 @@
 .swiper-scrollbar{border-radius:10px;position:relative;-ms-touch-action:none;background:rgba(0,0,0,.1)}.swiper-horizontal>.swiper-scrollbar{position:absolute;left:1%;bottom:3px;z-index:50;height:5px;width:98%}.swiper-vertical>.swiper-scrollbar{position:absolute;right:3px;top:1%;z-index:50;width:5px;height:98%}.swiper-scrollbar-drag{height:100%;width:100%;position:relative;background:rgba(0,0,0,.5);border-radius:10px;left:0;top:0}.swiper-scrollbar-cursor-drag{cursor:move}.swiper-scrollbar-lock{display:none}
+
+/* TigerSlicer: smooth state changes everywhere. */
+* { -webkit-tap-highlight-color: transparent; }
+button, a, input, select, img,
+[class*="Btn"], [class*="btn"], [class*="Menu"], [class*="Item"],
+[class*="Card"], [class*="card"], [class*="File"], [class*="Tab"] {
+    transition: background-color .16s ease, color .16s ease,
+                border-color .16s ease, box-shadow .16s ease,
+                opacity .16s ease, transform .12s ease;
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #4C4C55; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #F6A5C1; }
+::-webkit-scrollbar-track { background: transparent; }

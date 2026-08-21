@@ -1,1 +1,15 @@
 :root{--swiper-navigation-size:44px}.swiper-button-next,.swiper-button-prev{position:absolute;top:50%;width:calc(var(--swiper-navigation-size)/ 44 * 27);height:var(--swiper-navigation-size);margin-top:calc(0px - (var(--swiper-navigation-size)/ 2));z-index:10;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--swiper-navigation-color,var(--swiper-theme-color))}.swiper-button-next.swiper-button-disabled,.swiper-button-prev.swiper-button-disabled{opacity:.35;cursor:auto;pointer-events:none}.swiper-button-next:after,.swiper-button-prev:after{font-family:swiper-icons;font-size:var(--swiper-navigation-size);text-transform:none!important;letter-spacing:0;text-transform:none;font-variant:initial;line-height:1}.swiper-button-prev,.swiper-rtl .swiper-button-next{left:10px;right:auto}.swiper-button-prev:after,.swiper-rtl .swiper-button-next:after{content:'prev'}.swiper-button-next,.swiper-rtl .swiper-button-prev{right:10px;left:auto}.swiper-button-next:after,.swiper-rtl .swiper-button-prev:after{content:'next'}.swiper-button-lock{display:none}
+
+/* TigerSlicer: smooth state changes everywhere. */
+* { -webkit-tap-highlight-color: transparent; }
+button, a, input, select, img,
+[class*="Btn"], [class*="btn"], [class*="Menu"], [class*="Item"],
+[class*="Card"], [class*="card"], [class*="File"], [class*="Tab"] {
+    transition: background-color .16s ease, color .16s ease,
+                border-color .16s ease, box-shadow .16s ease,
+                opacity .16s ease, transform .12s ease;
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #4C4C55; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #F6A5C1; }
+::-webkit-scrollbar-track { background: transparent; }

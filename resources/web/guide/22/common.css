@@ -248,3 +248,17 @@ input[onclear="1"] {
 	display: flex;
 	justify-content:flex-end;
 }
+
+/* TigerSlicer: smooth state changes everywhere. */
+* { -webkit-tap-highlight-color: transparent; }
+button, a, input, select, img,
+[class*="Btn"], [class*="btn"], [class*="Menu"], [class*="Item"],
+[class*="Card"], [class*="card"], [class*="File"], [class*="Tab"] {
+    transition: background-color .16s ease, color .16s ease,
+                border-color .16s ease, box-shadow .16s ease,
+                opacity .16s ease, transform .12s ease;
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #4C4C55; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #F6A5C1; }
+::-webkit-scrollbar-track { background: transparent; }
