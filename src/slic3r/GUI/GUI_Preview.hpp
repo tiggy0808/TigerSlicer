@@ -84,12 +84,15 @@ private:
     bool init(wxWindow* parent, Bed3D& bed, Model* model, DynamicPrintConfig* config, BackgroundSlicingProcess* process);
 };
 
+class ResinRasterPreviewPanel;
+
 class Preview : public wxPanel
 {
     wxGLCanvas* m_canvas_widget { nullptr };
     GLCanvas3D* m_canvas { nullptr };
     DynamicPrintConfig* m_config;
     BackgroundSlicingProcess* m_process;
+    ResinRasterPreviewPanel* m_resin_raster_panel { nullptr }; // TigerSlicer: native raster inspector
     GCodeProcessorResult* m_gcode_result;
 
     // Calling this function object forces Plater::schedule_background_process.
@@ -140,6 +143,7 @@ public:
 
     //BBS: add only gcode mode
     void load_print(bool keep_z_range = false, bool only_gcode = false);
+    void load_print_as_sla();
     void reload_print(bool only_gcode = false);
     //BBS: always load shell at preview
     void load_shells(const Print& print, bool force_previewing = false);

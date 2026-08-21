@@ -1,4 +1,5 @@
 #include "MainFrame.hpp"
+#include "PrinterConnectionsPanel.hpp"
 
 #include <wx/panel.h>
 #include <wx/notebook.h>
@@ -1315,6 +1316,12 @@ void MainFrame::init_tabpanel() {
     m_monitor = new MonitorPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     m_monitor->SetBackgroundColour(*wxWHITE);
     m_tabpanel->AddPage(TAB_ID_MONITOR, m_monitor, _L("Device"), "tab_monitor_active");
+
+    // TigerSlicer: the Physical Printer workspace is a normal, always-present
+    // tab. It requires no configured physical-printer profile, and opening it
+    // changes no active preset or project.
+    m_printer_connections = new PrinterConnectionsPanel(m_tabpanel);
+    m_tabpanel->AddPage(TAB_ID_CONNECTIONS, m_printer_connections, _L("Physical Printer"), "tab_monitor_active");
 
     m_printer_view = new PrinterWebView(m_tabpanel);
     Bind(EVT_LOAD_PRINTER_URL, [this](LoadPrinterViewEvent &evt) {

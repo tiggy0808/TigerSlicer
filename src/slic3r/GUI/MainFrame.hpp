@@ -50,6 +50,7 @@
 #define TAB_ID_MULTI_DEVICE  "multi_device"
 #define TAB_ID_PROJECT       "project"
 #define TAB_ID_CALIBRATION   "calibration"
+#define TAB_ID_CONNECTIONS   "connections"
 
 #define ENABEL_PRINT_ALL 0
 
@@ -65,6 +66,7 @@ namespace GUI
 class Tab;
 class PrintHostQueueDialog;
 class Plater;
+class PrinterConnectionsPanel;
 class MainFrame;
 class ParamsDialog;
 #ifdef __WXGTK__
@@ -390,6 +392,7 @@ public:
     CalibrationPanel*     m_calibration{ nullptr };
     WebViewPanel*         m_webview { nullptr };
     PrinterWebView*       m_printer_view{nullptr};
+    PrinterConnectionsPanel* m_printer_connections{nullptr}; // TigerSlicer: Physical Printer workspace
     PluginPages           m_plugin_pages;
     wxLogWindow*          m_log_window { nullptr };
     // BBS

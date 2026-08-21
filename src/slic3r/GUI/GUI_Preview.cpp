@@ -3,6 +3,7 @@
 #include "libslic3r/Layer.hpp"
 #include "IMSlider.hpp"
 #include "GUI_Preview.hpp"
+#include "ResinRasterPreview.hpp"
 #include "GUI_App.hpp"
 #include "GUI.hpp"
 #if ENABLE_OPENGL_AUTO_AA_SAMPLES
@@ -285,7 +286,15 @@ bool Preview::init(wxWindow* parent, Bed3D& bed, Model* model)
     wxBoxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
     main_sizer->Add(m_canvas_widget, 1, wxALL | wxEXPAND, 0);
 
-    SetSizer(main_sizer);
+    // TigerSlicer: the raster inspector shows the exact pixels the resin
+    // printer will expose, beside the scene.
+    wxBoxSizer *preview_sizer = new wxBoxSizer(wxHORIZONTAL);
+    preview_sizer->Add(main_sizer, 1, wxEXPAND, 0);
+    m_resin_raster_panel = new ResinRasterPreviewPanel(this);
+    m_resin_raster_panel->Hide();
+    preview_sizer->Add(m_resin_raster_panel, 0, wxEXPAND, 0);
+
+    SetSizer(preview_sizer);
     SetMinSize(GetSize());
     GetSizer()->SetSizeHints(this);
 
@@ -334,6 +343,8 @@ void Preview::load_print(bool keep_z_range, bool only_gcode)
     PrinterTechnology tech = m_process->current_printer_technology();
     if (tech == ptFFF)
         load_print_as_fff(keep_z_range, only_gcode);
+    else if (tech == ptSLA)
+        load_print_as_sla();
 
     Layout();
 }
@@ -365,6 +376,8 @@ void Preview::reset_shells()
 
 void Preview::msw_rescale()
 {
+    if (m_resin_raster_panel != nullptr)
+        m_resin_raster_panel->msw_rescale();
     // rescale warning legend on the canvas
     get_canvas3d()->msw_rescale();
 
@@ -374,6 +387,8 @@ void Preview::msw_rescale()
 
 void Preview::sys_color_changed()
 {
+    if (m_resin_raster_panel != nullptr)
+        m_resin_raster_panel->sys_color_changed();
     //TODO
     // m_layers_slider->sys_color_changed();
 }
@@ -625,8 +640,34 @@ void Preview::update_layers_slider(const std::vector<double>& layers_z, bool kee
 }
 
 //BBS: add only gcode mode
+void Preview::load_print_as_sla()
+{
+    if (m_loaded_print == m_process->current_print() || m_process->current_printer_technology() != ptSLA)
+        return;
+
+    const std::shared_ptr<const MSlicerResinJob> mslicer_job = m_process->mslicer_resin_job();
+    if (m_resin_raster_panel != nullptr) {
+        m_resin_raster_panel->Show(mslicer_job != nullptr);
+        if (mslicer_job) {
+            m_resin_raster_panel->set_job(mslicer_job, m_process->mslicer_resin_output_size());
+            // A mid-height layer says far more about the print than the
+            // first one; scrubbing comes with the slider integration.
+            m_resin_raster_panel->set_layer(mslicer_job->layer_count() / 2);
+        } else {
+            m_resin_raster_panel->clear();
+        }
+        Layout();
+    }
+    if (IsShown())
+        m_loaded_print = m_process->current_print();
+}
+
 void Preview::load_print_as_fff(bool keep_z_range, bool only_gcode)
 {
+    if (m_resin_raster_panel != nullptr && m_resin_raster_panel->IsShown()) {
+        m_resin_raster_panel->Hide();
+        Layout();
+    }
     if (wxGetApp().mainframe == nullptr || wxGetApp().is_recreating_gui())
         // avoid processing while mainframe is being constructed
         return;
