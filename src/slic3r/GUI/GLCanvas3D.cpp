@@ -2556,7 +2556,7 @@ void GLCanvas3D::reload_scene(bool refresh_immediately, bool force_full_scene_re
             }
         }
     }
-    if (printer_technology == ptSLA) {
+    if (printer_technology == ptSLA && this->sla_print() != nullptr) {
         const SLAPrint* sla_print = this->sla_print();
 #ifndef NDEBUG
         // Verify that the SLAPrint object is synchronized with m_model.
@@ -2763,7 +2763,7 @@ void GLCanvas3D::reload_scene(bool refresh_immediately, bool force_full_scene_re
             }
         }
     }
-    if (printer_technology == ptSLA) {
+    if (printer_technology == ptSLA && this->sla_print() != nullptr) {
         size_t idx = 0;
         const SLAPrint *sla_print = this->sla_print();
 		std::vector<double> shift_zs(m_model->objects.size(), 0);
@@ -10062,6 +10062,8 @@ void GLCanvas3D::_render_sla_slices()
         return;
 
     const SLAPrint* print = this->sla_print();
+    if (print == nullptr)
+        return;
     const PrintObjects& print_objects = print->objects();
     if (print_objects.empty())
         // nothing to render, return
@@ -10319,7 +10321,7 @@ Vec3d GLCanvas3D::_mouse_to_bed_3d(const Point& mouse_pos)
 void GLCanvas3D::_load_sla_shells()
 {
     const SLAPrint* print = this->sla_print();
-    if (print->objects().empty())
+    if (print == nullptr || print->objects().empty())
         // nothing to render, return
         return;
 
@@ -10923,7 +10925,9 @@ const Print* GLCanvas3D::fff_print() const
 
 const SLAPrint* GLCanvas3D::sla_print() const
 {
-    return (m_process == nullptr) ? nullptr : m_process->sla_print();
+    // TigerSlicer: the MSlicer resin engine has no SLAPrint; prepared
+    // supports are ordinary model objects, so the scene needs no SLA pass.
+    return nullptr;
 }
 
 void GLCanvas3D::WipeTowerInfo::apply_wipe_tower(Vec2d pos, double rot) const

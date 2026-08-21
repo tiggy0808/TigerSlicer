@@ -11,7 +11,9 @@
 
 #include "libslic3r/PrintBase.hpp"
 #include "libslic3r/GCode/ThumbnailData.hpp"
-#include "libslic3r/Format/SL1.hpp"
+#include "libslic3r/MSlicerResinPrint.hpp"
+#include <memory>
+#include <mutex>
 #include "slic3r/Utils/PrintHost.hpp"
 #include "libslic3r/GCode/GCodeProcessor.hpp"
 #include "PartPlate.hpp"
@@ -22,7 +24,6 @@ namespace Slic3r {
 
 class DynamicPrintConfig;
 class Model;
-class SLAPrint;
 
 class SlicingStatusEvent : public wxEvent
 {
@@ -85,7 +86,7 @@ public:
 	~BackgroundSlicingProcess();
 
 	void set_fff_print(Print *print) { m_fff_print = print; }
-    void set_sla_print(SLAPrint *print) { m_sla_print = print; m_sla_print->set_printer(&m_sla_archive); }
+    void set_resin_print(MSlicerResinPrint *print) { if (m_resin_print != print) stop(); m_resin_print = print; }
 	void set_thumbnail_cb(ThumbnailsGeneratorCallback cb) { m_thumbnail_cb = cb; }
 	void set_gcode_result(GCodeProcessorResult* result) { m_gcode_result = result; }
 
@@ -121,7 +122,9 @@ public:
 	const PrintBase*    current_print() const { return m_print; }
 	const Print* 		fff_print() const { return m_fff_print; }
 	Print* 				fff_print() { return m_fff_print; }
-	const SLAPrint* 	sla_print() const { return m_sla_print; }
+	const MSlicerResinPrint* resin_print() const { return m_resin_print; }
+	std::shared_ptr<const MSlicerResinJob> mslicer_resin_job() const;
+	uint64_t mslicer_resin_output_size() const;
     // Take the project path (if provided), extract the name of the project, run it through the macro processor and save it next to the project file.
     // If the project_path is empty, just run output_filepath().
 	std::string 		output_filepath_for_project(const boost::filesystem::path &project_path);
@@ -233,12 +236,13 @@ private:
 	PrintBase				   *m_print 			 = nullptr;
 	// Non-owned pointers to Print instances.
 	Print 					   *m_fff_print 		 = nullptr;
-	SLAPrint 				   *m_sla_print			 = nullptr;
+	MSlicerResinPrint          *m_resin_print       = nullptr;
+	mutable std::mutex             m_mslicer_job_mutex;
+	std::shared_ptr<const std::vector<uint8_t>> m_mslicer_output;
 	// Data structure, to which the G-code export writes its annotations.
 	GCodeProcessorResult     *m_gcode_result 		 = nullptr;
 	// Callback function, used to write thumbnails into gcode.
 	ThumbnailsGeneratorCallback m_thumbnail_cb 	     = nullptr;
-	SL1Archive                  m_sla_archive;
 		// Temporary G-code, there is one defined for the BackgroundSlicingProcess, differentiated from the other processes by a process ID.
 	std::string 				m_temp_output_path;
 	// Output path provided by the user. The output path may be set even if the slicing is running,

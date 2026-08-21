@@ -104,6 +104,7 @@
 #include "Selection.hpp"
 #include "GLToolbar.hpp"
 #include "GUI_Preview.hpp"
+#include "SupportsView.hpp"
 #include "3DBed.hpp"
 #include "PartPlate.hpp"
 #include "Camera.hpp"
@@ -5239,6 +5240,7 @@ struct Plater::priv
     Slic3r::DynamicPrintConfig *config;        // FIXME: leak?
     Slic3r::Print               fff_print;
     Slic3r::SLAPrint            sla_print;
+    Slic3r::MSlicerResinPrint   resin_print;
     Slic3r::Model               model;
     PrinterTechnology           printer_technology = ptFFF;
     Slic3r::GCodeProcessorResult gcode_result;
@@ -5293,6 +5295,8 @@ struct Plater::priv
     GLToolbar collapse_toolbar;
     Preview *preview;
     AssembleView* assemble_view { nullptr };
+    // TigerSlicer: the MSLA Supports workspace
+    SupportsView* supports_view { nullptr };
     bool first_enter_assemble{ true };
     std::unique_ptr<NotificationManager> notification_manager;
 
@@ -5879,7 +5883,7 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
     partplate_list.update_slice_context_to_current_plate(background_process);
     /*
     background_process.set_fff_print(&fff_print);
-    background_process.set_sla_print(&sla_print);
+    background_process.set_resin_print(&resin_print);
     background_process.set_gcode_result(&gcode_result);
     background_process.set_thumbnail_cb([this](const ThumbnailsParams& params) { return this->generate_thumbnails(params, Camera::EType::Ortho); });
     background_process.set_slicing_completed_event(EVT_SLICING_COMPLETED);
@@ -5925,6 +5929,13 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
 
     assemble_view = new AssembleView(panel_3d, bed, &model, config, &background_process);
 
+    // TigerSlicer: the Supports workspace shares the scene the other views use.
+    supports_view = new SupportsView(panel_3d, bed, &model, config, &background_process);
+    q->set_msla_supports_view_refresh([this]() {
+        if (supports_view != nullptr && current_panel == supports_view)
+            supports_view->reload_settings();
+    });
+
 #ifdef __APPLE__
     // BBS
     // set default view_toolbar icons size equal to GLGizmosManager::Default_Icons_Size
@@ -5934,6 +5945,7 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
     panels.push_back(view3D);
     panels.push_back(preview);
     panels.push_back(assemble_view);
+    panels.push_back(supports_view);
 
     this->background_process_timer.SetOwner(this->q, 0);
     this->auto_reslice_timer.SetOwner(this->q, 0);
@@ -5965,6 +5977,13 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
     panel_sizer->Add(view3D, 1, wxEXPAND | wxALL, 0);
     panel_sizer->Add(preview, 1, wxEXPAND | wxALL, 0);
     panel_sizer->Add(assemble_view, 1, wxEXPAND | wxALL, 0);
+    panel_sizer->Add(supports_view, 1, wxEXPAND | wxALL, 0);
+    // The Resin settings column sits beside the canvas while the Supports
+    // workspace is active; set_current_panel() shows and hides it.
+    if (supports_view->get_settings_panel() != nullptr) {
+        panel_sizer->Add(supports_view->get_settings_panel(), 0, wxEXPAND);
+        supports_view->get_settings_panel()->Hide();
+    }
     panel_3d->SetSizer(panel_sizer);
     m_aui_mgr.AddPane(panel_3d, wxAuiPaneInfo().Name("main").CenterPane().PaneBorder(false));
 
@@ -6399,6 +6418,10 @@ void Plater::priv::update(unsigned int flags)
         update_status = this->update_background_process(false, flags & (unsigned int)UpdateParams::POSTPONE_VALIDATION_ERROR_MESSAGE);
     //BBS TODO reload_scene
     this->view3D->reload_scene(false, flags & (unsigned int)UpdateParams::FORCE_FULL_SCREEN_REFRESH);
+    if (this->current_panel == this->supports_view && this->supports_view != nullptr) {
+        this->supports_view->reload_scene(false, flags & (unsigned int)UpdateParams::FORCE_FULL_SCREEN_REFRESH);
+        this->supports_view->update_status();
+    }
     if (is_preview_shown()) this->preview->reload_print();
     //BBS assemble view
     this->assemble_view->reload_scene(false, flags);
@@ -6569,6 +6592,15 @@ void Plater::priv::select_view_3D(const std::string& name, bool no_slice)
     else if (name == "Assemble") {
         BOOST_LOG_TRIVIAL(info) << "select assemble view";
         set_current_panel(assemble_view, no_slice);
+    }
+    else if (name == "Supports") {
+        // The Supports workspace only exists for MSLA. Asking for it under
+        // FDM leaves the current view alone rather than showing a workspace
+        // whose every control belongs to another technology.
+        if (printer_technology != ptSLA || supports_view == nullptr ||
+            supports_view->get_canvas3d() == nullptr)
+            return;
+        set_current_panel(supports_view, no_slice);
     }
 
     //BBS update selection
@@ -10234,6 +10266,8 @@ void Plater::priv::set_current_panel(wxPanel* panel, bool no_slice)
     if (current_panel == view3D) {
         if (old_panel == preview)
             preview->get_canvas3d()->unbind_event_handlers();
+        else if (old_panel == supports_view)
+            supports_view->get_canvas3d()->unbind_event_handlers();
         else if (old_panel == assemble_view) {
             assemble_view->get_canvas3d()->unbind_event_handlers();
 
@@ -10275,6 +10309,8 @@ void Plater::priv::set_current_panel(wxPanel* panel, bool no_slice)
         q->invalid_all_plate_thumbnails();
         if (old_panel == view3D)
             view3D->get_canvas3d()->unbind_event_handlers();
+        else if (old_panel == supports_view)
+            supports_view->get_canvas3d()->unbind_event_handlers();
         else if (old_panel == assemble_view)
             assemble_view->get_canvas3d()->unbind_event_handlers();
 
@@ -10324,6 +10360,8 @@ void Plater::priv::set_current_panel(wxPanel* panel, bool no_slice)
         }
         else if (old_panel == preview)
             preview->get_canvas3d()->unbind_event_handlers();
+        else if (old_panel == supports_view)
+            supports_view->get_canvas3d()->unbind_event_handlers();
 
         assemble_view->get_canvas3d()->bind_event_handlers();
         assemble_view->reload_scene(true);
@@ -10351,6 +10389,34 @@ void Plater::priv::set_current_panel(wxPanel* panel, bool no_slice)
         assemble_view->set_as_dirty();
         // BBS
         //view_toolbar.select_item("Assemble");
+    }
+
+    else if (current_panel == supports_view) {
+        if (old_panel == view3D)
+            view3D->get_canvas3d()->unbind_event_handlers();
+        else if (old_panel == preview)
+            preview->get_canvas3d()->unbind_event_handlers();
+        else if (old_panel == assemble_view)
+            assemble_view->get_canvas3d()->unbind_event_handlers();
+
+        supports_view->get_canvas3d()->bind_event_handlers();
+        if (!supports_view->get_canvas3d()->is_initialized())
+            supports_view->get_canvas3d()->render();
+        supports_view->reload_scene(true);
+        supports_view->reload_settings();
+        supports_view->set_as_dirty();
+        supports_view->get_canvas3d()->reset_old_size();
+    }
+
+    // The Resin settings column exists only inside the Supports workspace.
+    if (supports_view != nullptr && supports_view->get_settings_panel() != nullptr) {
+        const bool show_settings = current_panel == supports_view;
+        if (supports_view->get_settings_panel()->IsShown() != show_settings) {
+            supports_view->get_settings_panel()->Show(show_settings);
+            if (wxSizer *sizer = supports_view->GetParent()->GetSizer(); sizer != nullptr)
+                sizer->Layout();
+            q->Layout();
+        }
     }
 
     current_panel->SetFocusFromKbd();
@@ -10683,6 +10749,10 @@ void Plater::priv::on_slicing_update(SlicingStatusEvent &evt)
     }
 
     if (evt.status.flags & (PrintBase::SlicingStatus::UPDATE_PRINT_STEP_WARNINGS | PrintBase::SlicingStatus::UPDATE_PRINT_OBJECT_STEP_WARNINGS)) {
+        // TigerSlicer: the MSlicer resin engine reports through exceptions and
+        // status text, not per-step warning states.
+        if (this->printer_technology != ptFFF)
+            return;
         // Update notification center with warnings of object_id and its warning_step.
         ObjectID object_id = evt.status.warning_object_id;
         int warning_step = evt.status.warning_step;
@@ -10691,19 +10761,11 @@ void Plater::priv::on_slicing_update(SlicingStatusEvent &evt)
 
         //BBS: add partplate related logic, use the print in background process
         if (evt.status.flags & PrintBase::SlicingStatus::UPDATE_PRINT_STEP_WARNINGS) {
-            state = this->printer_technology == ptFFF ?
-                this->background_process.m_fff_print->step_state_with_warnings(static_cast<PrintStep>(warning_step)) :
-                this->background_process.m_sla_print->step_state_with_warnings(static_cast<SLAPrintStep>(warning_step));
+            state = this->background_process.m_fff_print->step_state_with_warnings(static_cast<PrintStep>(warning_step));
         } else if (this->printer_technology == ptFFF) {
             const PrintObject *print_object = this->background_process.m_fff_print->get_object(object_id);
             if (print_object) {
                 state = print_object->step_state_with_warnings(static_cast<PrintObjectStep>(warning_step));
-                model_object = print_object->model_object();
-            }
-        } else {
-            const SLAPrintObject *print_object = this->background_process.m_sla_print->get_object(object_id);
-            if (print_object) {
-                state = print_object->step_state_with_warnings(static_cast<SLAPrintObjectStep>(warning_step));
                 model_object = print_object->model_object();
             }
         }
@@ -16360,7 +16422,12 @@ void Plater::export_stl(bool extended, bool selection_only, bool multi_stls, Fil
 
         const SLAPrintObject *object = this->p->sla_print.get_print_object_by_model_object_id(mo.id());
 
-        if (auto m = object->get_mesh_to_print(); m.empty())
+        // TigerSlicer: the MSlicer engine never populates the legacy SLAPrint;
+        // prepared supports are ordinary model objects, so the plain model
+        // combination already carries them.
+        if (object == nullptr)
+            mesh = combine_mesh_fff(mo, instance_id, [this](const std::string& msg) {return get_notification_manager()->push_general_error_notification(msg); });
+        else if (auto m = object->get_mesh_to_print(); m.empty())
             mesh = combine_mesh_fff(mo, instance_id, [this](const std::string& msg) {return get_notification_manager()->push_general_error_notification(msg); });
         else {
             const Transform3d mesh_trafo_inv = object->trafo().inverse();

@@ -1,4 +1,5 @@
 #include "BackgroundSlicingProcess.hpp"
+#include <boost/nowide/fstream.hpp>
 #include "GUI_App.hpp"
 #include "GUI.hpp"
 #include "MainFrame.hpp"
@@ -18,10 +19,8 @@
 
 // Print now includes tbb, and tbb includes Windows. This breaks compilation of wxWidgets if included before wx.
 #include "libslic3r/Print.hpp"
-#include "libslic3r/SLAPrint.hpp"
 #include "libslic3r/Utils.hpp"
 #include "PostProcessor.hpp"
-#include "libslic3r/Format/SL1.hpp"
 #include "libslic3r/Thread.hpp"
 #include "libslic3r/libslic3r.h"
 
@@ -39,6 +38,21 @@
 #include "slic3r/GUI/Plater.hpp"
 
 namespace Slic3r {
+
+namespace {
+
+void write_mslicer_output(const std::string &path, const std::vector<uint8_t> &bytes)
+{
+	boost::nowide::ofstream stream(path, std::ios::binary | std::ios::trunc);
+	if (!stream)
+		throw Slic3r::ExportError("Could not open the Resin output file for writing: " + path);
+	stream.write(reinterpret_cast<const char *>(bytes.data()), std::streamsize(bytes.size()));
+	stream.close();
+	if (!stream)
+		throw Slic3r::ExportError("Writing the Resin output file failed: " + path);
+}
+
+} // namespace
 
 bool SlicingProcessCompletedEvent::critical_error() const
 {
@@ -126,7 +140,7 @@ bool BackgroundSlicingProcess::switch_print_preprocess()
 
     /*switch (m_printer_tech) {
     case ptFFF: m_print = m_fff_print; break;
-    case ptSLA: m_print = m_sla_print; break;
+    case ptSLA: m_print = m_resin_print; break;
     default: assert(false); break;
     }*/
     return result;
@@ -165,7 +179,7 @@ bool BackgroundSlicingProcess::select_technology(PrinterTechnology tech)
 
     switch (tech) {
     case ptFFF: m_print = m_fff_print; break;
-    case ptSLA: m_print = m_sla_print; break;
+    case ptSLA: m_print = m_resin_print; break;
     default: assert(false); break;
     }
     assert(m_print != nullptr);
@@ -283,48 +297,43 @@ void BackgroundSlicingProcess::process_fff()
     }
 }
 
-static void write_thumbnail(Zipper& zipper, const ThumbnailData& data)
-{
-    size_t png_size = 0;
-    void* png_data  = tdefl_write_image_to_png_file_in_memory_ex((const void*) data.pixels.data(), data.width, data.height, 4, &png_size,
-                                                                 MZ_DEFAULT_LEVEL, 1);
-    if (png_data != nullptr) {
-        zipper.add_entry("thumbnail/thumbnail" + std::to_string(data.width) + "x" + std::to_string(data.height) + ".png",
-                         (const std::uint8_t*) png_data, png_size);
-        mz_free(png_data);
-    }
-}
 
 void BackgroundSlicingProcess::process_sla()
 {
-    assert(m_print == m_sla_print);
+    assert(m_print == m_resin_print);
     m_print->process();
+    this->throw_if_canceled();
+    const std::shared_ptr<const MSlicerResinJob> job = m_resin_print->job();
+    if (!job)
+        throw Slic3r::SlicingError("MSlicer Resin processing finished without a result.");
+    const auto output = std::make_shared<const std::vector<uint8_t>>(m_resin_print->encode());
+    {
+        std::lock_guard<std::mutex> lock(m_mslicer_job_mutex);
+        m_mslicer_output = output;
+    }
+    BOOST_LOG_TRIVIAL(info) << "MSlicer Resin result: " << job->manifest_json();
     if (this->set_step_started(bspsGCodeFinalize)) {
         if (!m_export_path.empty()) {
             wxQueueEvent(GUI::wxGetApp().mainframe->m_plater, new wxCommandEvent(m_event_export_began_id));
-
-            const std::string export_path = m_sla_print->print_statistics().finalize_output_path(m_export_path);
-
-            // BBS: add plate id for thumbnail generation
-            ThumbnailsList thumbnails = this->render_thumbnails(
-                ThumbnailsParams{current_print()->full_print_config().option<ConfigOptionPoints>("thumbnails")->values, true, true, true,
-                                 true, 0});
-
-            Zipper zipper(export_path);
-            m_sla_archive.export_print(zipper, *m_sla_print); // true, false, true, true); // renders also supports and pad
-            for (const ThumbnailData& data : thumbnails)
-                if (data.is_valid())
-                    write_thumbnail(zipper, data);
-            zipper.finalize();
-
-            // m_print->set_status(100, (boost::format(_utf8(L("Masked SLA file exported to %1%"))) % export_path).str());
-            m_print->set_status(100, (boost::format(_utf8("Masked SLA file exported to %1%")) % export_path).str());
+            const std::string export_path = m_export_path;
+            write_mslicer_output(export_path, *output);
+            m_print->set_status(100, (boost::format(_utf8("MSlicer Resin file exported to %1%")) % export_path).str());
         } else {
-            // m_print->set_status(100, _utf8(L("Slicing complete")));
             m_print->set_status(100, _utf8("Slicing complete"));
         }
         this->set_step_done(bspsGCodeFinalize);
     }
+}
+
+std::shared_ptr<const MSlicerResinJob> BackgroundSlicingProcess::mslicer_resin_job() const
+{
+	return m_resin_print ? m_resin_print->job() : nullptr;
+}
+
+uint64_t BackgroundSlicingProcess::mslicer_resin_output_size() const
+{
+	std::lock_guard<std::mutex> lock(m_mslicer_job_mutex);
+	return m_mslicer_output ? uint64_t(m_mslicer_output->size()) : 0;
 }
 
 void BackgroundSlicingProcess::thread_proc()
@@ -334,7 +343,7 @@ void BackgroundSlicingProcess::thread_proc()
     name_tbb_thread_pool_threads_set_locale();
 
     assert(m_print != nullptr);
-    assert(m_print == m_fff_print || m_print == m_sla_print);
+    assert(m_print == m_fff_print || m_print == m_resin_print);
     std::unique_lock<std::mutex> lck(m_mutex);
     // Let the caller know we are ready to run the background processing task.
     m_state = STATE_IDLE;
@@ -575,6 +584,8 @@ bool BackgroundSlicingProcess::stop()
     if (m_state == STATE_STARTED || m_state == STATE_RUNNING) {
         // Cancel any task planned by the background thread on UI thread.
         cancel_ui_task(m_ui_task);
+        if (m_print == m_resin_print)
+        	m_resin_print->request_cancel();
         m_print->cancel();
         // Wait until the background processing stops by being canceled.
         m_condition.wait(lck, [this]() { return m_state == STATE_CANCELED; });
@@ -598,6 +609,10 @@ bool BackgroundSlicingProcess::reset()
     // BBS: don't clear print for print is not owned by background slicing process anymore
     // do it in the part_plate
     // m_print->clear();
+	{
+		std::lock_guard<std::mutex> lock(m_mslicer_job_mutex);
+		m_mslicer_output.reset();
+	}
     this->invalidate_all_steps();
     return stopped;
 }
@@ -620,6 +635,8 @@ void BackgroundSlicingProcess::stop_internal()
         // At this point of time the worker thread may be blocking on m_print->state_mutex().
         // Set the print state to canceled before unlocking the state_mutex(), so when the worker thread wakes up,
         // it throws the CanceledException().
+        if (m_print == m_resin_print)
+        	m_resin_print->request_cancel();
         m_print->cancel_internal();
         // Allow the worker thread to wake up if blocking on a milestone.
         m_print->state_mutex().unlock();
@@ -969,18 +986,14 @@ void BackgroundSlicingProcess::prepare_upload()
             }
         }
     } else {
-        m_upload_job.upload_data.upload_path = m_sla_print->print_statistics().finalize_output_path(
-            m_upload_job.upload_data.upload_path.string());
-
-        ThumbnailsList thumbnails = this->render_thumbnails(
-            ThumbnailsParams{current_print()->full_print_config().option<ConfigOptionPoints>("thumbnails")->values, true, true, true, true});
-        // true, false, true, true); // renders also supports and pad
-        Zipper zipper{source_path.string()};
-        m_sla_archive.export_print(zipper, *m_sla_print, m_upload_job.upload_data.upload_path.string());
-        for (const ThumbnailData& data : thumbnails)
-            if (data.is_valid())
-                write_thumbnail(zipper, data);
-        zipper.finalize();
+        std::shared_ptr<const std::vector<uint8_t>> output;
+        {
+            std::lock_guard<std::mutex> lock(m_mslicer_job_mutex);
+            output = m_mslicer_output;
+        }
+        if (!output)
+            throw Slic3r::ExportError("The MSlicer Resin result is unavailable; slice again before uploading.");
+        write_mslicer_output(source_path.string(), *output);
     }
 
     m_print->set_status(100, (boost::format(_utf8(L("Scheduling upload to `%1%`. See Window -> Print Host Upload Queue"))) %
