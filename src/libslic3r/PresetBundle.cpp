@@ -573,6 +573,110 @@ void PresetBundle::copy_files(const std::string& from)
     }
 }
 
+
+// TigerSlicer: load the first-party MSlicer resin bundle (Prusa-style ini).
+// Orca's vendor pipeline is JSON-only and FDM-only; this reads the one
+// bundled SLA vendor directly into the sla_print/sla_material/printer
+// collections, resolving single-chain "inherits" within each section kind.
+void PresetBundle::load_tigerslicer_resin_bundle(ForwardCompatibilitySubstitutionRule substitution_rule)
+{
+    const boost::filesystem::path path =
+        boost::filesystem::path(resources_dir()) / "profiles" / "TigerSlicerResin.ini";
+    if (!boost::filesystem::exists(path)) {
+        BOOST_LOG_TRIVIAL(error) << "TigerSlicer Resin bundle missing: " << path;
+        return;
+    }
+
+    boost::property_tree::ptree tree;
+    try {
+        boost::nowide::ifstream ifs(path.string());
+        boost::property_tree::read_ini(ifs, tree);
+    } catch (const std::exception &err) {
+        BOOST_LOG_TRIVIAL(error) << "TigerSlicer Resin bundle unreadable: " << err.what();
+        return;
+    }
+
+    // Vendor header and printer models.
+    VendorProfile vendor = VendorProfile::from_ini(tree, path, true);
+    if (vendor.id.empty())
+        vendor.id = "TigerSlicerResin";
+    if (vendor.name.empty())
+        vendor.name = "TigerSlicer Resin";
+    VendorProfile &stored_vendor = this->vendors.emplace(vendor.id, vendor).first->second;
+
+    // Gather raw sections per kind.
+    struct SectionRef { std::string name; const boost::property_tree::ptree *node; };
+    std::map<std::string, std::vector<SectionRef>> kinds;
+    for (const auto &section : tree) {
+        const size_t colon = section.first.find(':');
+        if (colon == std::string::npos)
+            continue;
+        kinds[section.first.substr(0, colon)].push_back({ section.first.substr(colon + 1), &section.second });
+    }
+
+    auto load_kind = [this, &path, &stored_vendor, substitution_rule](
+        PresetCollection &collection, const std::vector<SectionRef> &sections) {
+        // Resolve one section's config, following "inherits" chains.
+        std::map<std::string, const boost::property_tree::ptree *> by_name;
+        for (const SectionRef &ref : sections)
+            by_name[ref.name] = ref.node;
+        std::map<std::string, DynamicPrintConfig> resolved;
+        std::function<const DynamicPrintConfig &(const std::string &)> resolve =
+            [&](const std::string &name) -> const DynamicPrintConfig & {
+            auto it_done = resolved.find(name);
+            if (it_done != resolved.end())
+                return it_done->second;
+            DynamicPrintConfig config;
+            auto it_node = by_name.find(name);
+            if (it_node != by_name.end()) {
+                std::string parent;
+                if (auto opt = it_node->second->get_optional<std::string>("inherits"))
+                    parent = *opt;
+                if (!parent.empty() && by_name.count(parent))
+                    config = resolve(parent);
+                else
+                    config = collection.default_preset().config;
+                ConfigSubstitutionContext ctxt(substitution_rule);
+                for (const auto &kv : *it_node->second) {
+                    if (kv.first == "inherits" || kv.first == "renamed_from")
+                        continue;
+                    try {
+                        config.set_deserialize(kv.first, kv.second.data(), ctxt);
+                    } catch (const std::exception &err) {
+                        BOOST_LOG_TRIVIAL(warning) << "TigerSlicer Resin bundle: option "
+                            << kv.first << " in " << name << " skipped: " << err.what();
+                    }
+                }
+            } else {
+                config = collection.default_preset().config;
+            }
+            return resolved.emplace(name, std::move(config)).first->second;
+        };
+
+        for (const SectionRef &ref : sections) {
+            DynamicPrintConfig config = resolve(ref.name);
+            Preset &loaded = collection.load_preset(path.string() + ":" + ref.name, ref.name, std::move(config), false);
+            loaded.is_system = true;
+            loaded.vendor    = &stored_vendor;
+            loaded.version   = stored_vendor.config_version;
+            size_t at = ref.name.find_first_of('@');
+            loaded.alias = at == std::string::npos ? ref.name :
+                boost::trim_right_copy(ref.name.substr(0, at));
+        }
+    };
+
+    if (auto it = kinds.find("sla_print"); it != kinds.end())
+        load_kind(this->sla_prints, it->second);
+    if (auto it = kinds.find("sla_material"); it != kinds.end())
+        load_kind(this->sla_materials, it->second);
+    if (auto it = kinds.find("printer"); it != kinds.end())
+        load_kind(this->printers, it->second);
+
+    BOOST_LOG_TRIVIAL(info) << "TigerSlicer Resin bundle loaded: "
+        << this->sla_prints.size() << " prints, "
+        << this->sla_materials.size() << " materials";
+}
+
 PresetsConfigSubstitutions PresetBundle::load_presets(AppConfig &config, ForwardCompatibilitySubstitutionRule substitution_rule,
                                                       const PresetPreferences& preferred_selection/* = PresetPreferences()*/)
 {
@@ -584,6 +688,9 @@ PresetsConfigSubstitutions PresetBundle::load_presets(AppConfig &config, Forward
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" enter, substitution_rule %1%, preferred printer_model_id %2%")%substitution_rule%preferred_selection.printer_model_id;
     //BBS: change system config to json
     std::tie(substitutions, errors_cummulative) = this->load_system_presets_from_json(substitution_rule);
+
+    // TigerSlicer: the resin vendor rides beside the JSON vendors.
+    this->load_tigerslicer_resin_bundle(substitution_rule);
 
     // BBS load preset from user's folder, load system default if
     // BBS: change directories by design

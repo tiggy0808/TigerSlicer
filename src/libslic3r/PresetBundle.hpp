@@ -448,6 +448,9 @@ public:
     /*std::pair<PresetsConfigSubstitutions, size_t> load_configbundle(
         const std::string &path, LoadConfigBundleAttributes flags, ForwardCompatibilitySubstitutionRule compatibility_rule);*/
     //Orca: load config bundle from json, pass the base bundle to support cross vendor inheritance
+    // TigerSlicer: load the bundled Prusa-style MSlicer resin vendor ini.
+    void load_tigerslicer_resin_bundle(ForwardCompatibilitySubstitutionRule substitution_rule);
+
     std::pair<PresetsConfigSubstitutions, size_t> load_vendor_configs_from_json(
         const std::string &path, const std::string &vendor_name, LoadConfigBundleAttributes flags, ForwardCompatibilitySubstitutionRule compatibility_rule, const PresetBundle* base_bundle = nullptr);
 

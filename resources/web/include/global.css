@@ -12,9 +12,9 @@
 
 /*/// COLORS ///*/
 :root { 
-	--main-color			: #009688;
-	--main-color-hover		: #26A69A;
-	--main-color-fixed		: #009688;
+	--main-color			: #F6A5C1;
+	--main-color-hover		: #D98BA8;
+	--main-color-fixed		: #F6A5C1;
 	--bg-color				: #FFFFFF;
 	--bg-color-secondary	: #F4F4F4;
 	--bg-color-alt			: #F0F0F0;
@@ -38,7 +38,7 @@
 :root {
 	--main-color			: #00675B;
 	--main-color-hover		: #008172;
-	--main-color-fixed		: #009688;
+	--main-color-fixed		: #F6A5C1;
 	--bg-color				: #2D2D31;
 	--bg-color-secondary	: #36363B;
 	--bg-color-alt			: #242428;

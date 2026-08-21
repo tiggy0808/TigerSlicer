@@ -340,6 +340,11 @@ set(SLIC3R_GUI_SOURCES
     GUI/ColorUtils.hpp
     GUI/Widgets/BarycentricRatioPicker.cpp
     GUI/Widgets/BarycentricRatioPicker.hpp
+    GUI/Widgets/VirtualExtruderListBox.cpp
+    GUI/Widgets/VirtualExtruderListBox.hpp
+    GUI/Widgets/UIColors.hpp
+    GUI/Widgets/LayerSequenceBar.cpp
+    GUI/Widgets/LayerSequenceBar.hpp
     GUI/Widgets/GradientRatioBar.cpp
     GUI/Widgets/GradientRatioBar.hpp
     GUI/PrinterConnectionsPanel.cpp

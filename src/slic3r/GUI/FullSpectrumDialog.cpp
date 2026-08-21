@@ -179,7 +179,7 @@ void FullSpectrumDialog::apply_colors()
     if (dark)
         wxGetApp().UpdateDlgDarkUI(this);
     else
-        wxGetApp().UpdateDlgDarkUI(this, true);
+        wxGetApp().UpdateDlgDarkUI(this);
 
     if (m_presets_scrolled_window)
         m_presets_scrolled_window->SetBackgroundColour(window_bg_color());
@@ -336,7 +336,7 @@ void FullSpectrumDialog::build_layout()
     left_box_sizer->Add(m_virtual_extruder_list, 1, wxLEFT | wxRIGHT | wxEXPAND, pad);
 
     wxBoxSizer* buttons_sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_btn_add_blend = new Button(left_box, _L("Add blend"), "recipe_add", 0, wxSize(16, 16));
+    m_btn_add_blend = new Button(left_box, _L("Add blend"), "recipe_add", 0, 16);
     m_btn_add_blend->SetCornerRadius(em / 2);
     m_btn_add_blend->SetPaddingSize(wxSize(em, em / 2));
     m_btn_add_blend->Bind(wxEVT_BUTTON, &FullSpectrumDialog::on_add_blend_clicked, this);
@@ -344,7 +344,7 @@ void FullSpectrumDialog::build_layout()
         _L("Create a blend recipe that alternates two filaments layer by layer.")
     );
 
-    m_btn_add_gradient = new Button(left_box, _L("Add gradient"), "recipe_add", 0, wxSize(16, 16));
+    m_btn_add_gradient = new Button(left_box, _L("Add gradient"), "recipe_add", 0, 16);
     m_btn_add_gradient->SetCornerRadius(em / 2);
     m_btn_add_gradient->SetPaddingSize(wxSize(em, em / 2));
     m_btn_add_gradient->Bind(wxEVT_BUTTON, &FullSpectrumDialog::on_add_gradient, this);
@@ -1791,7 +1791,7 @@ int FullSpectrumDialog::count_objects_using(unsigned int virtual_extruder_id) co
                 && volume->config.extruder() == int(virtual_extruder_id))
                 ++users;
             if (volume->is_mm_painted()) {
-                const auto& used_states = volume->mm_segmentation_facets.get_data().used_states;
+                const auto& used_states = volume->mmu_segmentation_facets.get_data().used_states;
                 if (virtual_extruder_id < used_states.size() && used_states[virtual_extruder_id])
                     ++users;
             }
