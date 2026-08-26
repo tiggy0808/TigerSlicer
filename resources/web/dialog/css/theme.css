@@ -30,7 +30,7 @@
   --row-hover: #f7f9fb;
   --row-selected: #eaf2ff;
   --plugin-status-danger: #b42318;
-  --plugin-status-ok: #9B5874;
+  --plugin-status-ok: #137333;
   --plugin-status-warn: #a15c00;
   --plugin-status-inactive: var(--muted);
   --plugin-status-danger-bg: rgba(180, 35, 24, 0.12);
@@ -39,7 +39,7 @@
   --plugin-status-inactive-bg: #edf1f5;
   --plugin-status-inactive-text: #44505c;
   --plugin-source-mine-bg: rgba(0, 137, 123, 0.12);
-  --plugin-source-mine-text: #D98BA8;
+  --plugin-source-mine-text: #00897b;
   --plugin-source-neutral-bg: #edf1f5;
   --plugin-source-neutral-text: #44505c;
   --plugin-source-subscribed-bg: rgba(37, 99, 170, 0.12);
@@ -68,9 +68,9 @@
   --col-sep: #4a4a51;
   --row-hover: #2b3340;
   --row-selected: #244945;
-  --plugin-link-text: #F6A5C1;
+  --plugin-link-text: #5eead4;
   --plugin-status-danger: #ff7b72;
-  --plugin-status-ok: #D98BA8;
+  --plugin-status-ok: #37c871;
   --plugin-status-warn: #f0b45a;
   --plugin-status-inactive: #b9c0c8;
   --plugin-status-danger-bg: rgba(255, 123, 114, 0.16);
@@ -79,7 +79,7 @@
   --plugin-status-inactive-bg: #36363b;
   --plugin-status-inactive-text: #c7ccd2;
   --plugin-source-mine-bg: rgba(0, 150, 136, 0.18);
-  --plugin-source-mine-text: #F6A5C1;
+  --plugin-source-mine-text: #8de5d6;
   --plugin-source-neutral-bg: #36363b;
   --plugin-source-neutral-text: #c7ccd2;
   --plugin-source-subscribed-bg: rgba(88, 166, 255, 0.18);

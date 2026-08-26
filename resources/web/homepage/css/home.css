@@ -47,7 +47,7 @@ html, body {
 .LinkBtn
 {
 	font-size:12px;
-	color: #F6A5C1;	
+	color: #00ffea;	
 	cursor: pointer;
 }
 
@@ -200,7 +200,7 @@ body
 
 .bambu-status-dot.online
 {
-	background-color: #D98BA8;
+	background-color: #4CAF50;
 }
 
 #BambuCloudBody
@@ -261,7 +261,7 @@ body
 
 #DownloadBtn
 {
-	color:#F6A5C1;
+	color:#00ffd9;
 }
 
 
