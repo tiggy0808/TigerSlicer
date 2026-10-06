@@ -956,10 +956,11 @@ std::string AppConfig::load()
     // TigerSlicer: one-time move of the saved default filament colour from teal to pink. It runs here,
     // after "orca_presets" was read, and not in set_defaults(): the construction-time set_defaults()
     // pass runs before the file is loaded and would consume the marker with nothing to migrate.
-    if (m_mode == EAppMode::Editor && get("default_filament_color_migrated").empty()) {
+    // A fresh install sets the marker in GUI_App instead, as its config never held the teal.
+    if (m_mode == EAppMode::Editor && get(DEFAULT_FILAMENT_COLOR_MIGRATED).empty()) {
         for (auto &printer : m_printer_settings)
             migrate_default_filament_colors(printer.second);
-        set("default_filament_color_migrated", "1");
+        set(DEFAULT_FILAMENT_COLOR_MIGRATED, "1");
     }
 
     // Figure out if datadir has legacy presets

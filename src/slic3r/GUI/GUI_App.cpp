@@ -2659,6 +2659,9 @@ void GUI_App::init_app_config()
         m_last_config_version = app_config->orig_version();//parse_semver_from_ini(app_config->config_path());
     }
     else {
+        // TigerSlicer: a new config never held Orca's teal default filament colour, so the one-time
+        // migration in AppConfig::load() must not touch a teal the user picks before the next start.
+        app_config->set(AppConfig::DEFAULT_FILAMENT_COLOR_MIGRATED, "1");
 #ifdef _WIN32
         // update associate files from registry information
         if (is_associate_files(L"3mf")) {
