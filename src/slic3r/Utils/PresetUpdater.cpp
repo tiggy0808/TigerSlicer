@@ -1056,7 +1056,10 @@ void PresetUpdater::priv::check_installed_vendor_profiles() const
 
             const auto is_vendor_enabled = (vendor_name == PresetBundle::ORCA_DEFAULT_BUNDLE) // always update configs from resource to vendor for ORCA_DEFAULT_BUNDLE
                                            || (enabled_vendors.find(vendor_name) != enabled_vendors.end());
-            if (enabled_config_update) {
+            // TigerSlicer: online profile updates are off (profile_update_url() is empty, so
+            // enabled_config_update is false), but keep the version-compared install from
+            // resources instead of falling back to re-copying every enabled vendor on each launch.
+            if (true || enabled_config_update) {
                 if ( fs::exists(path_in_vendor)) {
                     if (is_vendor_enabled) {
                         Semver resource_ver = get_version_from_json(file_path);
@@ -1319,7 +1322,9 @@ void PresetUpdater::sync(std::string http_url, std::string language, std::string
 			// Vendor profile updates are triggered by check_vendor_update()
 			// after the startup printer preset has been restored.
             this->p->sync_plugins(http_url, plugin_version);
-            this->p->sync_printer_config(http_url);
+            // TigerSlicer: no Bambu printer config download on every launch; the copy bundled in
+            // resources/printers is installed locally (see get_printer_config_updates()).
+            //this->p->sync_printer_config(http_url);
 			//if (p->cancel)
 			//	return;
 			//remove the tooltip currently

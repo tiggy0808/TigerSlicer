@@ -1731,8 +1731,7 @@ void PreferencesDialog::create_items()
         "filaments_area_preferred_count", 8, 99, [this](int value) {m_filament_height_timer.StartOnce(500);});
     g_sizer->Add(item_filament_area_height); 
 
-    auto item_shared_profiles  = create_item_checkbox(_L("Show shared profiles notification"), _L("Show a notification with a link to browse shared profiles when the selected printer is changed."), "show_shared_profiles_notification");
-    g_sizer->Add(item_shared_profiles);
+    // TigerSlicer: cloud features removed - no "Show shared profiles notification" (Orca Cloud link).
 
     //// GENERAL > Features
     g_sizer->Add(create_item_title(_L("Features")), 1, wxEXPAND);
@@ -1987,8 +1986,7 @@ void PreferencesDialog::create_items()
     auto item_stealth_mode     = create_item_checkbox(_L("Stealth mode"), _L("This disables all cloud features, including Orca Cloud profile syncing. Users who prefer to work entirely offline can enable this option.\nNote: When Stealth Mode is enabled, your user profiles will not be backed up to Orca Cloud."), "stealth_mode");
     g_sizer->Add(item_stealth_mode);
 
-    auto item_hide_login_side_panel = create_item_checkbox(_L("Hide login side panel"), _L("Hide the login side panel on the home page."), "hide_login_side_panel");
-    g_sizer->Add(item_hide_login_side_panel);
+    // TigerSlicer: cloud features removed - the home page has no login side panel to hide.
 
     auto item_network_test     = create_item_button(_L("Network test"), _L("Test") + " " + dots, "", _L("Open Network Test"), []() {
         NetworkTestDialog dlg(wxGetApp().mainframe);
@@ -1997,24 +1995,14 @@ void PreferencesDialog::create_items()
     g_sizer->Add(item_network_test);
 
     //// ONLINE > Cloud Providers
-    g_sizer->Add(create_item_title(_L("Cloud Providers")), 1, wxEXPAND);
-
-    auto item_bambu_cloud     = create_item_bambu_cloud(_L("Enable Bambu Cloud"), _L("Allow logging into Bambu Cloud alongside Orca Cloud. When enabled, a Bambu login section appears on the homepage."));
-    g_sizer->Add(item_bambu_cloud);
+    // TigerSlicer: cloud features removed - no "Cloud Providers" / "Enable Bambu Cloud" section.
 
     //// ONLINE > Update & sync
     g_sizer->Add(create_item_title(_L("Update & sync")), 1, wxEXPAND);
 
-    auto item_stable_updates   = create_item_checkbox(_L("Check for stable updates only"), "", "check_stable_update_only");
-    g_sizer->Add(item_stable_updates);
-
-    auto item_user_sync        = create_item_checkbox(_L("Auto sync user presets (Printer/Filament/Process)"), "", "sync_user_preset");
-    g_sizer->Add(item_user_sync);
-
-    if (app_config->get_stealth_mode()) {
-        if (m_bambu_cloud_checkbox)      m_bambu_cloud_checkbox->Enable(false);
-        if (m_sync_user_preset_checkbox) m_sync_user_preset_checkbox->Enable(false);
-    }
+    // TigerSlicer: cloud features removed - no "Check for stable updates only", "Auto sync user
+    // presets", "Update built-in presets automatically" or "Use encrypted file for token storage";
+    // there is no update checker, cloud sync, online preset update or sign-in token any more.
 
     auto item_filament_sync_mode = create_item_combobox(
         _L("Filament sync mode"),
@@ -2022,14 +2010,6 @@ void PreferencesDialog::create_items()
         "sync_ams_filament_mode",
         {_L("Filament & Color"), _L("Color only")});
     g_sizer->Add(item_filament_sync_mode);
-
-    auto item_system_sync      = create_item_checkbox(_L("Update built-in presets automatically."), "", "sync_system_preset");
-    g_sizer->Add(item_system_sync);
-
-    auto item_token_storage    = create_item_checkbox(_L("Use encrypted file for token storage"),
-                                                      _L("Store authentication tokens in an encrypted file instead of the system keychain. (Requires restart)"),
-                                                      SETTING_USE_ENCRYPTED_TOKEN_FILE);
-    g_sizer->Add(item_token_storage);
 
     //// ONLINE > Network plugin
     g_sizer->Add(create_item_title(_L("Bambu network plug-in")), 1, wxEXPAND);

@@ -216,6 +216,11 @@ std::unique_ptr<NetworkAgent> create_agent_from_config(const std::string& log_di
         for (const auto& provider : providers) {
             if (provider == ORCA_CLOUD_PROVIDER)
                 continue; // Primary agent already created above
+            // TigerSlicer: cloud features removed - no Bambu Cloud sign-in. LAN printing to Bambu
+            // printers does not need this provider: GUI_App::on_init_network() starts the Bambu
+            // plug-in agent itself, and BBLPrinterAgent works without a cloud agent.
+            if (provider == BBL_CLOUD_PROVIDER)
+                continue;
             auto third_party_agent = NetworkAgentFactory::create_cloud_agent(provider, log_dir);
             if (third_party_agent) {
                 agent->add_cloud_agent(provider, std::move(third_party_agent));

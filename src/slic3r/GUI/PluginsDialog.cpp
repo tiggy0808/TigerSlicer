@@ -40,7 +40,7 @@ namespace {
 const wxString kDeletePluginTitle            = _L("Delete Plugin");
 const wxString kUnsubscribeTitle             = _L("Unsubscribe");
 const wxString kOverwritePluginTitle         = _L("Overwrite Plugin");
-std::string s_selected_plugin_install_action = "explore";
+std::string s_selected_plugin_install_action = "install-local"; // TigerSlicer: no "explore" (plugin hub)
 
 struct PluginContextAction
 {
@@ -1072,6 +1072,9 @@ void PluginsDialog::open_plugin_folder(const PluginDescriptor& plugin)
 
 void PluginsDialog::open_plugin_on_cloud(const std::string& sharing_token)
 {
+    // TigerSlicer: cloud features removed - no "View on TigerCloud" links.
+    return;
+
     if (sharing_token.empty())
         return;
 
@@ -1087,6 +1090,9 @@ void PluginsDialog::open_plugin_on_cloud(const std::string& sharing_token)
 
 void PluginsDialog::open_plugin_hub()
 {
+    // TigerSlicer: cloud features removed - no online plugin hub; plugins install from a local file.
+    return;
+
     std::string cloud_base_url = "https://cloud.orcaslicer.com";
 
     if (wxGetApp().getAgent()) {

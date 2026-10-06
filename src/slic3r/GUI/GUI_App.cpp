@@ -956,7 +956,8 @@ void GUI_App::post_init()
     }
 
     // Start preset sync after project opened, otherwise we could have preset change during project opening which could cause crash 
-    if (app_config->get("sync_user_preset") == "true") {
+    // TigerSlicer: cloud features removed - no user preset cloud sync.
+    if (false && app_config->get("sync_user_preset") == "true") {
         // BBS loading user preset
         // Always async, not such startup step
         // BOOST_LOG_TRIVIAL(info) << "Loading user presets...";
@@ -3305,7 +3306,8 @@ bool GUI_App::on_init_inner()
     // Set cloud plugin directory from previous session so cloud-installed
     // plugins are discovered even before the network agent is ready.
     const std::string preset_folder = app_config->get("preset_folder");
-    if (!preset_folder.empty()) {
+    // TigerSlicer: cloud features removed - no cloud plugins from a previous signed-in session.
+    if (false && !preset_folder.empty()) {
         plugin_mgr.set_cloud_user(preset_folder);
     }
 
@@ -3329,7 +3331,9 @@ bool GUI_App::on_init_inner()
     if (m_agent)
         plugin_mgr.set_cloud_agent(std::dynamic_pointer_cast<OrcaCloudServiceAgent>(m_agent->get_cloud_agent()));
 
-    if (m_agent && m_agent->is_user_login()) {
+    // TigerSlicer: cloud features removed. Never switch to a cloud user's preset folder or fetch
+    // cloud plugins; user presets always load from the local default folder (user/default).
+    if (false && m_agent && m_agent->is_user_login()) {
         enable_user_preset_folder(true);
         plugin_mgr.set_cloud_user(m_agent->get_user_id());
         // If there is a user logged in we do an immediate sync.
@@ -4700,6 +4704,11 @@ void GUI_App::ShowDownNetPluginDlg() {
 
 void GUI_App::ShowUserLogin(bool show, const std::string& provider)
 {
+    // TigerSlicer: cloud features removed. There is no account to sign in to, so the login dialog
+    // never opens; request_login()/check_login() callers just see "not logged in".
+    if (show)
+        return;
+
     // Show user Login Dialog for specified cloud
     if (show) {
         try {
@@ -4946,6 +4955,10 @@ void GUI_App::request_login(bool show_user_info, const std::string& provider/* =
 
 void GUI_App::get_login_info(const std::string& provider/* = ORCA_CLOUD_PROVIDER*/)
 {
+    // TigerSlicer: cloud features removed. The home page has no login panel to update, and this
+    // must never reach user_logout(), which clears the stored credential.
+    return;
+
     if (m_agent) {
         if (m_agent->is_user_login(provider)) {
             std::string login_cmd = m_agent->build_login_cmd(provider);
@@ -5078,6 +5091,24 @@ std::string GUI_App::handle_web_request(std::string cmd)
         boost::optional<std::string> command = root.get_optional<std::string>("command");
         if (command.has_value()) {
             std::string command_str = command.value();
+            // TigerSlicer: cloud features removed. The home page no longer has a sign-in area;
+            // ignore any account, cloud-login, cloud project or model store command that still
+            // reaches us (this also skips the "quit Stealth Mode to log in" dialog below).
+            static const std::unordered_set<std::string> removed_cloud_commands = {
+                "get_login_info",
+                "get_orca_login_info",
+                "get_bambu_login_info",
+                "homepage_login_or_register",
+                "homepage_orca_login_or_register",
+                "homepage_bambu_login_or_register",
+                "homepage_logout",
+                "homepage_orca_logout",
+                "homepage_bambu_logout",
+                "homepage_modeldepot",
+                "request_project_download",
+            };
+            if (removed_cloud_commands.count(command_str))
+                return "";
             static const std::unordered_set<std::string> stealth_blocked_info_commands = {
                 "get_login_info",
                 "get_orca_login_info",

@@ -85,6 +85,12 @@ body {
   white-space: nowrap;
 }
 
+/* TigerSlicer: the install-options arrow went with the online plugin hub; round the lone button. */
+.explore-main-btn:first-child {
+  border-top-left-radius: 4px !important;
+  border-bottom-left-radius: 4px !important;
+}
+
 .explore-menu-btn {
   flex: 0 0 var(--explore-arrow-width);
   width: var(--explore-arrow-width) !important;

@@ -416,6 +416,9 @@ void WebViewPanel::OnClose(wxCloseEvent& evt)
 
 void WebViewPanel::OnFreshLoginStatus(wxTimerEvent &event)
 {
+    // TigerSlicer: cloud features removed - there is no login status to refresh.
+    return;
+
     auto mainframe = Slic3r::GUI::wxGetApp().mainframe;
     if (mainframe && mainframe->m_webview == this) {
         auto* app_config = Slic3r::GUI::wxGetApp().app_config;
@@ -681,7 +684,8 @@ void WebViewPanel::OnScriptMessage(wxWebViewEvent& evt)
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << ": " << evt.GetString().ToUTF8().data();
     // update login status
-    if (m_LoginUpdateTimer == nullptr) {
+    // TigerSlicer: cloud features removed - no 2-second login status poll for the home page.
+    if (false && m_LoginUpdateTimer == nullptr) {
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " Create Timer";
         m_LoginUpdateTimer = new wxTimer(this, LOGIN_INFO_UPDATE_TIMER_ID);
         m_LoginUpdateTimer->Start(2000);

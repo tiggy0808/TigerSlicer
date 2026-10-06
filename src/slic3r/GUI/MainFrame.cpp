@@ -2691,12 +2691,7 @@ static wxMenu* generate_help_menu()
     //        //TODO
     //    });
     // Check New Version
-    append_menu_item(helpMenu, wxID_ANY, _L("Check for Updates"), _L("Check for Updates"),
-        [](wxCommandEvent&) {
-            wxGetApp().check_new_version_sf(true, 1);
-        }, "", nullptr, []() {
-            return true;
-        });
+    // TigerSlicer: no update checker (check_new_version_sf() is a no-op), so no "Check for Updates".
 
     // About
 #ifndef __APPLE__
@@ -3390,23 +3385,7 @@ void MainFrame::init_menubar_as_editor()
         },
         "", nullptr, []() { return true; }, this);
 
-    append_menu_item(
-        top_menu, wxID_ANY, _L("Sync Presets"), _L("Pull and apply the latest presets from OrcaCloud"),
-        [this](wxCommandEvent&) {
-            if (!wxGetApp().is_user_login()) {
-                MessageDialog info_dlg(this, _L("You must be logged in to sync presets from cloud."),
-                    _L("Sync Presets"), wxOK | wxICON_INFORMATION);
-                info_dlg.ShowModal();
-                return;
-            }
-            if (m_plater)
-                m_plater->get_notification_manager()->push_notification(
-                    into_u8(_L("Syncing presets from cloud\u2026")));
-            wxGetApp().restart_sync_user_preset();
-        }, "", nullptr,
-        [this]() {
-            return wxGetApp().is_user_login() && !wxGetApp().app_config->get_stealth_mode();
-        }, this);
+    // TigerSlicer: cloud features removed - no "Sync Presets" (pulled presets from Orca Cloud).
 
     top_menu->AppendSeparator();
     append_menu_item(
@@ -3527,23 +3506,7 @@ void MainFrame::init_menubar_as_editor()
         },
         "", nullptr, []() { return true; }, this);
 
-    append_menu_item(
-        fileMenu, wxID_ANY, _L("Sync Presets"), _L("Pull and apply the latest presets from OrcaCloud"),
-        [this](wxCommandEvent&) {
-            if (!wxGetApp().is_user_login()) {
-                MessageDialog info_dlg(this, _L("You must be logged in to sync presets from cloud."),
-                    _L("Sync Presets"), wxOK | wxICON_INFORMATION);
-                info_dlg.ShowModal();
-                return;
-            }
-            if (m_plater)
-                m_plater->get_notification_manager()->push_notification(
-                    into_u8(_L("Syncing presets from cloud\u2026")));
-            wxGetApp().restart_sync_user_preset();
-        }, "", nullptr,
-        [this]() {
-            return wxGetApp().is_user_login() && !wxGetApp().app_config->get_stealth_mode();
-        }, this);
+    // TigerSlicer: cloud features removed - no "Sync Presets" (pulled presets from Orca Cloud).
 
     fileMenu->AppendSeparator();
     append_menu_item(
@@ -4447,6 +4410,9 @@ void MainFrame::update_side_preset_ui()
 
 void MainFrame::on_select_default_preset(SimpleEvent& evt)
 {
+    // TigerSlicer: cloud features removed - never ask to synchronize presets from Orca Cloud.
+    return;
+
     MessageDialog dialog(this,
                     _L("Do you want to synchronize your personal data from Orca Cloud?\n"
                         "It contains the following information:\n"

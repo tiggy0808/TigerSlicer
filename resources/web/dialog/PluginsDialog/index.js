@@ -1,9 +1,7 @@
 const pluginsById = new Map();
+// TigerSlicer: cloud features removed - no "explore" action (it opened the online plugin hub);
+// plugins are installed from a local file.
 const pluginInstallActions = {
-  "explore": {
-    label: "Install plugin",
-    command: "open_plugin_hub"
-  },
   "install-local": {
     label: "Install local plugin",
     command: "install_local_plugin"
@@ -18,7 +16,7 @@ let searchExpandOverride = new Map();
 let selectedPluginId = "";
 let contextPluginId = "";
 let activeDetailTab = "plugin-info";
-let selectedInstallAction = "explore";
+let selectedInstallAction = "install-local";
 // Config tab: the capability whose config is shown. Name and type together address it natively.
 let selectedCapabilityName = "";
 let selectedCapabilityType = "";
@@ -193,7 +191,7 @@ function StoreSplitRatio(ratio) {
 
 function NormalizeInstallAction(action) {
   const normalized = String(action || "");
-  return pluginInstallActions[normalized] ? normalized : "explore";
+  return pluginInstallActions[normalized] ? normalized : "install-local";
 }
 
 function SetSelectedInstallAction(action, notifyNative = false) {
@@ -656,7 +654,8 @@ function LabelCell(plugin, isExpanded = false, capabilityCount = 0, nameRanges =
   const labelCell = document.createElement("span");
   labelCell.className = "label-cell";
 
-  const hasCloudLink = plugin.source === "mine" || plugin.source === "subscribed" || plugin.source === "orphaned";
+  // TigerSlicer: cloud features removed - plugin names no longer link to TigerCloud.
+  const hasCloudLink = false;
   const pluginLabelText = plugin.label || plugin.name || plugin.plugin_id || "";
   const canExpand = capabilityCount > 0;
 
@@ -1227,27 +1226,11 @@ function RenderDescription(plugin) {
 
   node.replaceChildren();
 
-  // Descriptions come from the plugin's Python header; a cloud plugin that is not installed yet has
-  // no header, so link to TigerCloud instead.
+  // Descriptions come from the plugin's Python header.
+  // TigerSlicer: cloud features removed - no "View on TigerCloud" link for plugins without one.
   const description = String(plugin?.description || "").trim();
   if (description && description !== "No description.") {
     node.textContent = description;
-    return;
-  }
-
-  const isCloud = plugin && (plugin.source === "mine" || plugin.source === "subscribed" || plugin.source === "orphaned");
-  if (isCloud && String(plugin?.sharing_token || "")) {
-    node.appendChild(document.createTextNode("View on TigerCloud "));
-    const link = document.createElement("a");
-    link.href = "#";
-    link.className = "plugin-cloud-link";
-    link.textContent = "here";
-    link.title = "Open this plugin in your browser";
-    link.addEventListener("click", (event) => {
-      event.preventDefault();
-      sendOpenPluginOnCloud(String(plugin.plugin_key || ""));
-    });
-    node.appendChild(link);
     return;
   }
 

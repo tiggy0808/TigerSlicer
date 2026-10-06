@@ -41,8 +41,10 @@ function GotoNetPluginPage()
 {
 	let bRet=ResponseFilamentResult();
 	
+	// TigerSlicer: cloud features removed - skip the cloud/Stealth Mode page (4orca) and go
+	// straight to the network plug-in page; its Back button returns here.
 	if(bRet)
-		window.location.href="../4orca/index.html";
+		window.location.href="../5/index.html";
 }
 
 function FinishGuide()

@@ -71,7 +71,7 @@ body
 
 #LeftBoard
 {
-	display: none;  /* shown by cloud_providers_info from backend */
+	display: block;  /* TigerSlicer: always shown; it used to wait for cloud_providers_info from the backend */
 	border-right-width: 1px;
 	border-right-style: solid;
 	width:262px;

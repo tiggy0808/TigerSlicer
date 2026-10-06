@@ -1,15 +1,13 @@
 //var TestData={"sequence_id":"0","command":"get_recent_projects","response":[{"path":"D:\\work\\Models\\Toy\\3d-puzzle-cube-model_files\\3d-puzzle-cube.3mf","time":"2022\/3\/24 20:33:10"},{"path":"D:\\work\\Models\\Art\\Carved Stone Vase - remeshed+drainage\\Carved Stone Vase.3mf","time":"2022\/3\/24 17:11:51"},{"path":"D:\\work\\Models\\Art\\Kity & Cat\\Cat.3mf","time":"2022\/3\/24 17:07:55"},{"path":"D:\\work\\Models\\Toy\\鐩村墤.3mf","time":"2022\/3\/24 17:06:02"},{"path":"D:\\work\\Models\\Toy\\minimalistic-dual-tone-whistle-model_files\\minimalistic-dual-tone-whistle.3mf","time":"2022\/3\/22 21:12:22"},{"path":"D:\\work\\Models\\Toy\\spiral-city-model_files\\spiral-city.3mf","time":"2022\/3\/22 18:58:37"},{"path":"D:\\work\\Models\\Toy\\impossible-dovetail-puzzle-box-model_files\\impossible-dovetail-puzzle-box.3mf","time":"2022\/3\/22 20:08:40"}]};
 
 var m_HotModelList=null;
-var bambuSectionExpanded = false;
 
 function OnInit()
 {
 	//-----Official-----
     TranslatePage();
 
-	SendMsg_GetLoginInfo();
-	SendMsg_GetBambuLoginInfo();
+	// TigerSlicer: cloud features removed - no login info requests (the login area is gone).
 	SendMsg_GetRecentFile();
 	SendMsg_GetStaffPick();
 }
@@ -86,53 +84,18 @@ function HandleStudio( pVal )
 {
 	let strCmd = pVal['command'];
 	
+	// TigerSlicer: cloud features removed. The login messages (orca_userlogin, orca_useroffline,
+	// studio_bambu_userlogin, studio_bambu_useroffline), cloud_providers_info (which could hide the
+	// left navigation) and network_plugin_installtip (shown inside the removed Bambu Cloud panel)
+	// are ignored. The Bambu network plug-in is still installed from Preferences or the setup wizard.
 	if (strCmd == "get_recent_projects") {
     ShowRecentFileList(pVal["response"]);
-  } else if (strCmd == "orca_userlogin") {
-    SetOrcaLoginInfo(pVal["data"]["avatar"], pVal["data"]["name"]);
-  } else if (strCmd == "orca_useroffline") {
-    SetOrcaUserOffline();
-  } else if (strCmd == "studio_bambu_userlogin") {
-    SetBambuLoginInfo(pVal["data"]["avatar"], pVal["data"]["name"]);
-  } else if (strCmd == "studio_bambu_useroffline") {
-    SetBambuUserOffline();
   } else if (strCmd == "studio_set_mallurl") {
     SetMallUrl(pVal["data"]["url"]);
   } else if (strCmd == "studio_clickmenu") {
     let strName = pVal["data"]["menu"];
 
     GotoMenu(strName);
-  } else if (strCmd == "cloud_providers_info") {
-    var providers = (pVal["data"] && pVal["data"]["providers"]) || [];
-
-    if (providers.indexOf("bbl") >= 0) {
-      $("#BambuCloudSection").show();
-    } else {
-      SetBambuUserOffline();
-      $("#BambuCloudSection").hide();
-    }
-
-    if (providers.indexOf("orca") >= 0) {
-      $("#LeftBoard").show();
-    } else {
-      $("#LeftBoard").hide();
-    }
-  } else if (strCmd == "network_plugin_installtip") {
-    let nShow = pVal["show"] * 1;
-
-    if (nShow == 1) {
-      // Auto-expand Bambu section to show the tip
-      if (!bambuSectionExpanded) ToggleBambuSection();
-      $("#BambuLogin1").hide();
-      $("#NoPluginTip").show();
-      $("#NoPluginTip").css("display", "flex");
-    } else {
-      $("#NoPluginTip").hide();
-      // Only restore login button if not already logged in
-      if ($("#BambuLogin2").is(":hidden")) {
-        $("#BambuLogin1").show();
-      }
-    }
   } else if (strCmd == "modelmall_model_advise_get") {
     //alert('hot');
     if (m_HotModelList != null) {
@@ -168,36 +131,6 @@ function GotoMenu( strMenu )
 			$("div[board=\'"+strMenu+"\']").show();
 		}
 	}
-}
-
-function SetOrcaLoginInfo( strAvatar, strName )
-{
-	$("#OrcaLogin1").hide();
-	$("#OrcaStatusText").hide();
-
-	$("#UserName").text(strName);
-
-    let OriginAvatar=$("#UserAvatarIcon").prop("src");
-	if(strAvatar != null && strAvatar.trim() !== '' && strAvatar!=OriginAvatar)
-		$("#UserAvatarIcon").prop("src",strAvatar);
-	else
-	{
-		//alert('Avatar is Same');
-	}
-
-	$("#OrcaLogin2").show();
-	$("#OrcaLogin2").css("display","flex");
-}
-
-function SetOrcaUserOffline()
-{
-	$("#UserAvatarIcon").prop("src","img/c.jpg");
-	$("#UserName").text('');
-	$("#OrcaLogin2").hide();
-
-	$("#OrcaLogin1").show();
-	$("#OrcaLogin1").css("display","flex");
-	$("#OrcaStatusText").show();
 }
 
 function SetMallUrl( strUrl )
@@ -263,27 +196,6 @@ function ShowRecnetFileContextMenu()
 }
 
 /*-------RecentFile MX Message------*/
-function SendMsg_GetLoginInfo()
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="get_login_info";
-	
-	SendWXMessage( JSON.stringify(tSend) );	
-}
-
-function SendSimpleCommand(command) {
-  var tSend = {};
-  tSend['sequence_id'] = Math.round(new Date() / 1000);
-  tSend['command'] = command;
-  SendWXMessage(JSON.stringify(tSend));
-}
-
-function OnOrcaLoginOrRegister() { SendSimpleCommand("homepage_orca_login_or_register"); }
-function OnOrcaLogOut() { SendSimpleCommand("homepage_orca_logout"); }
-function SendMsg_GetOrcaLoginInfo() { SendSimpleCommand("get_orca_login_info"); }
-
-
 function SendMsg_GetRecentFile()
 {
 	var tSend={};
@@ -293,15 +205,6 @@ function SendMsg_GetRecentFile()
 	SendWXMessage( JSON.stringify(tSend) );
 }
 
-
-function OnLoginOrRegister()
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="homepage_login_or_register";
-	
-	SendWXMessage( JSON.stringify(tSend) );	
-}
 
 function OnClickModelDepot()
 {
@@ -405,69 +308,8 @@ function OnExploreRecentFile( )
 	$("#recnet_context_menu").hide();
 }
 
-function OnLogOut()
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="homepage_logout";
-
-	SendWXMessage( JSON.stringify(tSend) );
-}
-
-// --- Bambu Cloud Section ---
-
-function ToggleBambuSection() {
-  var body = document.getElementById('BambuCloudBody');
-  var chevron = document.querySelector('.bambu-chevron');
-  if (!body || !chevron) return;
-  bambuSectionExpanded = !bambuSectionExpanded;
-  if (bambuSectionExpanded) {
-    body.classList.add('expanded');
-    chevron.classList.add('expanded');
-  } else {
-    body.classList.remove('expanded');
-    chevron.classList.remove('expanded');
-  }
-}
-
-function SetBambuLoginInfo(strAvatar, strName) {
-  $("#BambuLogin1").hide();
-  $("#BambuUserName").text(strName);
-  if (strAvatar && strAvatar.trim() !== '') {
-    $("#BambuAvatarIcon").prop("src", strAvatar);
-  }
-  $("#BambuLogin2").show();
-  $("#BambuLogin2").css("display", "flex");
-  $(".bambu-status-dot").addClass("online");
-  $("#BambuStatusText").text("Connected");
-  $("#BambuStatusText").attr("tid", "orca11");
-}
-
-function SetBambuUserOffline() {
-  $("#BambuAvatarIcon").prop("src", "img/c.jpg");
-  $("#BambuUserName").text('');
-  $("#BambuLogin2").hide();
-  if ($("#NoPluginTip").is(":hidden")) {
-    $("#BambuLogin1").show();
-    $("#BambuLogin1").css("display", "flex");
-  }
-  $(".bambu-status-dot").removeClass("online");
-  $("#BambuStatusText").text("Not connected");
-  $("#BambuStatusText").attr("tid", "orca10");
-}
-
-function OnBambuLoginOrRegister() { SendSimpleCommand("homepage_bambu_login_or_register"); }
-function OnBambuLogOut() { SendSimpleCommand("homepage_bambu_logout"); }
-function SendMsg_GetBambuLoginInfo() { SendSimpleCommand("get_bambu_login_info"); }
-
-function BeginDownloadNetworkPlugin()
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="begin_network_plugin_download";
-	
-	SendWXMessage( JSON.stringify(tSend) );		
-}
+// TigerSlicer: cloud features removed - the Orca/Bambu login, logout and Bambu Cloud panel
+// functions went with the login area.
 
 function OutputKey(keyCode, isCtrlDown, isShiftDown, isCmdDown) {
 	var tSend = {};

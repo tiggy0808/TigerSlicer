@@ -382,6 +382,9 @@ void PresetBundleDialog::UnsubscribeBundle(const std::string& id)
 
 void PresetBundleDialog::OpenBundleOnCloud(const std::string& id)
 {
+    // TigerSlicer: cloud features removed - subscribed bundles no longer link to Orca Cloud.
+    return;
+
     if (id.empty())
         return;
 

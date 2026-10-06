@@ -229,7 +229,7 @@ function renderTop() {
               ? `<span class="bundle-status-icon bundle-status-icon-update" title="${escapeAttr(UPDATE_TOOLTIP)}" aria-label="${escapeAttr(UPDATE_TOOLTIP)}">&uarr;</span>`
               : `<span class="bundle-status-icon-spacer" aria-hidden="true"></span>`}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
           ${
-            b.type === "Subscribed" ?
+            false && b.type === "Subscribed" ? /* TigerSlicer: cloud features removed - no link to Orca Cloud */
             `<a href="#" class="bundle-name-text bundle-cloud-link" title="Open this bundle in your browser">${escapeHtml(b.name)}</a>`
             : `<span class="bundle-name-text">${escapeHtml(b.name)}</span>`
           }                                                                                                                                                                                                                                                                                

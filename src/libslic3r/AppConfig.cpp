@@ -41,7 +41,7 @@ using namespace nlohmann;
 namespace Slic3r {
 
 static const std::string VERSION_CHECK_URL = "https://check-version.orcaslicer.com/latest";
-static const std::string PROFILE_UPDATE_URL = "https://check-version.orcaslicer.com/profile";
+[[maybe_unused]] static const std::string PROFILE_UPDATE_URL = "https://check-version.orcaslicer.com/profile"; // TigerSlicer: unused, see profile_update_url()
 static const std::string MODELS_STR = "models";
 
 const std::string AppConfig::SECTION_FILAMENTS = "filaments";
@@ -448,7 +448,8 @@ void AppConfig::set_defaults()
     }
 
     if (get("show_shared_profiles_notification").empty()) {
-        set_bool("show_shared_profiles_notification", true);
+        // TigerSlicer: the notification linked to Orca Cloud shared profiles; cloud features removed.
+        set_bool("show_shared_profiles_notification", false);
     }
 
     if (get("auto_calculate_flush").empty()){
@@ -950,7 +951,9 @@ std::string AppConfig::load()
         // Default for new installs
         if (get(SETTING_CLOUD_PROVIDERS).empty()) {
             // Migrate add bbl cloud if installed_networking is true
-            bool enable_bbl_cloud = get_bool("installed_networking");
+            // TigerSlicer: cloud features removed - never enable Bambu Cloud sign-in; having the
+            // Bambu network plug-in installed is only needed for LAN printing.
+            bool enable_bbl_cloud = false && get_bool("installed_networking");
             if (enable_bbl_cloud) {
                 // Legacy Bambu-only user: give them both providers
                 set(SETTING_CLOUD_PROVIDERS, "orca;bbl");
@@ -1845,7 +1848,10 @@ std::string AppConfig::version_check_url() const
 
 std::string AppConfig::profile_update_url() const
 {
-    return PROFILE_UPDATE_URL;
+    // TigerSlicer: no online vendor profile updates (check-version.orcaslicer.com/profile was
+    // queried on every printer change). An empty URL disables them in PresetUpdater; the profiles
+    // bundled with the app are still installed from resources.
+    return {};
 }
 
 bool AppConfig::exists()
