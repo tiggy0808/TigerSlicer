@@ -11,6 +11,8 @@ for %%a in (%*) do (
 
 set "list_file=./localization/i18n/list.txt"
 set "pot_file=./localization/i18n/OrcaSlicer.pot"
+REM The app loads its catalog by SLIC3R_APP_KEY (version.inc), so the compiled .mo must carry that name.
+set "mo_name=TigerSlicer"
 set "filtered_list=%TEMP%\orca_gettext_filtered_%RANDOM%_%RANDOM%.txt"
 set "missing_list=%TEMP%\orca_gettext_missing_%RANDOM%_%RANDOM%.txt"
 set "generated_root=%TEMP%\orca_gettext_generated_%RANDOM%_%RANDOM%"
@@ -132,7 +134,7 @@ exit /b %errorlevel%
         if errorlevel 1 exit /b 1
     )
     if not exist "./resources/i18n/!lang!" mkdir "./resources/i18n/!lang!"
-    .\tools\msgfmt.exe --check-format -o "./resources/i18n/!lang!/OrcaSlicer.mo" "%file%"
+    .\tools\msgfmt.exe --check-format -o "./resources/i18n/!lang!/%mo_name%.mo" "%file%"
     if errorlevel 1 (
         echo Error encountered with msgfmt command for language !lang!.
         exit /b 1

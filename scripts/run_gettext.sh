@@ -6,6 +6,8 @@
 
 list_file="./localization/i18n/list.txt"
 pot_file="./localization/i18n/OrcaSlicer.pot"
+# The app loads its catalog by SLIC3R_APP_KEY (version.inc), so the compiled .mo must carry that name.
+mo_name="TigerSlicer"
 filtered_list=""
 missing_list=""
 generated_root_dir=""
@@ -121,7 +123,7 @@ do
             fi
         fi
         mkdir -p "resources/i18n/${lang}"
-        if ! msgfmt --check-format -o "resources/i18n/${lang}/OrcaSlicer.mo" "$dir/OrcaSlicer_${lang}.po"; then
+        if ! msgfmt --check-format -o "resources/i18n/${lang}/${mo_name}.mo" "$dir/OrcaSlicer_${lang}.po"; then
             echo "Error encountered with msgfmt command for language ${lang}."
             exit 1  # Exit the script with an error status
         fi
