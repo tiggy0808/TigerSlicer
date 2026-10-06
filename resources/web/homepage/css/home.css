@@ -47,7 +47,7 @@ html, body {
 .LinkBtn
 {
 	font-size:12px;
-	color: #00ffea;	
+	color: #F6A5C1;	
 	cursor: pointer;
 }
 
@@ -261,7 +261,7 @@ body
 
 #DownloadBtn
 {
-	color:#00ffd9;
+	color:#F6A5C1;
 }
 
 
@@ -427,7 +427,7 @@ body
 .MenuItem:hover
 {
 	border-color: #F6A5C1;		/*ORCA color*/
-	background-color: #E5F0EE; /*ORCA color with %25 opacity*/
+	background-color: #FBEAF0; /*TigerSlicer pale pink*/
 }
 
 .MenuIcon

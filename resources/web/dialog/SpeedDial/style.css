@@ -94,7 +94,7 @@ body {
 }
 .plugin-search:focus-within {
   border-color: var(--main-color, var(--orca-accent, #F6A5C1));
-  box-shadow: 0 0 0 2px rgba(0,150,136,.25);
+  box-shadow: 0 0 0 2px rgba(246,165,193,.25);
 }
 .plugin-search-icon { display: inline-flex; color: var(--muted, var(--orca-muted, #6b7280)); }
 .plugin-search-input {
@@ -152,7 +152,7 @@ body {
   cursor: pointer;
 }
 .row:hover { background: var(--row-hover, rgba(127,127,127,.16)); }
-.row.sel { background: var(--row-selected, rgba(0,150,136,.18)); }
+.row.sel { background: var(--row-selected, rgba(246,165,193,.18)); }
 .tile {
   flex: 0 0 auto;
   width: 26px;

@@ -61,7 +61,7 @@ body
 /*-----Right Top MenuBtn-----*/
 .MenuItem:hover
 {
-	border-color: #00675b;
+	border-color: #9B5874;
 	background-color: #3C2233;
 }
 
@@ -80,7 +80,7 @@ body
 
 .CT_Item:hover
 {
-	background-color:#00675b; /*ORCA color*/
+	background-color:#9B5874; /*ORCA color (TigerSlicer dark pink)*/
 }
 
 /*----User Manual------*/
