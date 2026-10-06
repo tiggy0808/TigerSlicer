@@ -90,7 +90,9 @@ constexpr const char* CONFIG_ORCA_AUTH_URL  = "orca_auth_url";
 constexpr const char* CONFIG_ORCA_CLOUD_URL = "orca_cloud_url";
 constexpr const char* CONFIG_ORCA_PUB_KEY   = "orca_pub_key";
 
-constexpr const char* SECRET_STORE_SERVICE = "OrcaSlicer/Auth";
+// TigerSlicer: our own keychain entry. Stock OrcaSlicer keeps its login under "OrcaSlicer/Auth";
+// sharing that name meant TigerSlicer read (and on logout deleted) the user's OrcaSlicer login.
+constexpr const char* SECRET_STORE_SERVICE = "TigerSlicer/Auth";
 constexpr const char* SECRET_STORE_USER    = "orca_refresh_token";
 constexpr std::chrono::seconds TOKEN_REFRESH_SKEW{900}; // 15 minutes
 
@@ -638,6 +640,10 @@ int OrcaCloudServiceAgent::start()
 {
     regenerate_pkce();
 
+    // TigerSlicer: cloud features removed. Never restore a stored session or refresh a token
+    // against the Orca auth server on startup; the agent stays signed out.
+    return BAMBU_NETWORK_SUCCESS;
+
     // Attempt silent sign-in from stored refresh token
     std::string stored_secret;
     if (load_user_secret(stored_secret) && !stored_secret.empty()) {
@@ -938,6 +944,10 @@ bool OrcaCloudServiceAgent::ensure_token_fresh(const std::string& reason) { retu
 
 int OrcaCloudServiceAgent::connect_server()
 {
+    // TigerSlicer: cloud features removed. Do not ping the Orca Cloud health endpoint (this ran
+    // on every Bambu plug-in reload); there is no account to connect, so report it unavailable.
+    return BAMBU_NETWORK_ERR_CONNECTION_TO_SERVER_FAILED;
+
     std::string response;
     unsigned int http_code = 0;
     int result             = http_get(ORCA_HEALTH_PATH, &response, &http_code);
