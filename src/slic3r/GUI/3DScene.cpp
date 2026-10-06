@@ -218,7 +218,9 @@ ColorRGBA GLVolume::brighten_color(const ColorRGBA& color, float multiplier)
 
     // Increase lightness by a fixed amount (0.25)
     // Ensures even saturated colors become visibly brighter
-    l = std::min(l + 0.25f, 1.0f);
+    // TigerSlicer: cap at 0.9 (never darken) so light colours keep their hue when
+    // selected; the default pink (L ~0.81) used to brighten to pure white.
+    l = std::max(l, std::min(l + 0.25f, 0.9f));
 
     // HSL to RGB conversion
     auto hue_to_rgb = [](float p, float q, float t) {
