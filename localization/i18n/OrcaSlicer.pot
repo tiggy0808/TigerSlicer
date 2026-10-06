@@ -8720,8 +8720,7 @@ msgid "Stealth mode"
 msgstr ""
 
 msgid ""
-"This disables all cloud features, including Orca Cloud profile syncing. Users who prefer to work entirely offline can enable this option.\n"
-"Note: When Stealth Mode is enabled, your user profiles will not be backed up to Orca Cloud."
+"Keeps TigerSlicer offline: the Bambu network plugin won't check for updates or connect to Bambu's servers, and printer error descriptions aren't downloaded. Printing over your local network still works."
 msgstr ""
 
 msgid "Hide login side panel"

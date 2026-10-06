@@ -1983,7 +1983,7 @@ void PreferencesDialog::create_items()
     auto item_region           = create_item_region_combobox(_L("Login region"), "");
     g_sizer->Add(item_region);
  
-    auto item_stealth_mode     = create_item_checkbox(_L("Stealth mode"), _L("This disables all cloud features, including Orca Cloud profile syncing. Users who prefer to work entirely offline can enable this option.\nNote: When Stealth Mode is enabled, your user profiles will not be backed up to Orca Cloud."), "stealth_mode");
+    auto item_stealth_mode     = create_item_checkbox(_L("Stealth mode"), _L("Keeps TigerSlicer offline: the Bambu network plugin won't check for updates or connect to Bambu's servers, and printer error descriptions aren't downloaded. Printing over your local network still works."), "stealth_mode");
     g_sizer->Add(item_stealth_mode);
 
     // TigerSlicer: cloud features removed - the home page has no login side panel to hide.
