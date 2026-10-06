@@ -1276,7 +1276,7 @@ var LangText = {
   },
   tr_TR: {
     t1: "TigerSlicer'a hoş geldiniz",
-    t2: "Orca Dilimleyici birkaç adımda kurulacaktır. Hadi başlayalım!",
+    t2: "TigerSlicer birkaç adımda kurulacaktır. Hadi başlayalım!",
     t3: "Kullanıcı Sözleşmesi",
     t4: "Reddet",
     t5: "Onayla",
@@ -1350,7 +1350,7 @@ var LangText = {
     t80: "Aşağıdaki adımları deneyin:",
     t81: "1, Eklenti ",
     t82: " dizinini açmak için tıklayın",
-    t83: "2, Tüm açık Orca slicerı kapatın",
+    t83: "2, Tüm açık TigerSlicer pencerelerini kapatın",
     t84: "3, Eklenti dizini altındaki tüm dosyaları silin",
     t85: "4, TigerSlicer'ı yeniden açın ve eklentiyi tekrar yükleyin",
     t86: "Kapat",

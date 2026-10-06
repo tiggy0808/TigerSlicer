@@ -1496,10 +1496,10 @@ void MoonrakerPrinterAgent::run_status_stream(std::string dev_id, std::string ba
             nlohmann::json identify;
             identify["jsonrpc"]               = "2.0";
             identify["method"]                = "server.connection.identify";
-            identify["params"]["client_name"] = "OrcaSlicer";
+            identify["params"]["client_name"] = "TigerSlicer";
             identify["params"]["version"]     = MoonrakerPrinterAgent_VERSION;
             identify["params"]["type"]        = "agent";
-            identify["params"]["url"]         = "https://github.com/SoftFever/OrcaSlicer";
+            identify["params"]["url"]         = "https://github.com/tiggy0808/TigerSlicer";
             identify["id"]                    = 0;
             ws.write(net::buffer(identify.dump()));
 

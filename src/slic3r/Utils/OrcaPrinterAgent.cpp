@@ -133,7 +133,8 @@ int OrcaPrinterAgent::set_user_selected_machine(std::string dev_id)
 // ============================================================================
 AgentInfo OrcaPrinterAgent::get_agent_info_static()
 {
-    return AgentInfo{ORCA_PRINTER_AGENT_ID, "Orca", OrcaPrinterAgent_VERSION, "Orca Printer Communication Protocol Agent"};
+    // The id stays "orca" (stored in printer presets); only the shown name follows the app.
+    return AgentInfo{ORCA_PRINTER_AGENT_ID, "TigerSlicer", OrcaPrinterAgent_VERSION, "TigerSlicer Printer Communication Protocol Agent"};
 }
 
 // ============================================================================

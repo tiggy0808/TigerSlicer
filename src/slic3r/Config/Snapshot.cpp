@@ -374,7 +374,7 @@ static void copy_config_dir_single_level(const boost::filesystem::path &path_src
 #if 0
     if (! boost::filesystem::is_directory(path_dst) &&
         ! boost::filesystem::create_directory(path_dst))
-        throw Slic3r::RuntimeError(std::string("OrcaSlicer was unable to create a directory at ") + path_dst.string());
+        throw Slic3r::RuntimeError(std::string("TigerSlicer was unable to create a directory at ") + path_dst.string());
 
     for (auto &dir_entry : boost::filesystem::directory_iterator(path_src))
         if (Slic3r::is_ini_file(dir_entry))

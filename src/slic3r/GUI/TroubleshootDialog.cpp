@@ -139,7 +139,7 @@ TroubleshootDialog::TroubleshootDialog()
 
     auto build = new Button(this, wxString(GIT_COMMIT_HASH));
     build->SetStyle(ButtonStyle::Regular, ButtonType::Window);
-    auto hash_url = "https://github.com/OrcaSlicer/OrcaSlicer/commit/" + wxString(GIT_COMMIT_HASH);
+    auto hash_url = "https://github.com/tiggy0808/TigerSlicer/commit/" + wxString(GIT_COMMIT_HASH);
     build->SetToolTip(hash_url);
     build->Bind(wxEVT_BUTTON, [hash_url](wxCommandEvent &e) {
          wxLaunchDefaultBrowser(hash_url);
@@ -248,7 +248,7 @@ TroubleshootDialog::TroubleshootDialog()
             return out;
         };
 
-        wxString url = "https://github.com/OrcaSlicer/OrcaSlicer/issues/new?template=bug_report.yml";
+        wxString url = "https://github.com/tiggy0808/TigerSlicer/issues/new?template=bug_report.yml";
         wxString os = GetOStype();
         if(!os.IsEmpty())
             url += "&os_type=%22" + os +"%22";
@@ -296,7 +296,7 @@ TroubleshootDialog::TroubleshootDialog()
     auto log_pack_btn = create_btn(_L("Pack") + "...", "");
     log_pack_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent &e) {
         auto data_dir   = boost::filesystem::path(Slic3r::data_dir());
-        ExportAsZip({wxString((data_dir / "log").string())}, "OrcaSlicer_Logs_" + GetTimestamp());
+        ExportAsZip({wxString((data_dir / "log").string())}, "TigerSlicer_Logs_" + GetTimestamp());
     });
     log_pack_szr->Add(log_pack_btn, 0, wxALIGN_CENTER_VERTICAL);
 
@@ -946,7 +946,7 @@ void TroubleshootDialog::PackAll()
         ).ShowModal();
     }
 
-    ExportAsZip(include_zip, "OrcaSlicer_PackedDebugInfo_" + GetTimestamp());
+    ExportAsZip(include_zip, "TigerSlicer_PackedDebugInfo_" + GetTimestamp());
 }
 
 void TroubleshootDialog::RebuildSystemProfiles()

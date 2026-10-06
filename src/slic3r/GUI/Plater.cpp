@@ -14184,7 +14184,7 @@ void Plater::calib_flowrate(bool is_linear, int pass, InfillPattern pattern) {
         return;
     wxString calib_name;
     if (is_linear) {
-        calib_name = L"Orca YOLO Flow Calibration";
+        calib_name = L"TigerSlicer YOLO Flow Calibration";
         if (pass == 2)
             calib_name += L" - Perfectionist version";
     } else
