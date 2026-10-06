@@ -325,7 +325,10 @@ wxBitmap* BitmapCache::load_svg(const std::string &bitmap_name, unsigned target_
     // map of color replaces
     std::map<std::string, std::string> replaces;
     replaces["\"#0x00AE42\""] = "\"#F6A5C1\"";
-    replaces["\"#D98BA8\""] = "\"#F6A5C1\"";
+    // "#00FF00" is a placeholder colour (no bundled SVG uses it at the moment). An earlier
+    // TigerSlicer recolour sweep rewrote this key to "#D98BA8", which made every icon drawn in
+    // the pink hover shade (completed_2, leaf, shield, placeholder_excel) turn red in dark mode.
+    replaces["\"#00FF00\""] = "\"#F6A5C1\"";
     if (dark_mode) {
         replaces["\"#262E30\""] = "\"#EFEFF0\"";
         replaces["\"#323A3D\""] = "\"#B3B3B5\"";
@@ -334,7 +337,7 @@ wxBitmap* BitmapCache::load_svg(const std::string &bitmap_name, unsigned target_
         replaces["\"#CECECE\""] = "\"#54545B\"";
         replaces["\"#6B6B6B\""] = "\"#818182\"";
         replaces["\"#909090\""] = "\"#FFFFFF\"";
-        replaces["\"#D98BA8\""] = "\"#FF0000\"";
+        replaces["\"#00FF00\""] = "\"#FF0000\"";
         replaces["\"#F6A5C1\""] = "\"#9B5874\"";
         replaces["\"#F1F1F1\""] = "\"#36363B\"";
         replaces["#DBDBDB"] = "#4A4A51"; // ORCA border color
@@ -567,7 +570,9 @@ bool BitmapCache::load_from_svg_file_change_color(const std::string &filename, u
     temp_color[7]             = '\0';
     unsigned int change_color = nsvg__parseColorHex(temp_color);
     change_color |= (unsigned int) (1.0f * 255) << 24; // opacity
-    unsigned int green_color = 0xFF889600; // #F6A5C1
+    // nanosvg packs colours as 0xAABBGGRR, so #F6A5C1 (the fill of outlined_rect.svg) is 0xFFC1A5F6.
+    // This used to look for the old teal (#009688 = 0xFF889600), so swatches stayed pink.
+    unsigned int green_color = 0xFFC1A5F6; // #F6A5C1
     for (NSVGshape* shape = image->shapes; shape != nullptr; shape = shape->next) {
         // find green color
         if (shape->fill.color == green_color) {
