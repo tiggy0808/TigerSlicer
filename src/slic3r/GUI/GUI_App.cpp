@@ -63,6 +63,8 @@
 #include <wx/dialog.h>
 #include <wx/textctrl.h>
 #include <wx/splash.h>
+#include <wx/dcbuffer.h>
+#include <wx/dcgraph.h>
 #include <wx/weakref.h>
 #include <wx/fontutil.h>
 #include <wx/glcanvas.h>
@@ -291,6 +293,11 @@ bool is_associate_files(std::wstring extend)
 }
 #endif
 
+// TigerSlicer startup card: a fixed black-and-pink design, the same in light
+// and dark mode. The artwork (background, pink halo, logo and wordmark) is
+// resources/images/splash_tigerslicer.svg, made by splash_svg() in
+// resources/icons/branding/generate_tigerslicer_branding.py; the version, the
+// status line and the progress bar are painted over it.
 class SplashScreen : public wxSplashScreen
 {
 public:
@@ -299,7 +306,7 @@ public:
         // is shown. The previous 1500 ms auto-timeout closed the splash long
         // before init finished, leaving the user staring at a frozen blank
         // screen during the slow load_presets / new MainFrame phases.
-        : wxSplashScreen(wxBitmap(FromDIP(wxSize(480,480),nullptr)), wxSPLASH_CENTRE_ON_SCREEN, 0, nullptr, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+        : wxSplashScreen(blank_card(), wxSPLASH_CENTRE_ON_SCREEN, 0, nullptr, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 #ifdef __APPLE__
             wxBORDER_NONE | wxFRAME_NO_TASKBAR | wxSTAY_ON_TOP
 #else
@@ -324,56 +331,66 @@ public:
         this->SetPosition(pos);
         this->CenterOnScreen();
 
-        scale_font(m_font_version, 1.65f); // only scale this one since it hasnt a preloaded font like Label::Body_24;
+        // Size the fonts for the display the splash ended up on.
+        scale_font(m_font_version, 1.f);
+        scale_font(m_font_action, 1.f);
 
-        m_bg_color = StateColor::darkModeColorFor(wxColour("#FFFFFF"));
-        m_fg_color = StateColor::darkModeColorFor(wxColour("#6B6A6A"));
-        m_progress_bg_color = StateColor::darkModeColorFor(wxColour("#DFDFDF"));
-        m_progress_fg_color = StateColor::darkModeColorFor(wxColour("#F6A5C1"));
-        m_progress_h = FromDIP(6);
-        bool dark_mode = m_fg_color != wxColour("#6B6A6A");
-        wxSize sz  = m_window->GetClientSize();
-        BitmapCache bmp_cache;
-        m_logo_bmp = *bmp_cache.load_svg(dark_mode ? "splash_logo_dark" : "splash_logo", sz.GetWidth(), sz.GetHeight());
-
+        // OnPaint covers every pixel through a back buffer: no erase, no flicker.
+        m_window->SetBackgroundStyle(wxBG_STYLE_PAINT);
         m_window->Bind(wxEVT_PAINT, &SplashScreen::OnPaint, this);
         m_window->Refresh();
         m_window->Update();
     }
 
-    void OnPaint(wxPaintEvent& evt)
+    void OnPaint(wxPaintEvent&)
     {
-        wxPaintDC dc(m_window);
-        wxSize c_sz = m_window->GetClientSize();
+        wxAutoBufferedPaintDC buffer(m_window);
+        const wxSize sz = m_window->GetClientSize();
+        if (sz.x <= 0 || sz.y <= 0)
+            return;
+        if (sz != m_card_size)
+            load_card(sz);
+
+        // A graphics context gives anti-aliased text and shapes (a plain wxDC is
+        // aliased GDI on Windows); the plain DC is only a fallback.
+        wxGCDC gcdc(buffer);
+        wxDC&  dc = gcdc.IsOk() ? static_cast<wxDC&>(gcdc) : static_cast<wxDC&>(buffer);
+
+        // The layout is in DIP; map it onto this window's pixels.
+        const double k  = sz.y / double(CARD_H);
+        const auto   px = [k](int dip) { return int(dip * k + 0.5); };
 
         dc.SetBackground(wxBrush(m_bg_color));
         dc.Clear();
-        if (m_logo_bmp.IsOk())
-            dc.DrawBitmap(m_logo_bmp, 0, 0, true);
+        if (m_card_bmp.IsOk())
+            dc.DrawBitmap(m_card_bmp, 0, 0, true);
 
-        wxRect rc = wxRect(0, 0, c_sz.GetWidth(), 0);
-        dc.SetTextForeground(m_fg_color);
-
+        // Version, centred under the logo.
         dc.SetFont(m_font_version);
-        rc.y      = c_sz.GetHeight() * 0.72;
-        rc.height = dc.GetTextExtent(m_text_version).GetHeight();
-        dc.DrawLabel(m_text_version, rc, wxALIGN_CENTER);
+        dc.SetTextForeground(m_version_color);
+        wxSize text = dc.GetTextExtent(m_text_version);
+        dc.DrawText(m_text_version, (sz.x - text.x) / 2, px(VERSION_CY) - text.y / 2);
 
+        // Status, left-aligned with the progress bar so it stays put as it
+        // changes, and ellipsized should a translation be wider than the bar.
+        const wxRect bar(px(MARGIN), px(BAR_Y), sz.x - 2 * px(MARGIN), std::max(2, px(BAR_H)));
         dc.SetFont(m_font_action);
-        rc.y      = c_sz.GetHeight() * 0.85;
-        rc.height = dc.GetTextExtent(m_text_action).GetHeight();
-        dc.DrawLabel(m_text_action, rc, wxALIGN_CENTER);
+        dc.SetTextForeground(m_status_color);
+        // FLAGS_NONE: measure "&" as drawn, not as a mnemonic marker.
+        const wxString status = wxControl::Ellipsize(m_text_action, dc, wxELLIPSIZE_END, bar.width, wxELLIPSIZE_FLAGS_NONE);
+        text = dc.GetTextExtent(status);
+        dc.DrawText(status, bar.x, px(STATUS_CY) - text.y / 2);
 
-        const wxRect progress_rc(0, c_sz.GetHeight() - m_progress_h, c_sz.GetWidth(), m_progress_h);
-                
+        // Progress: a slim track with round caps, filled from the left.
+        const double radius = bar.height / 2.0;
         dc.SetPen(*wxTRANSPARENT_PEN);
         dc.SetBrush(wxBrush(m_progress_bg_color));
-        dc.DrawRectangle(progress_rc);
-
-        const int fill_width = progress_rc.GetWidth() * m_progress * 0.01;
-        if (fill_width > 0) {
+        dc.DrawRoundedRectangle(bar, radius);
+        if (m_progress > 0) {
+            wxRect fill = bar;
+            fill.width  = std::max(bar.height, bar.width * m_progress / 100);
             dc.SetBrush(wxBrush(m_progress_fg_color));
-            dc.DrawRectangle(0, progress_rc.GetTop(), fill_width, m_progress_h);
+            dc.DrawRoundedRectangle(fill, radius);
         }
     }
 
@@ -421,19 +438,57 @@ public:
     }
 
 private:
-    wxBitmap m_logo_bmp;
-    wxColour m_fg_color;
-    wxColour m_bg_color;
-    wxColour m_progress_bg_color;
-    wxColour m_progress_fg_color;
+    // Layout in DIP. CARD_W x CARD_H is the size of the artwork; keep it in
+    // sync with SPLASH_W / SPLASH_H in generate_tigerslicer_branding.py.
+    static constexpr int           CARD_W     = 560;
+    static constexpr int           CARD_H     = 340;
+    static constexpr int           MARGIN     = 40;  // status text and progress bar inset
+    static constexpr int           VERSION_CY = 206; // centre line of the version text
+    static constexpr int           STATUS_CY  = 283; // centre line of the status text
+    static constexpr int           BAR_Y      = 300; // top of the progress bar
+    static constexpr int           BAR_H      = 4;
+    static constexpr unsigned char BG_RGB[3]  = {0x0E, 0x0E, 0x10}; // card background, as in the SVG
 
-    wxString m_text_version = GUI_App::format_display_version();
+    // Gives wxSplashScreen its size, in the card colour so that the frame's
+    // own first paint (before OnPaint is bound) already matches the card.
+    static wxBitmap blank_card()
+    {
+        wxImage img(FromDIP(wxSize(CARD_W, CARD_H), nullptr));
+        img.SetRGB(wxRect(img.GetSize()), BG_RGB[0], BG_RGB[1], BG_RGB[2]);
+        return wxBitmap(img);
+    }
+
+    // Rasterise the artwork for the window's pixel size (BitmapCache adds the
+    // Retina factor on macOS). dark_mode stays off: the card is always dark and
+    // its colours are clear of load_svg's recolouring table.
+    void load_card(const wxSize& size)
+    {
+        m_card_size = size;
+        BitmapCache cache;
+        if (const wxBitmap* bmp = cache.load_svg("splash_tigerslicer", 0, size.y)) {
+            m_card_bmp = *bmp;
+        } else {
+            m_card_bmp = wxNullBitmap;
+            BOOST_LOG_TRIVIAL(warning) << "Splash screen: failed to load splash_tigerslicer.svg";
+        }
+    }
+
+    // Fixed palette, independent of the UI theme.
+    const wxColour m_bg_color{BG_RGB[0], BG_RGB[1], BG_RGB[2]};
+    const wxColour m_version_color{"#8A8A90"};
+    const wxColour m_status_color{"#B4B4BA"};
+    const wxColour m_progress_bg_color{"#2A2A2F"};
+    const wxColour m_progress_fg_color{"#F6A5C1"};
+
+    wxBitmap m_card_bmp;
+    wxSize   m_card_size; // window size m_card_bmp was rasterised for
+
+    wxString m_text_version = _L("Version") + " " + GUI_App::format_display_version();
     wxString m_text_action  = _L("Loading configuration") + dots;
     int      m_progress     = 0;
-    int      m_progress_h   = 6;
 
-    wxFont m_font_version = Label::Body_16;
-    wxFont m_font_action  = Label::Body_16;
+    wxFont m_font_version = Label::Body_13;
+    wxFont m_font_action  = Label::Body_12;
 };
 
 #ifdef __linux__
