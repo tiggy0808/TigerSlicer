@@ -376,6 +376,9 @@ public:
     static const std::string SECTION_MATERIALS;
     static const std::string SECTION_EMBOSS_STYLE;
 
+    // TigerSlicer: colour given to filament slots that have no saved colour yet (Orca used teal #26A69A).
+    static constexpr const char *DEFAULT_FILAMENT_COLOR = "#F6A5C1";
+
     std::string get_network_plugin_version() const;
     void set_network_plugin_version(const std::string& version);
 

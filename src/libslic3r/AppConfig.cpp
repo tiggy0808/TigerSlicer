@@ -22,6 +22,9 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree_fwd.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <boost/format/format_fwd.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -728,6 +731,30 @@ static bool verify_config_file_checksum(boost::nowide::ifstream &ifs)
 
 
 #ifdef USE_JSON_CONFIG
+// TigerSlicer: filament slots without a saved colour used to default to Orca's teal #26A69A, and
+// PresetBundle::export_selections() then stored that teal per printer ("filament_colors" and
+// "filament_multi_colors" in "orca_presets"). Rewrite entries that are exactly the old default to the
+// new pink default; any other colour is a user choice and is kept. Project (.3mf) colours are not here.
+static void migrate_default_filament_colors(nlohmann::json &printer_settings)
+{
+    static const std::string OLD_DEFAULT_FILAMENT_COLOR = "#26A69A";
+    for (const std::string key : { "filament_colors", "filament_multi_colors" }) {
+        auto it = printer_settings.find(key);
+        if (it == printer_settings.end() || !it->is_string())
+            continue;
+        std::vector<std::string> colors;
+        boost::algorithm::split(colors, it->get<std::string>(), boost::algorithm::is_any_of(","));
+        bool changed = false;
+        for (std::string &color : colors)
+            if (boost::algorithm::iequals(color, OLD_DEFAULT_FILAMENT_COLOR)) {
+                color   = AppConfig::DEFAULT_FILAMENT_COLOR;
+                changed = true;
+            }
+        if (changed)
+            *it = boost::algorithm::join(colors, ",");
+    }
+}
+
 std::string AppConfig::load()
 {
     json j;
@@ -924,6 +951,15 @@ std::string AppConfig::load()
         BOOST_LOG_TRIVIAL(info) << format("parse app config \"%1%\", error: %2%", AppConfig::loading_path(), err.what());
 
         return err.what();
+    }
+
+    // TigerSlicer: one-time move of the saved default filament colour from teal to pink. It runs here,
+    // after "orca_presets" was read, and not in set_defaults(): the construction-time set_defaults()
+    // pass runs before the file is loaded and would consume the marker with nothing to migrate.
+    if (m_mode == EAppMode::Editor && get("default_filament_color_migrated").empty()) {
+        for (auto &printer : m_printer_settings)
+            migrate_default_filament_colors(printer.second);
+        set("default_filament_color_migrated", "1");
     }
 
     // Figure out if datadir has legacy presets
