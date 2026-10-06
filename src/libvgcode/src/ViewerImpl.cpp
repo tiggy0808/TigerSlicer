@@ -291,7 +291,7 @@ static const std::array<Color, size_t(EGCodeExtrusionRole::COUNT)> DEFAULT_EXTRU
     { 255, 140, 105 }, // Ironing
     {  77, 128, 186 }, // BridgeInfill
     { 255, 255, 255 }, // GapFill
-    {   0, 135, 110 }, // Skirt
+    { 246, 165, 193 }, // Skirt (TigerSlicer pink #F6A5C1; PrusaSlicer's teal read as the old brand accent)
     {   0, 255,   0 }, // SupportMaterial
     {   0, 128,   0 }, // SupportMaterialInterface
     { 179, 227, 171 }, // WipeTower

@@ -28,7 +28,7 @@
 #include <CGAL/Min_sphere_of_points_d_traits_3.h>
 
 static const Slic3r::ColorRGBA UNIFORM_SCALE_COLOR     = Slic3r::ColorRGBA::ORANGE();
-static const Slic3r::ColorRGBA SOLID_PLANE_COLOR       = {0.0f, 174.0f / 255.0f, 66.0f / 255.0f, 1.0f};
+static const Slic3r::ColorRGBA SOLID_PLANE_COLOR       = {246.0f / 255.0f, 165.0f / 255.0f, 193.0f / 255.0f, 1.0f}; // TigerSlicer #F6A5C1
 static const Slic3r::ColorRGBA TRANSPARENT_PLANE_COLOR = { 0.8f, 0.8f, 0.8f, 0.5f };
 
 namespace Slic3r {

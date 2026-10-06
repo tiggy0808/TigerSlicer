@@ -1696,10 +1696,10 @@ void GLGizmoEmboss::push_button_style(bool pressed)
 {
     if (m_is_dark_mode) {
         if (pressed) {
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(43 / 255.f, 64 / 255.f, 54 / 255.f, 1.f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(43 / 255.f, 64 / 255.f, 54 / 255.f, 1.f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(43 / 255.f, 64 / 255.f, 54 / 255.f, 1.f));
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 174 / 255.f, 66 / 255.f, 1.f));
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(60 / 255.f, 34 / 255.f, 51 / 255.f, 1.f)); // TigerSlicer #3C2233
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(60 / 255.f, 34 / 255.f, 51 / 255.f, 1.f)); // TigerSlicer #3C2233
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(60 / 255.f, 34 / 255.f, 51 / 255.f, 1.f)); // TigerSlicer #3C2233
+            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(246 / 255.f, 165 / 255.f, 193 / 255.f, 1.f)); // TigerSlicer #F6A5C1
         }
         else {
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(45.f / 255.f, 45.f / 255.f, 49.f / 255.f, 1.f));
@@ -1710,10 +1710,10 @@ void GLGizmoEmboss::push_button_style(bool pressed)
     }
     else {
         if (pressed) {
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(219 / 255.f, 253 / 255.f, 231 / 255.f, 1.f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(219 / 255.f, 253 / 255.f, 231 / 255.f, 1.f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(219 / 255.f, 253 / 255.f, 231 / 255.f, 1.f));
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 174 / 255.f, 66 / 255.f, 1.f));
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(251 / 255.f, 234 / 255.f, 240 / 255.f, 1.f)); // TigerSlicer #FBEAF0
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(251 / 255.f, 234 / 255.f, 240 / 255.f, 1.f)); // TigerSlicer #FBEAF0
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(251 / 255.f, 234 / 255.f, 240 / 255.f, 1.f)); // TigerSlicer #FBEAF0
+            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(246 / 255.f, 165 / 255.f, 193 / 255.f, 1.f)); // TigerSlicer #F6A5C1
         }
         else {
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.f, 1.f, 1.f, 1.f));

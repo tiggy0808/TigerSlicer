@@ -325,7 +325,7 @@ void SkipPartCanvas::Render()
     };
     // draw unchecked shapes
     // stencil1 => unchecked
-    draw_shape(uncheckd_stencil, psUnCheck, ColorRGB{0, 174 / 255.f, 66 / 255.f});
+    draw_shape(uncheckd_stencil, psUnCheck, ColorRGB{246 / 255.f, 165 / 255.f, 193 / 255.f}); // TigerSlicer #F6A5C1 (was BBS green)
 
     // draw checked shapes
     // stencil2 => checked

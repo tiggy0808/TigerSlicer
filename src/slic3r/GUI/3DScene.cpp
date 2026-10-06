@@ -148,7 +148,7 @@ void GLVolume::SinkingContours::update()
 
 ColorRGBA GLVolume::DISABLED_COLOR    = ColorRGBA::DARK_GRAY();
 ColorRGBA GLVolume::SLA_SUPPORT_COLOR = ColorRGBA::LIGHT_GRAY();
-ColorRGBA GLVolume::SLA_PAD_COLOR     = { 0.0f, 0.2f, 0.0f, 1.0f };
+ColorRGBA GLVolume::SLA_PAD_COLOR     = { 0.36f, 0.23f, 0.28f, 1.0f }; // TigerSlicer muted dark pink #5C3A47 (was dark green)
 // BBS
 ColorRGBA GLVolume::NEUTRAL_COLOR     = { 0.8f, 0.8f, 0.8f, 1.0f };
 ColorRGBA GLVolume::UNPRINTABLE_COLOR = { 0.0f, 0.0f, 0.0f, 0.5f };

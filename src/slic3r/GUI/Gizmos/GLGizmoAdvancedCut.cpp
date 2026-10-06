@@ -1136,7 +1136,7 @@ void GLGizmoAdvancedCut::render_cut_line()
 
             GLModel::Geometry init_data;
             init_data.format = {GLModel::Geometry::EPrimitiveType::Lines, GLModel::Geometry::EVertexLayout::P3};
-            init_data.color  = ColorRGBA::GREEN();
+            init_data.color  = ColorRGBA::ORCA(); // TigerSlicer pink cut line (was green)
             init_data.reserve_vertices(2);
             init_data.reserve_vertices(2);
 

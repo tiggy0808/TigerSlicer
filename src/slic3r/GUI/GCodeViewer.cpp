@@ -189,7 +189,7 @@ int GCodeViewer::SequentialView::ActualSpeedImguiWidget::plot(const char* label,
         const float y0 = y_range.first;
 
         const ImU32 grid_main_color = ImGui::GetColorU32(ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
-        const ImU32 grid_secondary_color = ImGui::GetColorU32(ImVec4(0.0f, 150.f / 255.0f, 136.0f / 255.f, 0.5f)); // ORCA color with opacity
+        const ImU32 grid_secondary_color = ImGui::GetColorU32(ImVec4(246.f / 255.0f, 165.f / 255.0f, 193.0f / 255.f, 0.5f)); // ORCA color with opacity (TigerSlicer pink)
 
         // horizontal levels
         for (const auto& [level, color] : levels) {
@@ -209,7 +209,7 @@ int GCodeViewer::SequentialView::ActualSpeedImguiWidget::plot(const char* label,
 
         // profiile
         const ImU32 col_base = ImGui::GetColorU32(ImVec4(0.8f, 0.8f, 0.8f, 1.0f));
-        const ImU32 col_hovered = ImGui::GetColorU32(ImVec4(0.0f, 150.f / 255.0f, 136.0f / 255.f, 1.0f)); // ORCA color
+        const ImU32 col_hovered = ImGui::GetColorU32(ImVec4(246.f / 255.0f, 165.f / 255.0f, 193.0f / 255.f, 1.0f)); // ORCA color (TigerSlicer pink)
         for (int n = 0; n < values_count - 1; ++n) {
             const ImVec2 tp1(ImSaturate((data[n].pos - x0) * inv_scale_x), 1.0f - ImSaturate((data[n].speed - y0) * inv_scale_y));
             const ImVec2 tp2(ImSaturate((data[n + 1].pos - x0) * inv_scale_x), 1.0f - ImSaturate((data[n + 1].speed - y0) * inv_scale_y));
@@ -593,7 +593,7 @@ void GCodeViewer::SequentialView::Marker::render_position_window(const libvgcode
                     for (const ActualSpeedImguiWidget::Item& item : m_actual_speed_imgui_widget.data) {
                         const bool highlight = hover_id >= 0 && (counter == hover_id || counter == hover_id + 1);
                         ImGui::TableNextRow();
-                        const ImU32 row_bg_color = ImGui::GetColorU32(item.internal ? ImVec4(0.0f, 150.f / 255.0f, 136.0f / 255.f, 0.15f) : ImVec4(0.2f, 0.2f, 0.2f, 0.25f)); // ORCA
+                        const ImU32 row_bg_color = ImGui::GetColorU32(item.internal ? ImVec4(246.f / 255.0f, 165.f / 255.0f, 193.0f / 255.f, 0.15f) : ImVec4(0.2f, 0.2f, 0.2f, 0.25f)); // ORCA
                         ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, row_bg_color);
                         ImGui::TableSetColumnIndex(0);
                         sprintf(buff, "%.3f", item.pos);
@@ -2832,7 +2832,7 @@ void GCodeViewer::render_legend_color_arr_recommen(float window_padding)
     auto link_text = [&](const std::string &label) {
         ImVec2 wiki_part_size = ImGui::CalcTextSize(label.c_str());
 
-        ImColor HyperColor = ImColor(0, 150, 136, 255).Value;
+        ImColor HyperColor = ImColor(246, 165, 193, 255).Value; // TigerSlicer pink
         ImGui::PushStyleColor(ImGuiCol_Text, HyperColor.Value);
         imgui.text(label.c_str());
         ImGui::PopStyleColor();
@@ -2858,7 +2858,7 @@ void GCodeViewer::render_legend_color_arr_recommen(float window_padding)
     auto link_text_set_to_optional = [&](const std::string &label) {
         ImVec2 wiki_part_size = ImGui::CalcTextSize(label.c_str());
 
-        ImColor HyperColor = ImColor(0, 150, 136, 255).Value;
+        ImColor HyperColor = ImColor(246, 165, 193, 255).Value; // TigerSlicer pink
         ImGui::PushStyleColor(ImGuiCol_Text, HyperColor.Value);
         imgui.text(label.c_str());
         ImGui::PopStyleColor();
@@ -2885,7 +2885,7 @@ void GCodeViewer::render_legend_color_arr_recommen(float window_padding)
 
     auto link_filament_group_wiki = [&](const std::string& label) {
         ImVec2 wiki_part_size = ImGui::CalcTextSize(label.c_str());
-        ImColor HyperColor = ImColor(0, 150, 136, 255); // ORCA match color
+        ImColor HyperColor = ImColor(246, 165, 193, 255); // ORCA match color (TigerSlicer pink)
         ImGui::PushStyleColor(ImGuiCol_Text, HyperColor.Value);
         imgui.text(label.c_str());
         ImGui::PopStyleColor();
