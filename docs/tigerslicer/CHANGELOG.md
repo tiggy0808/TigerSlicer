@@ -257,22 +257,50 @@ Done for macOS in this release (shared code): cloud removal (incl. the macOS Fil
 string/translation rename, `TigerSlicer.mo`, pink colours, splash, `tigerslicer://` scheme
 in `cmake/modules/MacOSXBundleInfo.plist.in`.
 
-Still Orca on macOS — consider for the Mac build:
-- The bundle is still `OrcaSlicer.app/Contents/MacOS/OrcaSlicer` (no `OUTPUT_NAME` on
-  Apple). `src/CMakeLists.txt` ~:332 `MACOSX_BUNDLE_BUNDLE_NAME "OrcaSlicer"` (menu-bar
-  app name), ~:334 copyright string.
-- `cmake/modules/MacOSXBundleInfo.plist.in` hard-codes `CFBundleIdentifier
-  com.orcaslicer.OrcaSlicer` — **same id as real OrcaSlicer**, so macOS treats the two as
-  one app (Launch Services, permissions, defaults). Strongly recommended to change to e.g.
-  `com.tigerslicer.TigerSlicer`.
-- `build_release_macos.sh` (OrcaSlicer.app paths, otool checks, universal-app steps),
-  `build_orca.yml` dmg volume name `OrcaSlicer` (TroubleshootDialog detects
-  `/Volumes/OrcaSlicer` — keep in sync), `Mouse3DHandlerMac.mm` registers
-  `"\013OrcaSlicer"` (must match the executable name; length byte `\013` = 11 also fits
-  "TigerSlicer").
-- Profile validator bundle in `src/CMakeLists.txt` ~:105-114 still Orca-named.
-- The unused `src/dev-utils/platform/osx/Info.plist.in` resolves to TigerSlicer names if
-  ever wired in, which would not match the `OrcaSlicer` binary.
+Done for macOS after the Windows release (`2f193c845`, build(macos)):
+- The bundle is `TigerSlicer.app/Contents/MacOS/TigerSlicer`: `OUTPUT_NAME "TigerSlicer"`
+  on Apple in `src/CMakeLists.txt` (CMake target still `OrcaSlicer`), with the build-tree
+  paths, `MACOSX_BUNDLE_BUNDLE_NAME "TigerSlicer"` (menu-bar app name) and the copyright
+  string following.
+- `CFBundleIdentifier` is `com.tigerslicer.TigerSlicer` (`cmake/modules/MacOSXBundleInfo.plist.in`
+  and `CMAKE_XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER`), so macOS no longer confuses
+  TigerSlicer with a real OrcaSlicer install.
+- `build_release_macos.sh` copies, relocates and verifies `TigerSlicer.app` (otool checks
+  on `MacOS/TigerSlicer`, universal step too). The `build/<arch>/OrcaSlicer/` staging
+  folder keeps its name.
+- `build_orca.yml` signs and packages `TigerSlicer.app` into a dmg whose volume is named
+  `TigerSlicer`, and `TroubleshootDialog` detects `/Volumes/TigerSlicer` to match.
+  The dmg and artifact *file* names are still `OrcaSlicer_Mac_universal_*`.
+- `Mouse3DHandlerMac.mm` registers `"\013TigerSlicer"`.
+- Profile validator: name, bundle id and copyright say TigerSlicer; its target and
+  bundle are still named `OrcaSlicer_profile_validator`.
+
+Still Orca on macOS: the unused `src/dev-utils/platform/osx/Info.plist.in`, the staging
+folder and CI dmg/artifact names above, and the profile validator's file name.
+
+#### Building the Mac app
+
+On Apple Silicon with Homebrew and only the Command Line Tools (no full Xcode):
+
+```bash
+brew install cmake ninja gettext nasm autoconf automake libtool texinfo pkg-config
+export PATH="$(brew --prefix libtool)/libexec/gnubin:$(brew --prefix texinfo)/bin:$PATH"
+export CMAKE_POLICY_VERSION_MINIMUM=3.5   # CMake 4 rejects some dependencies' old minimums
+./build_release_macos.sh -a arm64 -x      # first run builds the dependencies too; -s = app only
+```
+
+`-x` uses Ninja (the default Xcode generator needs full Xcode). The app lands in
+`build/arm64/OrcaSlicer/TigerSlicer.app`. To package the release dmg (ad-hoc signed, as
+nothing is notarized yet):
+
+```bash
+mkdir -p dmg && ditto build/arm64/OrcaSlicer/TigerSlicer.app dmg/TigerSlicer.app
+codesign --force --deep --sign - dmg/TigerSlicer.app
+ln -s /Applications dmg/Applications
+hdiutil create -volname TigerSlicer -srcfolder dmg -format UDZO TigerSlicer-0.0.1-macos-arm64.dmg
+```
+
+Keep the volume name `TigerSlicer` (TroubleshootDialog checks for it).
 
 Also on Linux: binary `orca-slicer`, `com.orcaslicer.OrcaSlicer*.desktop` file names,
 flatpak metainfo text, DBus names still Orca.
@@ -297,5 +325,19 @@ packaging, or both names end up in the app. A fresh clone is unaffected.
 - Filament colour migration on a copy of a real config: 8 × `#26A69A` → `#F6A5C1`,
   marker `default_filament_color_migrated = "1"`, clean exit.
 - 3D view: a loaded cube shows the pink filament slot; selected part renders light pink.
-- Not yet run: macOS/Linux builds, the new `[AppConfig]` Catch2 tests (the Windows
+- Not yet run: the Linux build, the new `[AppConfig]` Catch2 tests (the Windows
   release script doesn't build tests), Bambu LAN printing with the network plugin.
+
+### Verification (macOS, this release)
+
+- `build_release_macos.sh -a arm64 -x -s` on macOS 15.6 (Apple clang 17, Command Line
+  Tools only) with no errors; outputs `TigerSlicer.app` with `CFBundleExecutable`
+  `TigerSlicer`, `CFBundleIdentifier` `com.tigerslicer.TigerSlicer`,
+  `CFBundleShortVersionString` 0.0.1, 23 × `TigerSlicer.mo` and no `OrcaSlicer.mo`.
+- Installed from `TigerSlicer-0.0.1-macos-arm64.dmg` and launched with a throwaway
+  `--datadir`: the log reports version 0.0.1 build `b5e74f81c`, the new config records
+  0.0.1, no fatal errors.
+- Known harmless log noise on a fresh data dir (all platforms): "Failed to install bundled
+  TigerSlicer Resin profile" — `PresetBundle::setup_directories()` copies the resin ini/idx
+  into `data_dir/vendor`, which nothing creates or reads; the resin bundle is loaded from
+  the app's own `resources/profiles` instead.
