@@ -126,6 +126,14 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dev-utils/platform/msw/OrcaSlicer.man
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dev-utils/platform/osx/Info.plist.in ${CMAKE_CURRENT_BINARY_DIR}/Info.plist @ONLY)
 if (WIN32)
     add_library(OrcaSlicer SHARED OrcaSlicer.cpp OrcaSlicer.hpp)
+    # Windows ships TigerSlicer.exe (OrcaSlicer_app_gui, below) which loads this as TigerSlicer.dll
+    # (the name is hard-coded in OrcaSlicer_app_msvc.cpp). Both land in the same directory, so give the
+    # DLL's PDB and import library their own names, otherwise the exe's link overwrites them.
+    set_target_properties(OrcaSlicer PROPERTIES
+        OUTPUT_NAME "TigerSlicer"
+        PDB_NAME "TigerSlicer_dll"
+        ARCHIVE_OUTPUT_NAME "TigerSlicer_dll"
+    )
 else ()
     add_executable(OrcaSlicer OrcaSlicer.cpp OrcaSlicer.hpp)
 endif ()
@@ -210,7 +218,7 @@ if (WIN32)
     target_compile_definitions(OrcaSlicer_app_gui PRIVATE "$<$<NOT:$<CONFIG:RelWithDebInfo>>:SLIC3R_WRAPPER_NOCONSOLE>")
     add_dependencies(OrcaSlicer_app_gui OrcaSlicer)
     set_target_properties(OrcaSlicer_app_gui PROPERTIES
-        OUTPUT_NAME "orca-slicer"
+        OUTPUT_NAME "TigerSlicer"
         WIN32_EXECUTABLE "$<NOT:$<CONFIG:RelWithDebInfo>>"
     )
     target_link_libraries(OrcaSlicer_app_gui PRIVATE boost_headeronly)

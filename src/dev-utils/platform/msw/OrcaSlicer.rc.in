@@ -13,7 +13,7 @@ PRODUCTVERSION @ORCA_VERSION_MAJOR@,@ORCA_VERSION_MINOR@,@ORCA_VERSION_PATCH@,0
    VALUE "ProductVersion", "@SoftFever_VERSION@"
    VALUE "InternalName", "@SLIC3R_APP_NAME@"
    VALUE "LegalCopyright", ""
-   VALUE "OriginalFilename", "orca-slicer.exe"
+   VALUE "OriginalFilename", "TigerSlicer.exe"
   }
  }
  BLOCK "VarFileInfo"

@@ -291,11 +291,12 @@ int wmain(int argc, wchar_t **argv)
 
     wchar_t path_to_slic3r[MAX_PATH + 1] = { 0 };
     wcscpy(path_to_slic3r, path_to_exe);
-    wcscat(path_to_slic3r, L"OrcaSlicer.dll");
+    // Must match the OUTPUT_NAME of the OrcaSlicer target in src/CMakeLists.txt.
+    wcscat(path_to_slic3r, L"TigerSlicer.dll");
 //	printf("Loading Slic3r library: %S\n", path_to_slic3r);
     HINSTANCE hInstance_Slic3r = LoadLibraryExW(path_to_slic3r, nullptr, 0);
     if (hInstance_Slic3r == nullptr) {
-        printf("OrcaSlicer.dll was not loaded, error=%d\n", GetLastError());
+        printf("TigerSlicer.dll was not loaded, error=%d\n", GetLastError());
         return -1;
     }
 
@@ -309,7 +310,7 @@ int wmain(int argc, wchar_t **argv)
 #endif
         );
     if (orcaslicer_main == nullptr) {
-        printf("could not locate the function orcaslicer_main in OrcaSlicer.dll\n");
+        printf("could not locate the function orcaslicer_main in TigerSlicer.dll\n");
         return -1;
     }
     // argc minus the trailing nullptr of the argv

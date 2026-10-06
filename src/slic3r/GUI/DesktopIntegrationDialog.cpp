@@ -330,7 +330,7 @@ void DesktopIntegrationDialog::perform_desktop_integration()
             // Write slicer desktop file
             std::string desktop_file = GUI::format(
                 "[Desktop Entry]\n"
-                "Name=OrcaSlicer%1%\n"
+                "Name=TigerSlicer%1%\n"
                 "GenericName=3D Printing Software\n"
                 "Icon=OrcaSlicer%2%\n"
                 "Exec=\"%3%\" %%F\n"
@@ -401,7 +401,7 @@ void DesktopIntegrationDialog::perform_desktop_integration()
         // Desktop file
         std::string desktop_file = GUI::format(
             "[Desktop Entry]\n"
-            "Name=Bambu Gcode Viewer%1%\n"
+            "Name=TigerSlicer G-code Viewer%1%\n"
             "GenericName=3D Printing Software\n"
             "Icon=OrcaSlicer-gcodeviewer%2%\n"
             "Exec=\"%3%\" --gcodeviewer %%F\n"
@@ -535,7 +535,7 @@ void DesktopIntegrationDialog::perform_downloader_desktop_integration(std::strin
 
     std::string desktop_file_downloader = GUI::format(
         "[Desktop Entry]\n"
-        "Name=OrcaSlicer URL Protocol %1% %2%\n"
+        "Name=TigerSlicer URL Protocol %1% %2%\n"
         "Exec=%3% %%u\n"
         "Terminal=false\n"
         "Type=Application\n"

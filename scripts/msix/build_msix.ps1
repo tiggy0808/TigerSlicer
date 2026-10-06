@@ -14,9 +14,10 @@ param(
     [string]$Architecture = "x64",
     [string]$StagingDir = "",
     [switch]$StageOnly,
-    [string]$IdentityName = "OrcaSlicer.OrcaSlicer",
-    [string]$Publisher = "CN=38F7EA55-C73B-4072-B3B2-C8E0EA15BB82",
-    [string]$PublisherDisplayName = "OrcaSlicer"
+    # Must differ from OrcaSlicer's Store identity, or the package would replace an installed OrcaSlicer.
+    [string]$IdentityName = "TigerSlicer.TigerSlicer",
+    [string]$Publisher = "CN=TigerSlicer",
+    [string]$PublisherDisplayName = "TigerSlicer"
 )
 $ErrorActionPreference = 'Stop'
 
@@ -31,12 +32,12 @@ if ($versionContent -notmatch 'set\(SoftFever_VERSION "(\d+)\.(\d+)\.(\d+)') {
 $msixVersion = "$($Matches[1]).$($Matches[2]).$($Matches[3]).0"
 Write-Output "MSIX version: $msixVersion"
 
-if (-not (Test-Path (Join-Path $InstallDir 'orca-slicer.exe'))) {
-    throw "orca-slicer.exe not found in '$InstallDir' - build the install tree first"
+if (-not (Test-Path (Join-Path $InstallDir 'TigerSlicer.exe'))) {
+    throw "TigerSlicer.exe not found in '$InstallDir' - build the install tree first"
 }
 
 if ([string]::IsNullOrEmpty($StagingDir)) {
-    $StagingDir = Join-Path ([System.IO.Path]::GetTempPath()) 'orca-msix-staging'
+    $StagingDir = Join-Path ([System.IO.Path]::GetTempPath()) 'tigerslicer-msix-staging'
 }
 if (Test-Path $StagingDir) { Remove-Item $StagingDir -Recurse -Force }
 New-Item -ItemType Directory -Force $StagingDir | Out-Null
