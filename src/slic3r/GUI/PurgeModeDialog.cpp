@@ -15,7 +15,7 @@
 namespace Slic3r { namespace GUI {
 
 static const wxColour BgNormalColor = wxColour("#FFFFFF");
-static const wxColour BgSelectColor = wxColour("#EBF9F0");
+static const wxColour BgSelectColor = wxColour("#FBEAF0"); // TigerSlicer pale pink (was BBS pale green)
 
 static const wxColour BorderNormalColor   = wxColour("#CECECE");
 static const wxColour BorderSelectedColor = wxColour("#F6A5C1");

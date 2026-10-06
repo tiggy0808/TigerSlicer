@@ -15,7 +15,7 @@
 #define SIDE_TOOLS_GREY600 wxColour(144, 144, 144)
 #define SIDE_TOOLS_GREY400 wxColour(206, 206, 206)
 #define SIDE_TOOLS_BRAND wxColour(217, 139, 168)
-#define SIDE_TOOLS_LIGHT_GREEN wxColour(219, 253, 231)
+#define SIDE_TOOLS_LIGHT_GREEN wxColour(251, 234, 240) // TigerSlicer pale pink #FBEAF0 (name kept from BBS)
 
 enum WifiSignal {
     NONE,

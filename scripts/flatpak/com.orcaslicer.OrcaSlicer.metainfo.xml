@@ -41,8 +41,8 @@
             OrcaSlicer also provides built-in network printing capabilities for compatible printers.</p>
     </description>
     <branding>
-        <color type="primary" scheme_preference="light">#009688</color>
-        <color type="primary" scheme_preference="dark">#00695C</color>
+        <color type="primary" scheme_preference="light">#F6A5C1</color>
+        <color type="primary" scheme_preference="dark">#9B5874</color>
     </branding>
     <releases>
         <release version="2.5.0-dev" date="2026-06-22" type="development">

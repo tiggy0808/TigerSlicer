@@ -73,7 +73,7 @@ wxDECLARE_EVENT(EVT_BIND_MACHINE, wxCommandEvent);
 #define SELECT_MACHINE_GREY400 wxColour(206, 206, 206)
 #define SELECT_MACHINE_BRAND wxColour(217, 139, 168)
 #define SELECT_MACHINE_REMIND wxColour(255, 111, 0)
-#define SELECT_MACHINE_LIGHT_GREEN wxColour(219, 253, 231)
+#define SELECT_MACHINE_LIGHT_GREEN wxColour(251, 234, 240) // TigerSlicer pale pink #FBEAF0 (name kept from BBS)
 
 class MachineObjectPanel : public wxPanel
 {

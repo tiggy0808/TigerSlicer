@@ -7,16 +7,16 @@
 <path d="M2.3958 44.1094L3.94891 45.2742C4.13451 45.4134 4.38972 45.4134 4.57533 45.2742L6.12844 44.1094" stroke="#F6A5C1" stroke-width="1.04403" stroke-linecap="round"/>
 <defs>
 <linearGradient id="paint0_linear_17771_23047" x1="4.16777" y1="0.25" x2="4.16777" y2="50.9227" gradientUnits="userSpaceOnUse">
-<stop stop-color="#EBF9F0" stop-opacity="0"/>
+<stop stop-color="#FBEAF0" stop-opacity="0"/>
 <stop offset="1" stop-color="#F6A5C1"/>
 </linearGradient>
 <linearGradient id="paint1_linear_17771_23047" x1="7.52707" y1="49.2037" x2="7.52707" y2="1.64844" gradientUnits="userSpaceOnUse">
 <stop stop-color="#F6A5C1"/>
-<stop offset="1" stop-color="#EBF9F0" stop-opacity="0"/>
+<stop offset="1" stop-color="#FBEAF0" stop-opacity="0"/>
 </linearGradient>
 <linearGradient id="paint2_linear_17771_23047" x1="0.528814" y1="49.2037" x2="0.52881" y2="1.64844" gradientUnits="userSpaceOnUse">
 <stop stop-color="#F6A5C1"/>
-<stop offset="1" stop-color="#EBF9F0" stop-opacity="0"/>
+<stop offset="1" stop-color="#FBEAF0" stop-opacity="0"/>
 </linearGradient>
 </defs>
 </svg>

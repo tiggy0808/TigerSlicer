@@ -30,7 +30,7 @@ public:
     double   m_radius                     = {7};
     double   m_proportion                 = {0};
     wxColour m_progress_background_colour = {233, 233, 233};
-    wxColour m_progress_colour            = {0, 150, 136};
+    wxColour m_progress_colour            = {246, 165, 193}; // TigerSlicer #F6A5C1
     wxColour m_progress_colour_disable    = {255, 111, 0};
     wxString m_disable_text;
     

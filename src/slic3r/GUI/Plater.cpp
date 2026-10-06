@@ -2483,7 +2483,7 @@ Sidebar::Sidebar(Plater *parent)
 
         struct PanelColors {
             wxColour bg_normal = "#FFFFFF";
-            wxColour bg_focus  = "#E5F0EE";
+            wxColour bg_focus  = "#FBEAF0"; // TigerSlicer pale pink, dark #3D2D35
             wxColour bd_normal = "#DBDBDB";
             wxColour bd_hover  = "#F6A5C1";
             wxColour bd_focus  = "#F6A5C1";

@@ -6,7 +6,7 @@ static bool gDarkMode = false;
 static bool operator<(wxColour const &l, wxColour const &r) { return l.GetRGBA() < r.GetRGBA(); }
 
 static std::map<wxColour, wxColour> gDarkColors{
-    {"#F6A5C1", "#9B5874"}, // rgb(0, 150, 136)    ORCA color
+    {"#F6A5C1", "#9B5874"}, // rgb(246, 165, 193)  TigerSlicer brand pink (was ORCA teal #009688)
     {"#1F8EEA", "#2778D2"}, // rgb(31, 142, 234)   ???
     {"#FF6F00", "#D15B00"}, // rgb(255, 111, 0)    Secondary color
     {"#D01B1B", "#BB2A3A"}, // rgb(208, 27, 27)    ???
@@ -14,7 +14,7 @@ static std::map<wxColour, wxColour> gDarkColors{
     {"#DFDFDF", "#3E3E45"}, // rgb(223, 223, 223)  Button Background color
     {"#D4D4D4", "#4D4D54"}, // rgb(212, 212, 212)  Button Background color on Hover
     {"#6B6A6A", "#909090"}, // rgb(107, 107, 106)  Button Dimmed text
-    {"#D98BA8", "#9B5874"}, // rgb(0, 150, 136)    Button Confirm Color hover | ORCA Color Hover
+    {"#D98BA8", "#9B5874"}, // rgb(217, 139, 168)  Button Confirm Color hover | TigerSlicer pink hover
     {"#6B6B6A", "#B3B3B5"}, // rgb(107, 107, 106)  Input box side text
     {"#2C2C2E", "#B3B3B4"}, // rgb(44, 44, 46)     ???
     {"#6B6B6B", "#818183"}, // rgb(107, 107, 107)  Disabled Text
@@ -31,7 +31,7 @@ static std::map<wxColour, wxColour> gDarkColors{
     {"#000000", "#FFFFFE"}, // rgb(0, 0, 0)        Mostly Text color wxBlack
     {"#F4F4F4", "#36363D"}, // rgb(244, 244, 244)  ???
     {"#DBDBDB", "#4A4A51"}, // rgb(219, 219, 219)  Input/Combo Box Border Color
-    {"#EDFAF2", "#283232"}, // rgb(229, 240, 238)  Not Used anymore // Was used for BBS Combo / Dropdown focused background color
+    {"#EDFAF2", "#3D2D35"}, // rgb(237, 250, 242)  Not Used anymore // Was used for BBS Combo / Dropdown focused background color (dark partner follows the pink focus tint)
     {"#323A3C", "#E5E5E6"}, // rgb(50, 58, 60)     Text color used on search list | 
     {"#303A3C", "#E5E5E5"}, // rgb(48, 58, 60)     Object Table > Column header text color | StaticBox Border Color
     {"#FEFFFF", "#242428"}, // rgb(254, 255, 255)  Side Tabbar bg | 
@@ -39,16 +39,18 @@ static std::map<wxColour, wxColour> gDarkColors{
     {"#363636", "#B2B3B5"}, // rgb(54, 54, 54)     Sidebar > Parameter Label/Title color | Sidebar tab text | Create Filament window text
     {"#F0F0F1", "#333337"}, // rgb(240, 240, 241)  Disabled element background // ORCA Used better background color for dark mode
     {"#9E9E9E", "#53545A"}, // rgb(158, 158, 158)  ???
-    {"#D7E8DE", "#1F2B27"}, // rgb(215, 232, 222)  Not Used anymore // Leftover from BBS
+    {"#D7E8DE", "#3C2233"}, // rgb(215, 232, 222)  Not Used anymore // Leftover from BBS (dark partner follows the pink selection tint)
     {"#2B3436", "#808080"}, // rgb(43, 52, 54)     Not Used anymore // Leftover from BBS. Was used as main fill color of icons
     {"#ABABAB", "#ABABAB"},
     {"#D9D9D9", "#27272A"}, // rgb(217, 217, 217)  Sidebar > Toggle button track color
     {"#FFFEFE", "#D9D9D9"}, // rgb(255, 254, 254)  Sidebar > Toggle button thumb color
-    {"#EBF9F0", "#293F34"},
+    {"#EBF9F0", "#3D2D35"}, // rgb(235, 249, 240)  Not Used anymore // BBS pale green (dark partner follows the pink focus tint)
     //{"#F0F0F0", "#4C4C54"},
-    // ORCA
-    {"#BFE1DE", "#223C3C"}, // rgb(191, 225, 222)  Dropdown checked item background color > ORCA color with %25 opacity
-    {"#E5F0EE", "#283232"}, // rgb(229, 240, 238)  Combo / Dropdown focused background color > ORCA color with %10 opacity
+    // ORCA / TigerSlicer
+    // lightModeColorFor() inverts this map; where several light colours share a dark one, the lowest GetRGBA()
+    // wins, which keeps #3C2233 -> #F2D3DE and #3D2D35 -> #FBEAF0 when switching back to the light theme.
+    {"#F2D3DE", "#3C2233"}, // rgb(242, 211, 222)  Selected item / tab / dropdown checked background > TigerSlicer pink selection tint (was teal #BFE1DE -> #223C3C)
+    {"#FBEAF0", "#3D2D35"}, // rgb(251, 234, 240)  Combo / Dropdown focused background, selected capsule > TigerSlicer pale pink focus tint (was teal #E5F0EE -> #283232)
 };
 
 std::tuple<double, double, double> StateColor::GetLAB(const wxColour& color) {
