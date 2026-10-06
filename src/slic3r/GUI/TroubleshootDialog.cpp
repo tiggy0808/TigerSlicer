@@ -730,7 +730,7 @@ wxString TroubleshootDialog::GetPackageType()
     if (path.Contains("/Cellar/") || wxGetEnv("HOMEBREW_PREFIX", nullptr))
         return "Homebrew";
 
-    if (path.StartsWith("/Volumes/OrcaSlicer")) // running from .dmg
+    if (path.StartsWith("/Volumes/TigerSlicer")) // running from .dmg
         return "Temporary";
 
     if (path.StartsWith("/Applications"))
