@@ -19,10 +19,11 @@ Requirements (developer tooling, not needed at build time):
 Run from anywhere:  python resources/icons/branding/generate_tigerslicer_branding.py
 """
 
+import math
 import os
 import sys
 
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageDraw, ImageFilter, ImageOps
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -237,10 +238,73 @@ def document_icon(master):
     page.paste(badge, ((W - badge.width) // 2, (W - badge.height) // 2), badge)
     return page
 
+
+# macOS app icon grid (Big Sur and later): an 824 px body centred on a
+# 1024 px canvas, continuous-corner "squircle" outline, soft drop shadow.
+MAC_BODY = 824
+MAC_SQUIRCLE_N = 5.0          # superellipse exponent approximating Apple's corners
+MAC_TOP = (34, 34, 36, 255)   # body gradient, top -> bottom
+MAC_BOTTOM = (0, 0, 0, 255)
+MAC_MARK = 0.88               # mark disc diameter relative to the body
+MAC_SHADOW = (12, 14, 0.35)   # y offset, blur radius (px at 1024), opacity
+
+
+def squircle_mask(size, body, k):
+    """Superellipse of `body` px centred on a `size` px canvas, at k-x supersampling."""
+    W, a, c = size * k, body * k / 2, size * k / 2
+    e = 2 / MAC_SQUIRCLE_N
+    pts = []
+    for i in range(4096):
+        t = 2 * math.pi * i / 4096
+        ct, st = math.cos(t), math.sin(t)
+        pts.append((c + a * math.copysign(abs(ct) ** e, ct),
+                    c + a * math.copysign(abs(st) ** e, st)))
+    mask = Image.new("L", (W, W), 0)
+    ImageDraw.Draw(mask).polygon(pts, fill=255)
+    return mask
+
+
+def macos_app_icon(size=MASTER_PX):
+    """The mark on a macOS-style rounded square, so the Dock and Finder show
+    it at the same size and shape as other Mac apps. Used only by the Mac
+    bundle icon (Icon.icns) and the Dock icon (*-mac_* files)."""
+    k = SUPERSAMPLE
+    W = size * k
+    scale = size / 1024 * k
+    body = squircle_mask(size, MAC_BODY * size / 1024, k)
+    _, y0, _, y1 = body.getbbox()
+
+    # Body: a top-to-bottom gradient clipped to the squircle.
+    ramp = Image.new("RGBA", (1, 2))
+    ramp.putpixel((0, 0), MAC_TOP)
+    ramp.putpixel((0, 1), MAC_BOTTOM)
+    face = Image.new("RGBA", (W, W), (0, 0, 0, 0))
+    face.paste(ramp.resize((W, y1 - y0), Image.BILINEAR), (0, y0))
+    face.putalpha(body)
+
+    # Drop shadow: the body shape, offset down and blurred.
+    dy, blur, opacity = MAC_SHADOW
+    shadow = Image.new("L", (W, W), 0)
+    shadow.paste(body.point(lambda p: round(p * opacity)), (0, round(dy * scale)))
+    icon = Image.new("RGBA", (W, W), (0, 0, 0, 0))
+    icon.putalpha(shadow.filter(ImageFilter.GaussianBlur(blur * scale)))
+    icon = Image.alpha_composite(icon, face)
+
+    # The mark's pink half-discs (its black disc disappears into the body).
+    d = ImageDraw.Draw(icon)
+    disc = MAC_BODY * MAC_MARK * scale
+    s, off = disc / CANVAS, (W - disc) / 2
+    r = ARC_R * s
+    cx, cy = off + UPPER[0] * s, off + UPPER[1] * s
+    d.pieslice([cx - r, cy - r, cx + r, cy + r], 135, 315, fill=PINK)
+    cx, cy = off + LOWER[0] * s, off + LOWER[1] * s
+    d.pieslice([cx - r, cy - r, cx + r, cy + r], 315, 135, fill=PINK)
+    return icon.resize((size, size), Image.LANCZOS)
+
 # --------------------------------------------------------------- main ----
 
 
-def generate_branding_dir(master):
+def generate_branding_dir(master, mac):
     print("resources/icons/branding ->")
     for base in ("TigerSlicer", "TigerSlicer-gcodeviewer"):
         write(os.path.join(HERE, f"{base}.svg"), mark_svg())
@@ -251,12 +315,12 @@ def generate_branding_dir(master):
         save_png(sized(master, 192), os.path.join(HERE, f"{base}_192px.png"))
         save_png(sized(master, 128), os.path.join(HERE, f"{base}_128px.png"))
         save_png(sized(master, 32), os.path.join(HERE, f"{base}_32px.png"))
-        save_png(sized(master, 128), os.path.join(HERE, f"{base}-mac_128px.png"))
+        save_png(sized(mac, 128), os.path.join(HERE, f"{base}-mac_128px.png"))
         save_ico(master, os.path.join(HERE, f"{base}.ico"))
-        save_icns(master, os.path.join(HERE, f"{base}.icns"))
+        save_icns(mac, os.path.join(HERE, f"{base}.icns"))
 
 
-def generate_app_images(master):
+def generate_app_images(master, mac):
     """The files the application, installer and bundles actually load."""
     print("resources/images ->")
 
@@ -283,7 +347,7 @@ def generate_app_images(master):
     save_png(sized(master, 154), img("OrcaSlicer_154.png"))
     save_png(padded(master, 184, 184), img("OrcaSlicer_154_title.png"))
     save_png(sized(master, 128), img("OrcaSlicer_128px.png"))
-    save_png(sized(master, 128), img("OrcaSlicer-mac_128px.png"))
+    save_png(sized(mac, 128), img("OrcaSlicer-mac_128px.png"))
     save_png(sized(master, 192), img("OrcaSlicer_192px.png"))
     save_png(sized(master, 192), img("OrcaSlicer_192px_transparent.png"))
     save_png(grayscale(sized(master, 192)), img("OrcaSlicer_192px_grayscale.png"))
@@ -291,9 +355,12 @@ def generate_app_images(master):
     save_png(sized(master, 32), img("OrcaSlicer_32px.png"))
     save_ico(master, img("OrcaSlicer.ico"))
     save_ico(master, img("OrcaSlicerTitle.ico"))
-    save_ico(master, img("OrcaSlicer-mac_256px.ico"), sizes=[16, 32, 48, 64, 128, 256])
+    # Mac app icon: bundle icon (Icon.icns) and the Dock icon MainFrame sets
+    # at runtime (OrcaSlicer-mac_256px.ico). OrcaSlicer.icns is the plist's
+    # document-type icon and keeps the round mark.
+    save_ico(mac, img("OrcaSlicer-mac_256px.ico"), sizes=[16, 32, 48, 64, 128, 256])
     save_icns(master, img("OrcaSlicer.icns"))
-    save_icns(master, os.path.join(RES, "Icon.icns"))
+    save_icns(mac, os.path.join(RES, "Icon.icns"))
 
     # macOS document-type icons for .stl / .gcode associations.
     doc = document_icon(master)
@@ -308,8 +375,9 @@ def generate_app_images(master):
 
 def main():
     master = render_master()
-    generate_branding_dir(master)
-    generate_app_images(master)
+    mac = macos_app_icon()
+    generate_branding_dir(master, mac)
+    generate_app_images(master, mac)
 
 
 if __name__ == "__main__":
