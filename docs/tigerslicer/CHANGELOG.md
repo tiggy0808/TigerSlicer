@@ -274,6 +274,11 @@ Done for macOS after the Windows release (`2f193c845`, build(macos)):
 - `Mouse3DHandlerMac.mm` registers `"\013TigerSlicer"`.
 - Profile validator: name, bundle id and copyright say TigerSlicer; its target and
   bundle are still named `OrcaSlicer_profile_validator`.
+- Rounded-square Mac app icon (`2f9adb838`): `macos_app_icon()` in
+  `generate_tigerslicer_branding.py` draws the pink mark on Apple's icon grid (824 px
+  superellipse body on a 1024 px canvas, near-black gradient, soft shadow). It feeds only
+  `resources/Icon.icns`, the Dock icon `images/OrcaSlicer-mac_256px.ico`, and the
+  `*-mac_128px.png` / branding `*.icns` files; every other icon keeps the round mark.
 
 Still Orca on macOS: the unused `src/dev-utils/platform/osx/Info.plist.in`, the staging
 folder and CI dmg/artifact names above, and the profile validator's file name.
