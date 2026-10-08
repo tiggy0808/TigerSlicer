@@ -9,8 +9,9 @@ OrcaSlicer.
 
 ## 0.0.2 (2026-10-08)
 
-Theme: make resin printing reachable and usable. Developed and verified on macOS; nothing here is
-platform-specific, but the Windows build has not been run yet.
+Theme: make resin printing reachable and usable. Developed and verified on macOS. The first Windows
+build found crashes on paths the macOS check had not run; they are fixed after the tag (see
+"Switching to a resin printer at run time" below).
 
 Commits, oldest first (all on `main`):
 
@@ -97,6 +98,48 @@ Commits, oldest first (all on `main`):
 - End to end in the app (with a temporary startup hook, removed before commit): Elegoo Mars 3 + a
   20 mm cube sliced and exported a 2.1 MB CTB v5 file (`0x12FD0107` magic); Preview showed the raster
   panel at layer 201 of 400 with 8.02 ml resin and the layer slider.
+
+### Switching to a resin printer at run time (fixed after the tag, `6104cfd89`)
+The first Windows build crashed as soon as a resin printer was selected, and again on export. The
+macOS check had preselected the printer with a startup hook, so no run-time technology switch had
+run. Upstream never switches technology at run time either, so these paths were dead code there.
+All of it is shared code; the macOS app picks it up on its next build.
+- `Tab::load_current_preset`: the PrusaSlicer block that inserts and removes preset tabs in
+  `tab_panel()` on a technology change is disabled (`if (false)`), as is the `SetPageImage` call after
+  it. In Orca `tab_panel()` is the Home/Prepare/Preview notebook and the preset tabs live in
+  `ParamsPanel`, so `FindPage()` returned `wxNOT_FOUND` and `GetPage()` threw `std::out_of_range`
+  ("invalid vector subscript"); the app then quit and crashed again tearing down the half-switched
+  tabs. `ParamsPanel::switch_printer_technology()` already shows the right tabs.
+- `TabPrinter::update_pages` clears `m_active_page` when it swaps the FFF and SLA page sets: a hidden
+  printer tab kept a page of the old set and `reload_config()` read options the new config lacks.
+- `ParamsPanel::switch_printer_technology` hands the page area over like
+  `Tab::tree_sel_change_delayed()` (`clear_pages()` and `unselect_tree_item()` on the outgoing tab).
+  Otherwise the FFF print tab kept an active page whose controls were destroyed, and going back from
+  a resin printer to an FFF one crashed in `ConfigManipulation::toggle_field()`. If the outgoing tab
+  was a plate/object/part/layer settings tab (FFF only), the new technology's print tab is shown.
+- Printer combo (`Tab::select_preset`): the SLA rows of the `updates` table are restored, so a resin
+  printer picked in the combo reloads its print and resin tabs (the process combo stayed empty).
+  `MainFrame::technology_changed()` returns when there is no `wxMenuBar` (only macOS has one) and
+  `Sidebar::auto_calc_flushing_volumes()` returns for non-FFF printers (it read filament keys that the
+  resin full config does not have); both crashed on a combo switch.
+- Export: `MSlicerResinPrint::output_filename()` read `output_filename_format` (the PrusaSlicer name;
+  Orca's option is `filename_format`) and crashed. It reads `filename_format` now. A template's own
+  extension (`.sl1` from the SLA print default `[input_filename_base].sl1`, `.gcode`, or an MSlicer
+  format) is replaced by the archive's; anything else after a dot is part of the name, so a project
+  "Bracket v1.2" exports as `Bracket v1.2.ctb`. Tests in `test_mslicer_resin_job.cpp`.
+
+### Verification (Windows)
+- Release build (MSVC 17.14) with no errors. `libslic3r_tests` built on Windows for the first time
+  (`cmake -DBUILD_TESTS=ON`, target `libslic3r_tests`): 1,024 test cases, 88,087 assertions, all pass.
+- In the app with a throwaway `--datadir` (build before the printer-combo fixes): first run with
+  Generic Klipper Printer, then "Select/Remove printers (system presets)" → Elegoo Mars 3; 20 mm cube;
+  slice (400 layers, 8.02 ml resin); "Export resin file" proposes `cube20.ctb` and writes a
+  2,107,421-byte CTB v5 file (`0x12FD0107`).
+- Final build, printer combo: Mars 3 → Klipper → Mars 3 (process combo shows `0.05 mm MSlicer
+  Standard`), slice and export again (same file size and magic), back to Klipper, then a normal
+  close: no crash logs.
+- Not re-run after the fixes: the first-run wizard with only a resin printer selected (it applies
+  through the same `load_current_presets()` as "Select/Remove printers"), and macOS.
 
 ### Known gaps
 - The 3D view in Preview is empty for resin plates (Orca removed the SLA preview scene); the raster
