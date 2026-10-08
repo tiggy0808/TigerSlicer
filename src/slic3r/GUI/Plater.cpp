@@ -5058,6 +5058,11 @@ void Sidebar::auto_calc_flushing_volumes(const int filament_idx, const int extru
     std::vector<int> extruder_indices;
 
     auto& preset_bundle = wxGetApp().preset_bundle;
+    // TigerSlicer: flushing volumes are an FFF filament concept. With a resin printer the full config has
+    // no filament keys ("filament_diameter", ...), so selecting one in the printer combo crashed in
+    // get_min_flush_volumes().
+    if (preset_bundle->printers.get_edited_preset().printer_technology() != ptFFF)
+        return;
     auto filament_ptr = preset_bundle->project_config.option<ConfigOptionStrings>("filament_colour");
     int filament_count = filament_ptr ? filament_ptr->size() : 0;
     int extruder_count = preset_bundle->get_printer_extruder_count();

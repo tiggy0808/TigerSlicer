@@ -2447,6 +2447,10 @@ void Tab::on_presets_changed()
     for (auto t: m_dependent_tabs)
     {
         Tab* tab = wxGetApp().get_tab(t);
+        // TigerSlicer: the SLA rows in select_preset() can list a resin tab here; get_tab() returns null
+        // for a tab that is not built yet.
+        if (tab == nullptr)
+            continue;
         // If the printer tells us that the print or filament/sla_material preset has been switched or invalidated,
         // refresh the print or filament/sla_material tab page.
         // But if there are options, moved from the previously selected preset, update them to edited preset
@@ -5842,6 +5846,10 @@ void TabPrinter::update_pages()
 
     //clear all active pages before switching
     clear_pages();
+    // TigerSlicer: the active page belongs to the page set swapped out below. rebuild_page_tree() only
+    // picks a new one when this tab is shown, so a hidden printer tab kept it and load_current_preset()
+    // reloaded it against the other technology's config (crash on options that config lacks).
+    m_active_page = nullptr;
 
     // set m_pages to m_pages_(technology before changing)
     m_printer_technology == ptFFF ? m_pages.swap(m_pages_fff) : m_pages.swap(m_pages_sla);
@@ -6427,6 +6435,12 @@ void Tab::load_current_preset()
                 // till unusable Tabs will be deleted
                 Page* tmp_page = m_active_page;
                 m_active_page = nullptr;
+                // TigerSlicer: the preset tabs live in ParamsPanel, not in tab_panel() (the Home/Prepare/
+                // Preview notebook), so FindPage() below returns wxNOT_FOUND for every tab and
+                // GetPage(wxNOT_FOUND) throws std::out_of_range: selecting a resin printer at run time
+                // ended in "invalid vector subscript" and a crash. ParamsPanel::switch_printer_technology()
+                // (from Plater::set_printer_technology) shows the new technology's tabs instead.
+                if (false)
                 for (auto tab : wxGetApp().tabs_list) {
                     if (tab->type() == Preset::TYPE_PRINTER) { // Printer tab is shown every time
                         int cur_selection = wxGetApp().tab_panel()->GetSelection();
@@ -6460,7 +6474,8 @@ void Tab::load_current_preset()
                 static_cast<TabPrinter*>(this)->m_printer_technology = printer_technology;
                 m_active_page = tmp_page;
 #ifdef _MSW_DARK_MODE
-                if (!wxGetApp().tabs_as_menu())
+                // TigerSlicer: this Tab is not a page of tab_panel() either (see above).
+                if (false && !wxGetApp().tabs_as_menu())
                     dynamic_cast<Notebook*>(wxGetApp().tab_panel())->SetPageImage(wxGetApp().tab_panel()->FindPage(this), printer_technology == ptFFF ? "printer" : "sla_printer");
 #endif
             }
@@ -6735,11 +6750,13 @@ bool Tab::select_preset(
                 bool    	         old_preset_dirty;
                 bool         	     new_preset_compatible;
             };
+            // TigerSlicer: the SLA entries are back. Without them a resin printer picked in the printer combo
+            // reloaded none of its dependent tabs, leaving the resin print and resin combos empty.
             std::vector<PresetUpdate> updates = {
                 { Preset::Type::TYPE_PRINT,         &m_preset_bundle->prints,       ptFFF },
-                //{ Preset::Type::TYPE_SLA_PRINT,     &m_preset_bundle->sla_prints,   ptSLA },
+                { Preset::Type::TYPE_SLA_PRINT,     &m_preset_bundle->sla_prints,   ptSLA },
                 { Preset::Type::TYPE_FILAMENT,      &m_preset_bundle->filaments,    ptFFF },
-                //{ Preset::Type::TYPE_SLA_MATERIAL,  &m_preset_bundle->sla_materials,ptSLA }
+                { Preset::Type::TYPE_SLA_MATERIAL,  &m_preset_bundle->sla_materials,ptSLA }
             };
             Preset *to_be_selected = m_presets->find_preset(preset_name, false, true);
             ConfigOptionStrings* cur_opt2 = dynamic_cast <ConfigOptionStrings *>(m_presets->get_edited_preset().config.option("printer_extruder_variant"));

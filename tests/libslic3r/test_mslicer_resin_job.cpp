@@ -1,5 +1,6 @@
 ﻿#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 
 #include "libslic3r/MSlicerResinJob.hpp"
@@ -755,7 +756,7 @@ TEST_CASE("native MSlicer Resin print owns apply process and output naming", "[m
     config.set_key_value("pad_enable", new ConfigOptionBool(false));
     config.set_key_value("hollowing_enable", new ConfigOptionBool(false));
     config.set_key_value("sla_archive_format", new ConfigOptionString("goo"));
-    config.set_key_value("output_filename_format", new ConfigOptionString("[input_filename_base]"));
+    config.set_key_value("filename_format", new ConfigOptionString("[input_filename_base]"));
 
     Model model;
     ModelObject *object = model.add_object("cube", "cube.stl", TriangleMesh(cube()));
@@ -799,6 +800,64 @@ TEST_CASE("native MSlicer Resin print owns apply process and output naming", "[m
     REQUIRE(print.job() != nullptr);
     CHECK(MSlicerResinJob::has_prepared_supports(model));
     CHECK_FALSE(print.encode().empty());
+}
+
+TEST_CASE("native MSlicer Resin output takes its name from filename_format and its extension from the archive format", "[mslicer][resin][Regression]")
+{
+    // The bundled resin profiles leave the extension out; the built-in SLA print default and the
+    // FFF-style default carry one of their own, which must not end up on a resin archive.
+    const std::string filename_format = GENERATE(as<std::string>{}, "[input_filename_base]",
+                                                 "[input_filename_base].sl1", "{input_filename_base}.gcode");
+
+    DynamicPrintConfig config;
+    config.apply(SLAFullPrintConfig::defaults());
+    config.set_key_value("display_pixels_x", new ConfigOptionInt(64));
+    config.set_key_value("display_pixels_y", new ConfigOptionInt(48));
+    config.set_key_value("display_width", new ConfigOptionFloat(32.));
+    config.set_key_value("display_height", new ConfigOptionFloat(24.));
+    config.set_key_value("printable_height", new ConfigOptionFloat(20.));
+    config.set_key_value("layer_height", new ConfigOptionFloat(1.));
+    config.set_key_value("supports_enable", new ConfigOptionBool(false));
+    config.set_key_value("pad_enable", new ConfigOptionBool(false));
+    config.set_key_value("hollowing_enable", new ConfigOptionBool(false));
+    config.set_key_value("sla_archive_format", new ConfigOptionString("ctb"));
+    config.set_key_value("filename_format", new ConfigOptionString(filename_format));
+
+    Model model;
+    ModelObject *object = model.add_object("cube", "cube.stl", TriangleMesh(cube()));
+    object->add_instance();
+
+    MSlicerResinPrint print;
+    REQUIRE(print.apply(model, config) == PrintBase::APPLY_STATUS_INVALIDATED);
+    CHECK(print.output_filename() == "cube.ctb");
+    // Text after a dot in the name is not an extension to replace.
+    CHECK(print.output_filename("Bracket v1.2") == "Bracket v1.2.ctb");
+}
+
+TEST_CASE("native MSlicer Resin output names can use print settings", "[mslicer][resin]")
+{
+    DynamicPrintConfig config;
+    config.apply(SLAFullPrintConfig::defaults());
+    config.set_key_value("display_pixels_x", new ConfigOptionInt(64));
+    config.set_key_value("display_pixels_y", new ConfigOptionInt(48));
+    config.set_key_value("display_width", new ConfigOptionFloat(32.));
+    config.set_key_value("display_height", new ConfigOptionFloat(24.));
+    config.set_key_value("printable_height", new ConfigOptionFloat(20.));
+    config.set_key_value("layer_height", new ConfigOptionFloat(1.));
+    config.set_key_value("supports_enable", new ConfigOptionBool(false));
+    config.set_key_value("pad_enable", new ConfigOptionBool(false));
+    config.set_key_value("hollowing_enable", new ConfigOptionBool(false));
+    config.set_key_value("sla_archive_format", new ConfigOptionString("goo"));
+    config.set_key_value("filename_format", new ConfigOptionString("[input_filename_base]_{layer_height}mm"));
+
+    Model model;
+    ModelObject *object = model.add_object("cube", "cube.stl", TriangleMesh(cube()));
+    object->add_instance();
+
+    MSlicerResinPrint print;
+    REQUIRE(print.apply(model, config) == PrintBase::APPLY_STATUS_INVALIDATED);
+    // layer_height 1 is printed as "1".
+    CHECK(print.output_filename() == "cube_1mm.goo");
 }
 
 TEST_CASE("MSlicer settings are first-class SLA preset options with safe defaults", "[mslicer][resin]")

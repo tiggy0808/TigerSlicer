@@ -506,8 +506,20 @@ void ParamsPanel::rebuild_panels()
 
 void ParamsPanel::switch_printer_technology()
 {
+    // Hand the page area over the way Tab::tree_sel_change_delayed() does. Otherwise a current tab of
+    // the other technology keeps its active page, the next tab clears the shared page sizer (destroying
+    // that page's controls), and switching back toggled the dead fields: going from a resin printer
+    // back to an FFF one crashed in ConfigManipulation::toggle_field().
+    const PrinterTechnology print_tech = wxGetApp().preset_bundle->printers.get_selected_preset().printer_technology();
+    auto* current = dynamic_cast<Tab*>(m_current_tab);
+    const bool current_supported = current != nullptr && current->supports_printer_technology(print_tech);
+    if (current != nullptr && !current_supported) {
+        current->clear_pages();
+        current->unselect_tree_item();
+    }
     rebuild_panels();
-    const bool current_is_valid = m_current_tab != nullptr &&
+    // The plate/object/part/layer tabs stay assigned for either technology but are FFF only.
+    const bool current_is_valid = current_supported &&
         (m_current_tab == m_tab_print || m_current_tab == m_tab_filament || m_current_tab == m_tab_printer ||
          m_current_tab == m_tab_print_plate || m_current_tab == m_tab_print_object ||
          m_current_tab == m_tab_print_part || m_current_tab == m_tab_print_layer);

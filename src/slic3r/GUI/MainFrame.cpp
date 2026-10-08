@@ -4376,6 +4376,10 @@ void MainFrame::RunScript(wxString js)
 
 void MainFrame::technology_changed()
 {
+    // TigerSlicer: only macOS has a wxMenuBar (the top bar replaces it elsewhere), so on Windows
+    // switching between a resin and an FFF printer in the printer combo crashed here.
+    if (m_menubar == nullptr)
+        return;
     // update menu titles
     PrinterTechnology pt = plater()->printer_technology();
     if (int id = m_menubar->FindMenu(pt == ptFFF ? _omitL("Material Settings") : _L("Filament settings")); id != wxNOT_FOUND)

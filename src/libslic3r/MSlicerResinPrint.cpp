@@ -3,6 +3,8 @@
 #include "Model.hpp"
 #include "ResinProfileMigration.hpp"
 
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/nowide/fstream.hpp>
 
 namespace Slic3r {
@@ -154,14 +156,38 @@ void MSlicerResinPrint::process(long long *, bool)
     set_status(100, "MSlicer Resin slicing complete");
 }
 
+// Extensions a filename_format template may bring along that the resin archive format replaces: the
+// SLA print default ("[input_filename_base].sl1"), FFF-style templates and the MSlicer formats.
+static bool is_template_extension(const std::string &extension)
+{
+    const std::string lower = boost::algorithm::to_lower_copy(extension);
+    for (const char *known : { ".sl1", ".sl1s", ".gcode", ".bgcode" })
+        if (lower == known)
+            return true;
+    for (ts_mslicer_format format : { TS_MSLICER_FORMAT_CTB, TS_MSLICER_FORMAT_GOO, TS_MSLICER_FORMAT_NANODLP, TS_MSLICER_FORMAT_SVG })
+        if (const char *known = MSlicerResinJob::format_extension(format); known != nullptr && lower == known)
+            return true;
+    return false;
+}
+
 std::string MSlicerResinPrint::output_filename(const std::string &filename_base) const
 {
     const ts_mslicer_format format = MSlicerResinJob::format_from_config(m_full_print_config);
     const char *extension = MSlicerResinJob::format_extension(format);
     if (extension == nullptr)
         throw InvalidArgument("The selected MSlicer Resin output format has no file extension.");
-    return PrintBase::output_filename(m_full_print_config.opt_string("output_filename_format"),
-                                      extension, filename_base);
+    // TigerSlicer: the template is "filename_format" here ("output_filename_format" is the PrusaSlicer
+    // name and does not exist, so exporting dereferenced a missing option and crashed). The archive
+    // format decides the extension: a template's own (".sl1") is replaced, while any other text after
+    // a dot belongs to the name ("Bracket v1.2" becomes "Bracket v1.2.ctb", not "Bracket v1.ctb").
+    const auto *filename_format = m_full_print_config.option<ConfigOptionString>("filename_format");
+    boost::filesystem::path filename = PrintBase::output_filename(
+        filename_format != nullptr ? filename_format->value : std::string(), extension, filename_base);
+    if (is_template_extension(filename.extension().string()))
+        filename.replace_extension(extension);
+    else
+        filename += extension;
+    return filename.string();
 }
 
 std::vector<uint8_t> MSlicerResinPrint::encode() const
