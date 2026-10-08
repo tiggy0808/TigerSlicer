@@ -8393,18 +8393,25 @@ void PrintConfigDef::init_sla_params()
     // SLA Printer settings
 
     def = this->add("display_width", coFloat);
+    def->label = L("Display width");
+    def->tooltip = L("Physical width of the printer's LCD screen.");
+    def->sidetext = L("mm");
     //def->label = L("");
     //def->tooltip = L("");
     def->min = 1;
     def->set_default_value(new ConfigOptionFloat(120.));
 
     def = this->add("display_height", coFloat);
+    def->label = L("Display height");
+    def->tooltip = L("Physical height of the printer's LCD screen.");
+    def->sidetext = L("mm");
     //def->label = L("");
     //def->tooltip = L("");
     def->min = 1;
     def->set_default_value(new ConfigOptionFloat(68.));
 
     def = this->add("display_pixels_x", coInt);
+    def->tooltip = L("Number of pixels across the screen's width.");
     //def->full_label = L("");
     def->label = ("X");
     //def->tooltip = L("");
@@ -8412,6 +8419,7 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionInt(2560));
 
     def = this->add("display_pixels_y", coInt);
+    def->tooltip = L("Number of pixels across the screen's height.");
     //def->full_label = L("");
     def->label = ("Y");
     //def->tooltip = L("");
@@ -8419,6 +8427,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionInt(1440));
 
     def = this->add("display_mirror_x", coBool);
+    def->full_label = L("Display horizontal mirroring");
+    def->label = L("Mirror horizontally");
+    def->tooltip = L("Mirror the layer images left to right.");
     //def->full_label = L("");
     //def->label = L("");
     //def->tooltip = L("");
@@ -8426,6 +8437,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionBool(true));
 
     def = this->add("display_mirror_y", coBool);
+    def->full_label = L("Display vertical mirroring");
+    def->label = L("Mirror vertically");
+    def->tooltip = L("Mirror the layer images top to bottom.");
     //def->full_label = L("");
     //def->label = L("");
     //def->tooltip = L("");
@@ -8433,6 +8447,8 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionBool(false));
 
     def = this->add("display_orientation", coEnum);
+    def->label = L("Display orientation");
+    def->tooltip = L("How the LCD screen is mounted in the printer. Portrait swaps the meaning of display width and height, and the layer images are rotated by 90 degrees.");
     //def->label = L("");
     //def->tooltip = L("");
     def->enum_keys_map = &ConfigOptionEnum<SLADisplayOrientation>::get_enum_values();
@@ -8470,6 +8486,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(50.));
 
     def = this->add("relative_correction", coFloats);
+    def->full_label = L("Printer scaling correction");
+    def->label = L("Printer scaling correction");
+    def->tooltip = L("Scale the model by these factors to compensate for this printer's dimensional error. 1 means no correction.");
     //def->label = L("");
     //def->full_label = L("");
     //def->tooltip = L("");
@@ -8478,6 +8497,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloats( { 1., 1.} ));
 
     def = this->add("relative_correction_x", coFloat);
+    def->full_label = L("Printer scaling X axis correction");
+    def->label = L("Printer scaling correction in X axis");
+    def->tooltip = L("Scaling factor in X to compensate for this printer's dimensional error. 1 means no correction.");
     //def->label = L("");
     //def->full_label = L("");
     //def->tooltip = L("");
@@ -8486,6 +8508,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(1.));
 
     def = this->add("relative_correction_y", coFloat);
+    def->full_label = L("Printer scaling Y axis correction");
+    def->label = L("Printer scaling correction in Y axis");
+    def->tooltip = L("Scaling factor in Y to compensate for this printer's dimensional error. 1 means no correction.");
     //def->label = L("");
     //def->full_label = L("");
     //def->tooltip = L("");
@@ -8494,6 +8519,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(1.));
 
     def = this->add("relative_correction_z", coFloat);
+    def->full_label = L("Printer scaling Z axis correction");
+    def->label = L("Printer scaling correction in Z axis");
+    def->tooltip = L("Scaling factor in Z to compensate for this printer's dimensional error. 1 means no correction.");
     //def->label = L("");
     //def->full_label = L("");
     //def->tooltip = L("");
@@ -8502,6 +8530,10 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(1.));
 
     def = this->add("absolute_correction", coFloat);
+    def->full_label = L("Printer absolute correction");
+    def->label = L("Printer absolute correction");
+    def->tooltip = L("Grow (positive) or shrink (negative) every layer outline by this distance.");
+    def->sidetext = L("mm");
     //def->label = L("");
     //def->full_label = L("");
     //def->tooltip = L("");
@@ -8530,12 +8562,16 @@ void PrintConfigDef::init_sla_params()
     // SLA Material settings.
 
     def = this->add("material_colour", coString);
+    def->label = L("Color");
+    def->tooltip = L("Resin color, used only to draw the model in TigerSlicer.");
     //def->label = L("");
     //def->tooltip = L("");
     def->gui_type = ConfigOptionDef::GUIType::color;
     def->set_default_value(new ConfigOptionString("#F6A5C1")); // TigerSlicer pink, matches the bundled resin profiles
 
     def = this->add("material_type", coString);
+    def->label = L("Resin type");
+    def->tooltip = L("The kind of resin, for example standard, ABS-like or water washable.");
     //def->label = L("");
     //def->tooltip = L("");
     def->gui_type = ConfigOptionDef::GUIType::f_enum_open;   // TODO: ???
@@ -8555,6 +8591,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(0.3));
 
     def = this->add("bottle_volume", coFloat);
+    def->label = L("Bottle volume");
+    def->tooltip = L("Volume of one bottle, used to estimate the cost of a print.");
+    def->sidetext = L("ml");
     //def->label = L("");
     //def->tooltip = L("");
     //def->sidetext = "";
@@ -8562,6 +8601,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(1000.0));
 
     def = this->add("bottle_weight", coFloat);
+    def->label = L("Bottle weight");
+    def->tooltip = L("Weight of one bottle.");
+    def->sidetext = L("kg");
     //def->label = L("");
     //def->tooltip = L("");
     //def->sidetext = "";
@@ -8569,6 +8611,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(1.0));
 
     def = this->add("material_density", coFloat);
+    def->label = L("Density");
+    def->tooltip = L("Resin density, used to estimate the weight of a print.");
+    def->sidetext = L("g/ml");
     //def->label = L("");
     //def->tooltip = L("");
     //def->sidetext = "";
@@ -8576,6 +8621,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(1.0));
 
     def = this->add("bottle_cost", coFloat);
+    def->label = L("Cost");
+    def->tooltip = L("Price of one bottle, used to estimate the cost of a print.");
+    def->sidetext = L("money/bottle");
     //def->label = L("");
     //def->tooltip = L("");
     //def->sidetext = "";
@@ -8607,6 +8655,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(100));
 
     def = this->add("exposure_time", coFloat);
+    def->label = L("Exposure time");
+    def->tooltip = L("How long the screen lights each normal layer.");
+    def->sidetext = L("s");
     //def->label = L("");
     //def->tooltip = L("");
     //def->sidetext = "";
@@ -8630,6 +8681,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(150));
 
     def = this->add("initial_exposure_time", coFloat);
+    def->label = L("Bottom exposure time");
+    def->tooltip = L("How long the screen lights each bottom layer. Bottom layers are exposed longer so the print sticks to the build plate.");
+    def->sidetext = L("s");
     //def->label = L("");
     //def->tooltip = L("");
     //def->sidetext = "";
@@ -8637,6 +8691,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(15));
 
     def = this->add("material_correction", coFloats);
+    def->full_label = L("Correction for expansion");
+    def->label = L("Correction for expansion");
+    def->tooltip = L("Scale the model by these factors to compensate for this resin shrinking or expanding as it cures. 1 means no correction.");
     //def->full_label = L("");
     //def->tooltip = L("");
     def->min = 0;
@@ -8644,6 +8701,8 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloats( { 1., 1., 1. } ));
 
     def = this->add("material_correction_x", coFloat);
+    def->full_label = L("Correction for expansion in X axis");
+    def->tooltip = L("Scaling factor in X to compensate for resin shrinkage or expansion. 1 means no correction.");
     //def->full_label = L("");
     //def->tooltip = L("");
     def->min = 0;
@@ -8651,6 +8710,8 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(1.));
 
     def = this->add("material_correction_y", coFloat);
+    def->full_label = L("Correction for expansion in Y axis");
+    def->tooltip = L("Scaling factor in Y to compensate for resin shrinkage or expansion. 1 means no correction.");
     //def->full_label = L("");
     //def->tooltip = L("");
     def->min = 0;
@@ -8658,6 +8719,8 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(1.));
 
     def = this->add("material_correction_z", coFloat);
+    def->full_label = L("Correction for expansion in Z axis");
+    def->tooltip = L("Scaling factor in Z to compensate for resin shrinkage or expansion. 1 means no correction.");
     //def->full_label = L("");
     //def->tooltip = L("");
     def->min = 0;
@@ -8996,6 +9059,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(0.3));
 
     def = this->add("hollowing_enable", coBool);
+    def->label = L("Hollow the model");
+    def->category = L("Hollowing");
+    def->tooltip = L("Print the model with an empty interior to save resin. Add drain holes so uncured resin can flow out.");
     //def->label = L("");
     //def->category = L("");
     //def->tooltip = L("");
@@ -9003,6 +9069,10 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionBool(false));
 
     def = this->add("hollowing_min_thickness", coFloat);
+    def->label = L("Wall thickness");
+    def->category = L("Hollowing");
+    def->tooltip = L("Minimum wall thickness of a hollowed model.");
+    def->sidetext = L("mm");
     //def->label = L("");
     //def->category = L("");
     //def->tooltip = L("");
@@ -9013,6 +9083,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(3.));
 
     def = this->add("hollowing_quality", coFloat);
+    def->label = L("Accuracy");
+    def->category = L("Hollowing");
+    def->tooltip = L("Speed against accuracy when computing the interior. Lower values are faster but can leave artifacts.");
     //def->label = L("");
     //def->category = L("");
     //def->tooltip = L("");
@@ -9022,6 +9095,9 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(0.5));
 
     def = this->add("hollowing_closing_distance", coFloat);
+    def->label = L("Closing distance");
+    def->category = L("Hollowing");
+    def->tooltip = L("How rounded the interior is. The interior is first computed deeper in the object by this distance and then grown back to the wall thickness. At zero the interior follows the outer shape most closely.");
     //def->label = L("");
     //def->category = L("");
     //def->tooltip = L("");

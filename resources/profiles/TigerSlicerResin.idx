@@ -1,4 +1,5 @@
 min_slic3r_version = 1.0.0
+1.3.2 Printers use their real bed size and height, and are listed by name.
 1.3.1 TigerSlicer 1.0 rebaseline of the shipped profiles.
 min_slic3r_version = 0.0.0
 1.3.0 Adds the Phrozen Sonic and Sonic Mini, Voxelab Ceres 8.9 and Polaris 5.5, and Wanhao CGR Mini Mono.

@@ -72,6 +72,7 @@ static std::vector<std::string> s_project_options {
 
 //Orca: add custom as default
 const char *PresetBundle::ORCA_DEFAULT_BUNDLE = "Custom";
+const char *PresetBundle::TIGERSLICER_RESIN_VENDOR = "TigerSlicerResin";
 const char *PresetBundle::ORCA_DEFAULT_PRINTER_MODEL = "MyKlipper 0.4 nozzle";
 const char *PresetBundle::ORCA_DEFAULT_PRINTER_VARIANT = "0.4";
 const char *PresetBundle::ORCA_DEFAULT_FILAMENT = "Generic PLA @System";
@@ -599,7 +600,7 @@ void PresetBundle::load_tigerslicer_resin_bundle(ForwardCompatibilitySubstitutio
     // Vendor header and printer models.
     VendorProfile vendor = VendorProfile::from_ini(tree, path, true);
     if (vendor.id.empty())
-        vendor.id = "TigerSlicerResin";
+        vendor.id = TIGERSLICER_RESIN_VENDOR;
     if (vendor.name.empty())
         vendor.name = "TigerSlicer Resin";
     VendorProfile &stored_vendor = this->vendors.emplace(vendor.id, vendor).first->second;
@@ -1339,6 +1340,8 @@ bool PresetBundle::apply_vendor_config(
 
     std::vector<std::string> install_bundles;
     for (const auto &it : new_vendors) {
+        if (it.first == TIGERSLICER_RESIN_VENDOR)
+            continue;
         if (it.second.size() > 0) {
             auto vendor_file = vendor_dir / (it.first + ".json");
             if (!fs::exists(vendor_file)) {
@@ -1370,7 +1373,7 @@ bool PresetBundle::apply_vendor_config(
     // Check if any non-default vendor has selected printers
     bool has_vendor_printer = false;
     for (const auto& [vendor, models] : new_vendors) {
-        if (vendor != PresetBundle::ORCA_DEFAULT_BUNDLE && !models.empty()) {
+        if (vendor != PresetBundle::ORCA_DEFAULT_BUNDLE && vendor != TIGERSLICER_RESIN_VENDOR && !models.empty()) {
             has_vendor_printer = true;
             break;
         }
@@ -1387,7 +1390,7 @@ bool PresetBundle::apply_vendor_config(
                 // For @System filaments, we check if the short_name exists as a vendor-specific filament
                 bool has_vendor_filament = false;
                 for (const auto& [vendor, models] : new_vendors) {
-                    if (vendor != PresetBundle::ORCA_DEFAULT_BUNDLE) {
+                    if (vendor != PresetBundle::ORCA_DEFAULT_BUNDLE && vendor != TIGERSLICER_RESIN_VENDOR) {
                         auto vendor_it = this->vendors.find(vendor);
                         // Check if this vendor is loaded in the preset bundle
                         if (vendor_it != this->vendors.end()) {
@@ -2950,8 +2953,9 @@ void PresetBundle::load_selections(AppConfig &config, const PresetPreferences& p
     // Selects the profile, leaves it to -1 if the initial profile name is empty or if it was not found.
     prints.select_preset_by_name_strict(initial_print_profile_name);
     filaments.select_preset_by_name_strict(initial_filament_profile_name);
-	// sla_prints.select_preset_by_name_strict(initial_sla_print_profile_name);
-    // sla_materials.select_preset_by_name_strict(initial_sla_material_profile_name);
+    // The resin profiles last used with this printer (saved by export_selections).
+    sla_prints.select_preset_by_name_strict(config.get_printer_setting(initial_printer_profile_name, PRESET_SLA_PRINT_NAME));
+    sla_materials.select_preset_by_name_strict(config.get_printer_setting(initial_printer_profile_name, PRESET_SLA_MATERIALS_NAME));
 
     // Load the names of the other filament profiles selected for a multi-material printer.
     // Load it even if the current printer technology is SLA.
@@ -3117,6 +3121,10 @@ void PresetBundle::export_selections(AppConfig &config)
     config.clear_printer_settings(printer_name);
     config.set_printer_setting(printer_name, PRESET_PRINTER_NAME, printer_name);
     config.set_printer_setting(printer_name, PRESET_PRINT_NAME, prints.get_selected_preset_name());
+    if (printers.get_selected_preset().printer_technology() == ptSLA) {
+        config.set_printer_setting(printer_name, PRESET_SLA_PRINT_NAME, sla_prints.get_selected_preset_name());
+        config.set_printer_setting(printer_name, PRESET_SLA_MATERIALS_NAME, sla_materials.get_selected_preset_name());
+    }
     config.set_printer_setting(printer_name, PRESET_FILAMENT_NAME,     filament_presets.front());
     config.set_printer_setting(printer_name, "curr_bed_type", config.get("curr_bed_type"));
     for (unsigned i = 1; i < filament_presets.size(); ++i) {
@@ -5586,6 +5594,27 @@ void PresetBundle::normalize_compatible_presets()
     normalize(this->sla_materials, &this->sla_prints);
 }
 
+// A "- default -" resin placeholder is compatible with every printer, so the compatibility pass keeps
+// it selected. Replace it with the printer's preferred resin profile, or else the first compatible one.
+static void replace_default_resin_preset(PresetCollection &presets, const std::string &preferred_name)
+{
+    if (presets.get_selected_idx() != size_t(-1) && !presets.get_selected_preset().is_default)
+        return;
+    Preset *choice = preferred_name.empty() ? nullptr : presets.find_preset(preferred_name, false);
+    if (choice == nullptr || !choice->is_compatible) {
+        choice = nullptr;
+        for (Preset &preset : presets)
+            if (!preset.is_default && preset.is_visible && preset.is_compatible) {
+                choice = &preset;
+                break;
+            }
+    }
+    if (choice == nullptr)
+        return;
+    choice->is_visible = true;
+    presets.select_preset_by_name(choice->name, true);
+}
+
 void PresetBundle::update_compatible(PresetSelectCompatibleType select_other_print_if_incompatible, PresetSelectCompatibleType select_other_filament_if_incompatible)
 {
     const Preset					&printer_preset					    = this->printers.get_edited_preset();
@@ -5754,9 +5783,11 @@ void PresetBundle::update_compatible(PresetSelectCompatibleType select_other_pri
 		assert(printer_preset.config.has("default_sla_material_profile"));
 		this->sla_prints.update_compatible(printer_preset_with_vendor_profile, nullptr, select_other_print_if_incompatible,
             PreferedPrintProfileMatch(this->sla_prints.get_selected_idx() == size_t(-1) ? nullptr : &this->sla_prints.get_edited_preset(), printer_preset.config.opt_string("default_sla_print_profile")));
+        replace_default_resin_preset(this->sla_prints, printer_preset.config.opt_string("default_sla_print_profile"));
         const PresetWithVendorProfile sla_print_preset_with_vendor_profile = this->sla_prints.get_edited_preset_with_vendor_profile();
 		this->sla_materials.update_compatible(printer_preset_with_vendor_profile, &sla_print_preset_with_vendor_profile, select_other_filament_if_incompatible,
             PreferedProfileMatch(this->sla_materials.get_selected_idx() == size_t(-1) ? std::string() : this->sla_materials.get_edited_preset().alias, printer_preset.config.opt_string("default_sla_material_profile")));
+        replace_default_resin_preset(this->sla_materials, printer_preset.config.opt_string("default_sla_material_profile"));
 		break;
 	}
     default: break;

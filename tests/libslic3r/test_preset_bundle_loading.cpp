@@ -4,6 +4,7 @@
 
 #include "libslic3r/PresetBundle.hpp"
 #include "libslic3r/AppConfig.hpp"
+#include "libslic3r/Utils.hpp"
 
 #include "test_utils.hpp"
 
@@ -540,3 +541,38 @@ TEST_CASE("A printer specific filament supersedes the generic library filament w
     CHECK(is_compatible_with_printer(generic_lib, PresetWithVendorProfile(*printer_c, nullptr)));
 }
 
+
+TEST_CASE("Bundled resin printers carry their bed and select real resin profiles", "[Preset][Bundle][resin]")
+{
+    const std::string old_resources = resources_dir();
+    set_resources_dir((fs::path(std::string(TEST_DATA_DIR)) / ".." / ".." / "resources").lexically_normal().string());
+
+    PresetBundle bundle;
+    bundle.load_tigerslicer_resin_bundle(ForwardCompatibilitySubstitutionRule::Disable);
+
+    const Preset *mars = bundle.printers.find_preset("Elegoo Mars 3", false);
+    REQUIRE(mars != nullptr);
+    CHECK(mars->printer_technology() == ptSLA);
+    // Listed and enabled by its name, like the JSON vendors' models.
+    CHECK(mars->config.opt_string("printer_model") == "Elegoo Mars 3");
+
+    // The printer's own build area, not the FFF default bed.
+    const std::vector<Vec2d> &area = mars->config.option<ConfigOptionPoints>("printable_area")->values;
+    REQUIRE(area.size() == 4);
+    CHECK(area[2].x() == Catch::Approx(143.43));
+    CHECK(area[2].y() == Catch::Approx(89.6));
+    CHECK(mars->config.opt_float("printable_height") == Catch::Approx(175.));
+
+    const VendorProfile &vendor = bundle.vendors.at(PresetBundle::TIGERSLICER_RESIN_VENDOR);
+    CHECK(std::any_of(vendor.models.begin(), vendor.models.end(), [](const VendorProfile::PrinterModel &model) {
+        return model.id == "Elegoo Mars 3" && model.technology == ptSLA;
+    }));
+
+    // Choosing the printer replaces the "- default -" resin placeholders with its own profiles.
+    bundle.printers.select_preset_by_name("Elegoo Mars 3", true);
+    bundle.update_compatible(PresetSelectCompatibleType::Always, PresetSelectCompatibleType::Always);
+    CHECK(bundle.sla_prints.get_selected_preset_name() == "0.05 mm MSlicer Standard");
+    CHECK(bundle.sla_materials.get_selected_preset_name() == "Generic Standard Resin @MSlicer");
+
+    set_resources_dir(old_resources);
+}

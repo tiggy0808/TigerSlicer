@@ -508,6 +508,8 @@ public:
 
     //orca: add 'custom' as default
     static const char *ORCA_DEFAULT_BUNDLE;
+    // TigerSlicer's resin vendor: an ini bundle loaded from resources, never installed as a JSON vendor.
+    static const char *TIGERSLICER_RESIN_VENDOR;
 	static const char *ORCA_DEFAULT_PRINTER_MODEL;
 	static const char *ORCA_DEFAULT_PRINTER_VARIANT;
 	static const char *ORCA_DEFAULT_FILAMENT;
