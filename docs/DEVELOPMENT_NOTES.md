@@ -16,22 +16,22 @@ Commits, oldest first (all on `main`):
 
 | Commit | Subject |
 |---|---|
-| `e2f17d562d` | fix(cloud): our own keychain entry, and no silent sign-in on startup |
-| `54266f12f9` | feat(cloud): sign-in, preset sync and the startup phone-home are gone |
-| `d47de5f80a` | feat(splash): a black-and-pink startup card |
-| `bc2b876fad` | fix(i18n): compile catalogs as TigerSlicer.mo so translations load |
-| `e0c87eb0ae` | feat(brand): ship TigerSlicer.exe and stop claiming OrcaSlicer's system names |
-| `a06dcde36a` | feat(brand): say TigerSlicer in every translatable string |
-| `1746d8cba3` | feat(brand): rename the untranslated places users still saw Orca |
-| `a9713f82ad` | fix(prefs): stealth mode says what it still does |
-| `db2ca258c8` | feat(theme): the 3D scene and its gizmos turn pink |
-| `cdf2eeea1e` | feat(theme): dialogs, overlays and widgets lose their teal |
-| `b32763ca49` | feat(theme): new parts start pink |
-| `b995ef02c3` | fix(theme): filament swatches show their colour, pink icons stay pink |
-| `917783b1ce` | feat(theme): web views lose their teal |
-| `d3166a8e67` | fix(theme): fresh installs skip the filament colour migration |
-| `d98abeffa2` | chore(version): 0.0.1 |
-| `a63356fce9` | fix(theme): selected pink parts stay pink |
+| `509f32dfc2` | fix(cloud): our own keychain entry, and no silent sign-in on startup |
+| `340f138315` | feat(cloud): sign-in, preset sync and the startup phone-home are gone |
+| `e75058f9ed` | feat(splash): a black-and-pink startup card |
+| `e5645119a6` | fix(i18n): compile catalogs as TigerSlicer.mo so translations load |
+| `e4fa398bcf` | feat(brand): ship TigerSlicer.exe and stop claiming OrcaSlicer's system names |
+| `e63c3d1feb` | feat(brand): say TigerSlicer in every translatable string |
+| `9ec5f32b24` | feat(brand): rename the untranslated places users still saw Orca |
+| `1614e4fdd0` | fix(prefs): stealth mode says what it still does |
+| `fd0627978d` | feat(theme): the 3D scene and its gizmos turn pink |
+| `0025939531` | feat(theme): dialogs, overlays and widgets lose their teal |
+| `fd95203897` | feat(theme): new parts start pink |
+| `4d9f875127` | fix(theme): filament swatches show their colour, pink icons stay pink |
+| `ccf5350806` | feat(theme): web views lose their teal |
+| `4281a5a918` | fix(theme): fresh installs skip the filament colour migration |
+| `99467ae37d` | chore(version): 0.0.1 |
+| `0247a6f342` | fix(theme): selected pink parts stay pink |
 
 Style used for disabled code: early `return;` or `if (false && ...)` with a
 `// TigerSlicer:` comment, keeping upstream code compiled so upstream merges stay easy.
@@ -39,7 +39,7 @@ No classes or headers were deleted.
 
 ### 1. Cloud features removed
 
-**Privacy bug fixed first (`e2f17d562d`, `src/slic3r/Utils/OrcaCloudServiceAgent.cpp`).**
+**Privacy bug fixed first (`509f32dfc2`, `src/slic3r/Utils/OrcaCloudServiceAgent.cpp`).**
 TigerSlicer stored its cloud login in the OS keychain under `"OrcaSlicer/Auth"`, the
 same entry stock OrcaSlicer uses, and `OrcaCloudServiceAgent::start()` (called on every
 launch, even in stealth mode) loaded and refreshed that token against
@@ -52,7 +52,7 @@ account, and a TigerSlicer logout could delete OrcaSlicer's saved login.
   `/api/v1/health` request.
 - The agent object is still created (other code dereferences it without null checks).
 
-**Sign-in and sync (`54266f12f9`).**
+**Sign-in and sync (`340f138315`).**
 - `GUI_App.cpp`: `ShowUserLogin(true)` is a no-op (`ShowUserLogin(false)` still closes a
   dialog), so `request_login`/`check_login` do nothing. `get_login_info()` returns at the
   top (can never call `user_logout()`). `handle_web_request()` ignores all
@@ -105,13 +105,13 @@ account, and a TigerSlicer logout could delete OrcaSlicer's saved login.
   WebView2 runtime download, physical-printer host OAuth (SimplyPrint/Obico/3DPrinterOS/
   Flashforge), and the user-initiated network test.
 
-**Stealth mode tooltip (`a9713f82ad`).** Rewritten to what it still does: keeps the Bambu
+**Stealth mode tooltip (`1614e4fdd0`).** Rewritten to what it still does: keeps the Bambu
 network plugin from checking for updates/connecting to Bambu's servers and stops online
 printer error descriptions. New msgid, untranslated (English fallback).
 
 ### 2. "TigerSlicer", not Orca
 
-**Translations never loaded (`bc2b876fad`).** The build wrote
+**Translations never loaded (`e5645119a6`).** The build wrote
 `resources/i18n/<lang>/OrcaSlicer.mo` but the app loads catalog `SLIC3R_APP_KEY` =
 `TigerSlicer`. Now `CMakeLists.txt` writes `${SLIC3R_APP_KEY}.mo`, and
 `scripts/run_gettext.bat` / `scripts/run_gettext.sh` use `mo_name="TigerSlicer"`
@@ -119,7 +119,7 @@ printer error descriptions. New msgid, untranslated (English fallback).
 their names (`localization/i18n/OrcaSlicer.pot`, `<lang>/OrcaSlicer_<lang>.po`).
 macOS needs nothing extra (`build_release_macos.sh` calls the fixed `run_gettext.sh`).
 
-**Windows names and OS registration (`e0c87eb0ae`, Windows only unless noted).**
+**Windows names and OS registration (`e4fa398bcf`, Windows only unless noted).**
 - `src/CMakeLists.txt`: launcher outputs `TigerSlicer.exe`, GUI DLL `TigerSlicer.dll`
   (CMake target names unchanged; DLL gets `PDB_NAME`/`ARCHIVE_OUTPUT_NAME`
   `TigerSlicer_dll` so it doesn't collide with the exe's .pdb/.lib).
@@ -139,7 +139,7 @@ macOS needs nothing extra (`build_release_macos.sh` calls the fixed `run_gettext
 - Cross-platform text: Linux `.desktop` `Name=TigerSlicer` + `x-scheme-handler/tigerslicer`;
   macOS `cmake/modules/MacOSXBundleInfo.plist.in` registers the `tigerslicer` URL scheme.
 
-**Translatable strings (`a06dcde36a`).** 98 of the 117 Orca msgids changed, in the C++
+**Translatable strings (`e63c3d1feb`).** 98 of the 117 Orca msgids changed, in the C++
 source, `OrcaSlicer.pot` and all 23 `.po` files together (so translations keep matching);
 all catalogs pass `tools/msgfmt.exe --check-format`. Rules (applied only inside gettext
 literals / msgid / msgstr): `Orca Slicer` → `TigerSlicer`; word `OrcaSlicer` (not part of
@@ -151,7 +151,7 @@ OrcaSlicer"), and the About history paragraph. Translator transliterations were 
 (zh_CN 逆戟鲸, ja オルカ, ko 오르카, th ออร์ก้า, tr "Orca Dilimleyici"); new/changed
 translations are marked `# AI Translated`. hints.ini tips (8) updated in sync.
 
-**Hand edits (`1746d8cba3`).**
+**Hand edits (`9ec5f32b24`).**
 - About dialog: "TigerSlicer is based on OrcaSlicer by SoftFever and contributors, which
   builds on Bambu Studio and PrusaSlicer." Copyright "TigerSlicer" plus "Portions
   Copyright (C) 2026 OrcaSlicer Pte Ltd" (AGPL attribution kept). Link →
@@ -182,7 +182,7 @@ Palette: main `#F6A5C1`, hover/pressed `#D98BA8`, dark-mode `#9B5874`; new tints
 `#F2D3DE` (selection, dark partner `#3C2233`) and `#FBEAF0` (focus, dark `#3D2D35`),
 both added to `Widgets/StateColor.cpp` `gDarkColors` (old teal keys removed).
 
-- **3D scene (`db2ca258c8`).** `src/libslic3r/Color.hpp` `ColorRGB::ORCA()` /
+- **3D scene (`fd0627978d`).** `src/libslic3r/Color.hpp` `ColorRGB::ORCA()` /
   `ColorRGBA::ORCA()` (0,150,136) → (246,165,193) — feeds `COL_ORCA` (~45 uses: gizmo
   borders, measure text, sliders, plate list), the selection rectangle and ImGui header/
   slider colours. Plate slicing progress (`GLCanvas3D.cpp`), layer slider `BRAND_COLOR`
@@ -191,14 +191,14 @@ both added to `Widgets/StateColor.cpp` `gDarkColors` (old teal keys removed).
   (`libvgcode/src/ViewerImpl.cpp`), G-code viewer grid/hover/links, measure hover, cut
   line, mesh-boolean box/buttons, painter tool buttons (supports, fuzzy skin, MMU, seam),
   text/emboss pressed toggles, skip-part "kept" colour.
-- **Dialogs/widgets/icons (`cdf2eeea1e`).** ImGui hover/dark constants, confirm/combo
+- **Dialogs/widgets/icons (`0025939531`).** ImGui hover/dark constants, confirm/combo
   borders, text selection (pink at 0.5 alpha for legibility), notifications, hints,
   slicing progress, daily tips; wx selection/focus tints (object list, dropdown, combobox,
   tab buttons, search, printer panel, capsule buttons, purge mode, multi-nozzle sync),
   `StepCtrl`, `ProgressBar`, HTML links, thermal-preconditioning OK button; icons
   `canvas_menu_hover`/`canvas_zoom_hover` (+dark), `pipe_of_*`, `dev_ams_upgrading`;
   flatpak metainfo brand colours.
-- **New parts start pink (`b32763ca49`, `d3166a8e67`).** The green part colour was the
+- **New parts start pink (`fd95203897`, `4281a5a918`).** The green part colour was the
   default filament colour `#26A69A` (`PresetBundle.cpp` `update_selections` /
   `load_selections`), now `AppConfig::DEFAULT_FILAMENT_COLOR = "#F6A5C1"`. One-time
   migration in `AppConfig::load()` (`migrate_default_filament_colors`, JSON config,
@@ -209,25 +209,25 @@ both added to `Widgets/StateColor.cpp` `gDarkColors` (old teal keys removed).
   so a teal chosen in the first session isn't rewritten. 3MF colours are never touched.
   SLA `material_colour` default `#29B2B2` → `#F6A5C1`. Tests added to
   `tests/libslic3r/test_appconfig.cpp` (`[AppConfig]`).
-- **Selected parts stay pink (`a63356fce9`).** `GLVolume::brighten_color()`
+- **Selected parts stay pink (`0247a6f342`).** `GLVolume::brighten_color()`
   (`src/slic3r/GUI/3DScene.cpp`) highlights a selected object by adding 0.25 to its HSL
   lightness. The old teal (L ≈0.40) stayed teal, but the pink default (L ≈0.81) hit 1.0
   and every selected part rendered pure white. Now `l = max(l, min(l + 0.25, 0.9))`:
   dark/mid colours (L ≤ 0.65) are unchanged, light colours keep their hue. Measured on
   Windows: selected pink cube (209,209,209) before → (205,171,183) after.
-- **Bug fixes (`b995ef02c3`).** Filament swatches were stuck pink because
+- **Bug fixes (`4d9f875127`).** Filament swatches were stuck pink because
   `BitmapCache.cpp` still searched for teal `0xFF889600` (nanosvg ABGR) after
   `outlined_rect.svg` became pink → now `0xFFC1A5F6`. Some icons (completed_2, leaf,
   shield, placeholder_excel) turned red in dark mode because the earlier sweep rewrote a
   placeholder key `"#00FF00"` to `"#D98BA8"` → restored to `"#00FF00"`.
-- **Web views (`917783b1ce`).** `include/global.css` dark main/hover → #9B5874, focus
+- **Web views (`ccf5350806`).** `include/global.css` dark main/hover → #9B5874, focus
   tints; homepage `dark.css`/`home.css`; guide pages; dialog `theme.css`, PluginsDialog
   styles (badges, update button, run icon, focus rings), SpeedDial.
 - **Left green on purpose:** support enforcer (green) vs blocker (red), scale grabbers,
   Y axis, heat maps, other toolpath role colours, status-OK greens, palettes of distinct
   colours, real filament colour data (e.g. Bambu Green), PNG images.
 
-### 4. New startup screen (`d47de5f80a`)
+### 4. New startup screen (`e75058f9ed`)
 
 - 560×340 DIP borderless card, always dark `#0E0E10` (independent of light/dark mode).
 - Artwork `resources/images/splash_tigerslicer.svg`, generated by the new `splash_svg()`
@@ -258,7 +258,7 @@ Done for macOS in this release (shared code): cloud removal (incl. the macOS Fil
 string/translation rename, `TigerSlicer.mo`, pink colours, splash, `tigerslicer://` scheme
 in `cmake/modules/MacOSXBundleInfo.plist.in`.
 
-Done for macOS after the Windows release (`2f193c845`, build(macos)):
+Done for macOS after the Windows release (`8c7560f43`, build(macos)):
 - The bundle is `TigerSlicer.app/Contents/MacOS/TigerSlicer`: `OUTPUT_NAME "TigerSlicer"`
   on Apple in `src/CMakeLists.txt` (CMake target still `OrcaSlicer`), with the build-tree
   paths, `MACOSX_BUNDLE_BUNDLE_NAME "TigerSlicer"` (menu-bar app name) and the copyright
@@ -275,7 +275,7 @@ Done for macOS after the Windows release (`2f193c845`, build(macos)):
 - `Mouse3DHandlerMac.mm` registers `"\013TigerSlicer"`.
 - Profile validator: name, bundle id and copyright say TigerSlicer; its target and
   bundle are still named `OrcaSlicer_profile_validator`.
-- Rounded-square Mac app icon (`2f9adb838`): `macos_app_icon()` in
+- Rounded-square Mac app icon (`302c3bdaa`): `macos_app_icon()` in
   `generate_tigerslicer_branding.py` draws the pink mark on Apple's icon grid (824 px
   superellipse body on a 1024 px canvas, near-black gradient, soft shadow). It feeds only
   `resources/Icon.icns`, the Dock icon `images/OrcaSlicer-mac_256px.ico`, and the
@@ -343,7 +343,7 @@ packaging, or both names end up in the app. A fresh clone is unaffected.
   `TigerSlicer`, `CFBundleIdentifier` `com.tigerslicer.TigerSlicer`,
   `CFBundleShortVersionString` 0.0.1, 23 × `TigerSlicer.mo` and no `OrcaSlicer.mo`.
 - Installed from `TigerSlicer-0.0.1-macos-arm64.dmg` and launched with a throwaway
-  `--datadir`: the log reports version 0.0.1 build `b5e74f81c`, the new config records
+  `--datadir`: the log reports version 0.0.1 build `507a595c8`, the new config records
   0.0.1, no fatal errors.
 - Known harmless log noise on a fresh data dir (all platforms): "Failed to install bundled
   TigerSlicer Resin profile" — `PresetBundle::setup_directories()` copies the resin ini/idx
