@@ -1,8 +1,9 @@
-# TigerSlicer changelog
+# TigerSlicer development notes
 
-Detailed notes for every TigerSlicer release, written so the changes can be
-reproduced or ported (in particular to the macOS build). TigerSlicer is based on
-OrcaSlicer; "upstream" below means OrcaSlicer.
+Technical notes for each release: which commits changed what, in enough detail to reproduce or port a
+change (in particular from the Windows build to the macOS one). For a short list of what changed for
+users, see [CHANGELOG.md](../CHANGELOG.md). TigerSlicer is based on OrcaSlicer; "upstream" below means
+OrcaSlicer.
 
 ---
 
@@ -284,6 +285,8 @@ Still Orca on macOS: the unused `src/dev-utils/platform/osx/Info.plist.in`, the 
 folder and CI dmg/artifact names above, and the profile validator's file name.
 
 #### Building the Mac app
+
+(Also in [BUILDING.md](BUILDING.md).)
 
 On Apple Silicon with Homebrew and only the Command Line Tools (no full Xcode):
 
