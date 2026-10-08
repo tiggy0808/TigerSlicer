@@ -3,6 +3,39 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
+## 0.0.2 (2026-10-08)
+
+Resin printing now works from start to finish.
+
+**New**
+- **Resin printers in the setup wizard.** All 67 bundled resin printers (Elegoo, Phrozen, Creality,
+  EPAX, Peopoly, Voxelab, Uniformation, Wanhao and generic screens) are listed under "Resin printers
+  (MSLA)". Picking only resin printers skips the filament step.
+- **Resin settings you can edit.** With a resin printer selected, the sidebar shows a Resin selector
+  in place of the filament list, and the settings pages cover the screen and output format (printer),
+  exposure, light power, wait times and lift/retract motion (resin), and layers, anti-aliasing and
+  hollowing (print).
+- **Hollowing and drain holes.** The Supports workspace (View menu) can hollow a model and place drain
+  holes by clicking on it, with the hole size and depth set beside the button. Support points and
+  drain holes are now drawn on the model.
+- **Layer slider in the resin preview.** Step through every layer image instead of only the middle one.
+- **Send to Elegoo and other ChiTu-board printers.** In the printer connection dialog, choose
+  "ChiTu SDCP (local LAN)" and enter the printer's address; "Send to printer" then uploads the file.
+  The print is not started automatically.
+- The export button reads "Export resin file" for resin printers.
+
+**Fixed**
+- TigerSlicer crashed with a resin printer selected: on startup, when opening a model, and when
+  slicing.
+- Resin printers used OrcaSlicer's default 200 mm bed instead of their own build area and height.
+- Resin printers showed an internal ID such as "ELEGOO_MARS_3" instead of their name.
+- A resin printer started on placeholder "Default Setting" profiles, which refused to slice.
+- Support presets and "Save print settings profile" in the Supports workspace did nothing.
+
+**Known issues**
+- In Preview, resin plates show only the layer image panel; the 3D view stays empty.
+- Resin printers are not found automatically on the network; enter the printer's address instead.
+
 ## 0.0.1 (2026-10-06)
 
 This release makes TigerSlicer fully its own app instead of a renamed OrcaSlicer.

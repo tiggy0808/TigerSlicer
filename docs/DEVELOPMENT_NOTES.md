@@ -7,6 +7,94 @@ OrcaSlicer.
 
 ---
 
+## 0.0.2 (2026-10-08)
+
+Theme: make resin printing reachable and usable. Developed and verified on macOS; nothing here is
+platform-specific, but the Windows build has not been run yet.
+
+### Resin printers are selectable
+- `PresetBundle::TIGERSLICER_RESIN_VENDOR` (`"TigerSlicerResin"`) names the ini-based resin vendor.
+  `apply_vendor_config` skips it when installing vendor `.json` bundles (there is none, so selecting a
+  resin printer used to fail the whole wizard apply) and in the `@System` filament replacement logic.
+- Setup wizard: `GuideFrame::LoadResinProfileFamily()` (`WebGuideDialog.cpp`) adds the vendor's SLA
+  models to the printer list with variant `default` (the resin presets' `printer_variant`), technology
+  `SLA` and the `TigerSlicerResin/<model>_thumbnail.png` cover. `guide/21/common.js` shows them as
+  "Resin printers (MSLA)" right after Custom Printer, labels the card "Type: Resin (MSLA)" instead of a
+  nozzle size, and `21.js` skips the filament page when only resin printers are selected.
+- `resources/profiles/TigerSlicerResin.ini` (config 1.3.2):
+  - `bed_shape`/`max_print_height` (PrusaSlicer names, silently dropped by Orca's `handle_legacy`) are
+    now `printable_area`/`printable_height`, so every printer gets its real build area and height.
+  - Model ids are the display names (`[printer_model:Elegoo Mars 3]`, `printer_model = Elegoo Mars 3`),
+    as in Orca's JSON vendors: the printer combo shows and resolves system printers by `printer_model`.
+    Thumbnails were renamed to match.
+- `PresetBundle::update_compatible` (SLA branch) replaces a selected `- default -` print/material with
+  the printer's `default_sla_print_profile`/`default_sla_material_profile` (or the first compatible
+  one): the placeholders are compatible with everything, so they were never replaced, and the default
+  print enables `pad_enable`, which the engine refuses. `export_selections`/`load_selections` save and
+  restore the resin print and material per printer (`sla_print`, `sla_materials` printer settings).
+
+### Crashes with a resin printer selected
+- `BackgroundSlicingProcess` never received the resin print: `set_resin_print(&resin_print)` only
+  existed inside a commented-out block in `Plater::priv::priv`. It is registered (with a status
+  callback) before the first plate selects its technology.
+- `PartPlate::update_slice_context` selected the plate's construction-time technology (always FFF);
+  it now uses the selected printer preset's technology, so resin plates slice with the resin print.
+- `BackgroundSlicingProcess::apply` read `wxGetApp().mainframe->m_plater` while the main frame is
+  still being constructed (resin's first apply reports a change, FFF's does not).
+- `PartPlateList::set_default_wipe_tower_pos_for_plate` returns early for non-FFF printers (the SLA
+  full config has no wipe tower options).
+- `GLCanvas3D::reload_scene` runs the filament checks (TPU, PLA/PETG mixing, nozzle compatibility)
+  only for FFF and clears their warnings otherwise.
+- `Plater::record_slice_preset` (called by `reslice()`, i.e. Slice plate and switching to Preview)
+  returns early for non-FFF printers; it dereferenced the missing filament presets.
+
+### Resin settings UI
+- `MainFrame::create_preset_tabs` creates `TabSLAPrint` (sidebar params panel) and `TabSLAMaterial`
+  (params dialog, title "Resin Settings"). `ParamsPanel::refresh_tabs` hides tabs for the other
+  technology (they are never laid out, so they drew over the panel: the "appearance bug" behind BBS's
+  workaround), and `ParamsPanel::switch_printer_technology()` rebuilds both panels from
+  `Plater::set_printer_technology`. On macOS `create_layout` detaches `m_page_view` before re-adding it.
+- Pages: `TabPrinter::build_sla` (printable space, display, output file, corrections),
+  `TabSLAMaterial::build` (resin info, exposure/PWM/wait, normal and bottom lift/retract, corrections),
+  `TabSLAPrint::build` (layers, anti-aliasing, hollowing; hollowing fields follow `hollowing_enable`).
+- `PrintConfig.cpp`: labels, tooltips, units and limits restored for the legacy SLA options these pages
+  show (BBS had commented them out).
+- Sidebar: a Resin row (`combo_sla_material` + edit button) in the printer section replaces the
+  filament section for resin printers; the nozzle diameter box is hidden. `Sidebar::update_presets`
+  refreshes the resin combos.
+- The export button and its dropdown read "Export resin file" for resin printers.
+
+### Supports workspace, preview, network upload
+- `SupportsView`: Hollowing group and drain holes (place/remove by clicking, diameter and depth spin
+  boxes; default 4 mm x 6 mm as in PrusaSlicer's hollowing gizmo). Support presets and "Save print
+  settings profile" work now that the SLA print tab exists. Stale "slicing refuses" texts fixed.
+- `GLCanvas3D::_render_msla_manual_points()` (ported from the PrusaSlicer-based TigerSlicer) draws
+  support points (pink spheres) and drain holes (purple cylinders) in the Supports workspace.
+- `ResinRasterPreviewPanel` has a layer slider (`wxSlider`, arrow keys work); Orca's ImGui layer
+  slider only exists for FFF previews.
+- `PrintHost::get_print_host` returns `MSlicerSDCPHost` when `resin_host_type` is ChiTu SDCP.
+  `resin_host_type` is in the FFF printer, SLA printer and physical printer option lists (the dialog
+  builds its fields once), the SLA printer options gained the print host keys, and
+  `PhysicalPrinterDialog` shows "Resin Host Type" for resin printers, hiding credential fields for SDCP.
+
+### Verification (macOS)
+- Launched with a resin printer selected and with a model loaded: no crash, correct printer name,
+  bed and resin profiles, resin pages in the sidebar, "Export resin file" button.
+- Setup wizard: the generated printer list holds all 67 resin models with existing thumbnails; the
+  printer page renders them under "Resin printers (MSLA)" and a resin-only choice skips the filament page.
+- New test `[Preset][Bundle][resin]` in `test_preset_bundle_loading.cpp`: the bundled Elegoo Mars 3 loads
+  with its build area and height, is listed by name, and selecting it picks the real resin profiles.
+  `libslic3r_tests` passes in full (1,022 cases, 88,078 assertions), including all `[resin]` cases.
+- End to end in the app (with a temporary startup hook, removed before commit): Elegoo Mars 3 + a
+  20 mm cube sliced and exported a 2.1 MB CTB v5 file (`0x12FD0107` magic); Preview showed the raster
+  panel at layer 201 of 400 with 8.02 ml resin and the layer slider.
+
+### Known gaps
+- The 3D view in Preview is empty for resin plates (Orca removed the SLA preview scene); the raster
+  panel beside it is the resin preview.
+- The Physical Printer tab does not discover resin printers: the engine only probes an address that
+  is entered explicitly (no broadcast). Enter the printer's IP in the printer connection dialog.
+
 ## 0.0.1 (2026-10-06)
 
 Theme: make it TigerSlicer, not an OrcaSlicer fork. Cloud features removed,
