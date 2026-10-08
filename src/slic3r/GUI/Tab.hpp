@@ -683,7 +683,7 @@ class TabSLAMaterial : public Tab
 public:
 	//BBS: GUI refactor
     TabSLAMaterial(ParamsPanel* parent) :
-		Tab(parent, _(_devL("Material Settings")), Slic3r::Preset::TYPE_SLA_MATERIAL) {}
+		Tab(parent, _L("Resin Settings"), Slic3r::Preset::TYPE_SLA_MATERIAL) {}
     ~TabSLAMaterial() {}
 
 	void		build() override;

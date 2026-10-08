@@ -34,6 +34,7 @@
 #include <wx/scrolwin.h>
 #include <wx/settings.h>
 #include <wx/sizer.h>
+#include <wx/spinctrl.h>
 #include <wx/stattext.h>
 #include <wx/tglbtn.h>
 
@@ -107,13 +108,20 @@ SupportsView::SupportsView(wxWindow *parent, Bed3D &bed, Model *model, DynamicPr
     // placed point gives no visible feedback at all.
     m_canvas->enable_msla_manual_point_markers(true);
 
-    // Manual point placement: while the toggle below is on, the canvas turns
-    // plain clicks into these events instead of camera drags. Drain holes
-    // are placed from the workbench ribbon in the 3D editor.
-    m_canvas_widget->Bind(EVT_GLCANVAS_MSLA_PLACE_POINT,
-                          [this](Vec2dEvent &evt) { on_place_point(evt.data); });
-    m_canvas_widget->Bind(EVT_GLCANVAS_MSLA_DELETE_POINT,
-                          [this](Vec2dEvent &evt) { on_delete_point(evt.data); });
+    // Manual point and drain hole placement: while one of the toggles below is
+    // on, the canvas turns plain clicks into these events instead of camera drags.
+    m_canvas_widget->Bind(EVT_GLCANVAS_MSLA_PLACE_POINT, [this](Vec2dEvent &evt) {
+        if (m_place_holes != nullptr && m_place_holes->GetValue())
+            on_place_hole(evt.data);
+        else
+            on_place_point(evt.data);
+    });
+    m_canvas_widget->Bind(EVT_GLCANVAS_MSLA_DELETE_POINT, [this](Vec2dEvent &evt) {
+        if (m_place_holes != nullptr && m_place_holes->GetValue())
+            on_delete_hole(evt.data);
+        else
+            on_delete_point(evt.data);
+    });
 
     auto *root = new wxBoxSizer(wxHORIZONTAL);
     // The settings column is parented to the plater, not this view: it takes
@@ -211,11 +219,10 @@ void SupportsView::build_settings_panel(wxWindow *parent)
         }
     };
 
-    // Layers live on the Print Settings (material) tab, hollowing and drain
-    // holes on the workbench ribbon; this panel holds supports and the
-    // print-level details. No Pad group: the engine refuses pad_enable
-    // (supports carry their own base pads), so the checkbox could only
-    // make slicing fail.
+    // Layers live on the print settings tab; this panel holds supports,
+    // hollowing, drain holes and the print-level details. No Pad group: the
+    // engine refuses pad_enable (supports carry their own base pads), so the
+    // checkbox could only make slicing fail.
 
     // Section label for the support half of the panel.
     auto *supports_label = new wxStaticText(m_settings_panel, wxID_ANY, _L("Supports"));
@@ -354,8 +361,8 @@ void SupportsView::build_settings_panel(wxWindow *parent)
         update_status();
     });
     m_remove = new wxButton(m_settings_panel, wxID_ANY, _L("Remove supports"));
-    m_remove->SetToolTip(_L("Delete the generated support object. Slicing then refuses until "
-                            "supports are generated again, or until they are turned off."));
+    m_remove->SetToolTip(_L("Delete the generated support object. The plate then slices without "
+                            "supports until they are generated again."));
     m_remove->Bind(wxEVT_BUTTON, [this](wxCommandEvent &) {
         wxGetApp().plater()->remove_prepared_msla_supports();
         reload_scene(true);
@@ -366,6 +373,69 @@ void SupportsView::build_settings_panel(wxWindow *parent)
     actions->Add(m_generate, 1, wxRIGHT, int(0.3 * em));
     actions->Add(m_remove, 1);
     column->Add(actions, 0, wxEXPAND | wxALL, em);
+
+    auto *hollowing_label = new wxStaticText(m_settings_panel, wxID_ANY, _L("Hollowing and drain holes"));
+    hollowing_label->SetFont(wxGetApp().bold_font());
+    hollowing_label->SetForegroundColour(kPink);
+    column->Add(hollowing_label, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, em);
+    add_group(_L("Hollowing"), { "hollowing_enable", "hollowing_min_thickness",
+                                 "hollowing_quality", "hollowing_closing_distance" });
+
+    auto *hole_size_row = new wxBoxSizer(wxHORIZONTAL);
+    auto add_size = [this, hole_size_row, em](const wxString &label, double value, double max, const wxString &tooltip) {
+        auto *text = new wxStaticText(m_settings_panel, wxID_ANY, label);
+        text->SetForegroundColour(kDimmed);
+        auto *spin = new wxSpinCtrlDouble(m_settings_panel, wxID_ANY, wxEmptyString, wxDefaultPosition,
+                                          wxSize(6 * em, -1), wxSP_ARROW_KEYS, 0.5, max, value, 0.5);
+        spin->SetDigits(1);
+        spin->SetToolTip(tooltip);
+        wxGetApp().UpdateDarkUI(spin);
+        hole_size_row->Add(text, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, int(0.3 * em));
+        hole_size_row->Add(spin, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, em);
+        return spin;
+    };
+    m_hole_diameter = add_size(_L("Hole diameter (mm)"), 4., 60.,
+                               _L("Diameter of the next drain hole you place."));
+    m_hole_depth    = add_size(_L("Depth (mm)"), 6., 100.,
+                               _L("How deep the next drain hole goes into the model. Make it deeper than the hollowed wall."));
+    column->Add(hole_size_row, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, em);
+
+    auto *holes_row = new wxBoxSizer(wxHORIZONTAL);
+    m_place_holes = new wxToggleButton(m_settings_panel, wxID_ANY, _L("Place drain holes"),
+                                       wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
+    m_place_holes->SetToolTip(_L("While on: left-click the model to drill a drain hole there, "
+                                 "right-click to remove the nearest one. Holes let uncured resin "
+                                 "drain out of a hollowed model. Turn the mode off to rotate the "
+                                 "view with the mouse again."));
+    m_place_holes->Bind(wxEVT_ENTER_WINDOW, [this](wxMouseEvent &evt) {
+        if (!m_place_holes->GetValue()) {
+            m_place_holes->SetForegroundColour(kPink);
+            m_place_holes->Refresh();
+        }
+        evt.Skip();
+    });
+    m_place_holes->Bind(wxEVT_LEAVE_WINDOW, [this](wxMouseEvent &evt) {
+        update_place_points_appearance();
+        evt.Skip();
+    });
+    m_place_holes->Bind(wxEVT_TOGGLEBUTTON, [this](wxCommandEvent &) {
+        // Arming hole placement disarms point placement; one click, one meaning.
+        if (m_place_holes->GetValue() && m_place_points != nullptr)
+            m_place_points->SetValue(false);
+        if (m_canvas != nullptr)
+            m_canvas->enable_msla_point_placement(
+                m_place_holes->GetValue() ||
+                (m_place_points != nullptr && m_place_points->GetValue()));
+        update_place_points_appearance();
+    });
+    m_clear_holes = new wxButton(m_settings_panel, wxID_ANY, _L("Clear holes"));
+    m_clear_holes->SetToolTip(_L("Remove every drain hole from every object."));
+    m_clear_holes->Bind(wxEVT_BUTTON, [this](wxCommandEvent &) { clear_drain_holes(); });
+    wxGetApp().UpdateDarkUI(m_place_holes);
+    wxGetApp().UpdateDarkUI(m_clear_holes);
+    holes_row->Add(m_place_holes, 1, wxRIGHT, int(0.3 * em));
+    holes_row->Add(m_clear_holes, 1);
+    column->Add(holes_row, 0, wxEXPAND | wxALL, em);
 
     // The remaining print-level details, relocated here from the retired
     // MSLA Print Settings tab.
@@ -576,6 +646,69 @@ void SupportsView::clear_manual_points()
     for (ModelObject *object : plater->model().objects)
         object->sla_support_points.clear();
     plater->remove_prepared_msla_supports();
+    if (m_canvas != nullptr)
+        m_canvas->set_as_dirty();
+    update_status();
+}
+
+void SupportsView::on_place_hole(const Vec2d &pos)
+{
+    Vec3f local_hit    = Vec3f::Zero();
+    Vec3f local_normal = Vec3f::Zero();
+    ModelObject *object = raycast_model_point(pos, local_hit, &local_normal);
+    if (object == nullptr || local_normal.squaredNorm() == 0.f)
+        return;
+    Plater *plater = wxGetApp().plater();
+    plater->take_snapshot(std::string("Add Drain Hole"));
+    const float radius = float(m_hole_diameter != nullptr ? m_hole_diameter->GetValue() : 4.) * 0.5f;
+    const float depth  = float(m_hole_depth != nullptr ? m_hole_depth->GetValue() : 6.);
+    // The hole points into the model, against the surface normal.
+    object->sla_drain_holes.emplace_back(local_hit, -local_normal.normalized(), radius, depth);
+    if (m_canvas != nullptr)
+        m_canvas->set_as_dirty();
+    update_status();
+}
+
+void SupportsView::on_delete_hole(const Vec2d &pos)
+{
+    Vec3f local_hit = Vec3f::Zero();
+    ModelObject *object = raycast_model_point(pos, local_hit);
+    if (object == nullptr || object->sla_drain_holes.empty())
+        return;
+    size_t best_index = object->sla_drain_holes.size();
+    float  best_dist  = std::numeric_limits<float>::max();
+    for (size_t i = 0; i < object->sla_drain_holes.size(); ++i) {
+        const sla::DrainHole &hole = object->sla_drain_holes[i];
+        // Within a little more than the hole's own radius of where it was placed.
+        const float dist = (hole.pos - local_hit).norm();
+        if (dist < hole.radius + 3.f && dist < best_dist) {
+            best_dist  = dist;
+            best_index = i;
+        }
+    }
+    if (best_index == object->sla_drain_holes.size())
+        return;
+    Plater *plater = wxGetApp().plater();
+    plater->take_snapshot(std::string("Remove Drain Hole"));
+    object->sla_drain_holes.erase(object->sla_drain_holes.begin() + best_index);
+    if (m_canvas != nullptr)
+        m_canvas->set_as_dirty();
+    update_status();
+}
+
+void SupportsView::clear_drain_holes()
+{
+    Plater *plater = wxGetApp().plater();
+    if (plater == nullptr)
+        return;
+    bool any = false;
+    for (const ModelObject *object : plater->model().objects)
+        any |= !object->sla_drain_holes.empty();
+    if (!any)
+        return;
+    plater->take_snapshot(std::string("Clear Drain Holes"));
+    for (ModelObject *object : plater->model().objects)
+        object->sla_drain_holes.clear();
     if (m_canvas != nullptr)
         m_canvas->set_as_dirty();
     update_status();

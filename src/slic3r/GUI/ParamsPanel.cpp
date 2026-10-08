@@ -486,6 +486,8 @@ void ParamsPanel::create_layout()
     m_left_sizer->AddSpacer(6 * em_unit(this) / 10);
 #if __WXOSX__
     m_left_sizer->Add(m_tmp_panel, 1, wxEXPAND | wxALL, 0);
+    // rebuild_panels() runs this again when the printer technology changes.
+    m_tmp_panel->GetSizer()->Detach(m_page_view);
     m_tmp_panel->GetSizer()->Add( m_page_view, 1, wxEXPAND );
 #else
     m_left_sizer->Add( m_page_view, 1, wxEXPAND );
@@ -502,10 +504,30 @@ void ParamsPanel::rebuild_panels()
     create_layout();
 }
 
+void ParamsPanel::switch_printer_technology()
+{
+    rebuild_panels();
+    const bool current_is_valid = m_current_tab != nullptr &&
+        (m_current_tab == m_tab_print || m_current_tab == m_tab_filament || m_current_tab == m_tab_printer ||
+         m_current_tab == m_tab_print_plate || m_current_tab == m_tab_print_object ||
+         m_current_tab == m_tab_print_part || m_current_tab == m_tab_print_layer);
+    if (!current_is_valid && (m_tab_print != nullptr || m_tab_filament != nullptr))
+        set_active_tab(m_tab_print != nullptr ? m_tab_print : m_tab_filament);
+}
+
 void ParamsPanel::refresh_tabs()
 {
     auto& tabs_list = wxGetApp().tabs_list;
     auto print_tech = wxGetApp().preset_bundle->printers.get_selected_preset().printer_technology();
+    m_tab_print    = nullptr;
+    m_tab_filament = nullptr;
+    m_tab_printer  = nullptr;
+    for (auto tab : tabs_list) {
+        // A tab for the other printer technology is never laid out here, so it must
+        // not stay shown either: it would draw over this panel's own tabs.
+        if (tab->GetParent() == this && !tab->supports_printer_technology(print_tech))
+            tab->Hide();
+    }
     for (auto tab : tabs_list)
         if (tab->supports_printer_technology(print_tech))
         {

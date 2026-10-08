@@ -670,6 +670,9 @@ struct Sidebar::priv
     StaticBox * panel_printer_preset = nullptr;
     wxStaticBitmap *      image_printer       = nullptr;
     PlaterPresetComboBox *combo_printer       = nullptr;
+    // Resin profile row (combo_sla_material above): replaces the filament section while a resin printer is selected.
+    wxBoxSizer *          resin_sizer         = nullptr;
+    bool                  filament_content_shown_before_resin = true;
     ScalableButton *      btn_edit_printer    = nullptr;
     ScalableButton *      btn_connect_printer = nullptr;
 
@@ -826,6 +829,10 @@ void Sidebar::priv::layout_printer(bool isBBL, bool isDual)
         //hsizer_printer->Add(btn_sync_printer , 0, wxLEFT, FromDIP(4));
         vsizer_printer->AddSpacer(FromDIP(SidebarProps::ContentMarginV()));
         vsizer_printer->Add(hsizer_printer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(SidebarProps::ContentMargin()));
+        if (resin_sizer != nullptr) {
+            vsizer_printer->Add(resin_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, FromDIP(SidebarProps::ContentMargin()));
+            vsizer_printer->Show(resin_sizer, false);
+        }
 
         // Printer - extruder
 
@@ -879,8 +886,9 @@ void Sidebar::priv::layout_printer(bool isBBL, bool isDual)
         int extruder_count = 0;
         const bool has_flow_variant = cfg.support_different_extruders(extruder_count);
 
-        panel_nozzle_dia->Show(!has_flow_variant);
-        extruder_single_sizer->Show(has_flow_variant);
+        const bool is_resin = wxGetApp().preset_bundle->printers.get_edited_preset().printer_technology() == ptSLA;
+        panel_nozzle_dia->Show(!has_flow_variant && !is_resin);
+        extruder_single_sizer->Show(has_flow_variant && !is_resin);
     } else {
         panel_nozzle_dia->Show(false);
         extruder_single_sizer->Show(false);
@@ -923,6 +931,24 @@ Sidebar::priv::~priv()
 void Sidebar::priv::show_preset_comboboxes()
 {
     const bool showSLA = wxGetApp().preset_bundle->printers.get_edited_preset().printer_technology() == ptSLA;
+
+    // Resin printers take a resin profile instead of filaments.
+    if (resin_sizer != nullptr && vsizer_printer != nullptr) {
+        vsizer_printer->Show(resin_sizer, showSLA);
+        if (showSLA)
+            combo_sla_material->update();
+        m_panel_printer_content->Layout();
+    }
+    if (m_panel_filament_title != nullptr && m_panel_filament_content != nullptr) {
+        if (showSLA && m_panel_filament_title->IsShown()) {
+            filament_content_shown_before_resin = m_panel_filament_content->IsShown();
+            m_panel_filament_title->Hide();
+            m_panel_filament_content->Hide();
+        } else if (!showSLA && !m_panel_filament_title->IsShown()) {
+            m_panel_filament_title->Show();
+            m_panel_filament_content->Show(filament_content_shown_before_resin);
+        }
+    }
 
 //BBS
 #if 0
@@ -2824,6 +2850,18 @@ Sidebar::Sidebar(Plater *parent)
         p->right_extruder->combo_diameter->Bind(wxEVT_COMBOBOX, switch_diameter);
         p->single_extruder->combo_diameter->Bind(wxEVT_COMBOBOX, switch_diameter);
 
+        {
+            auto *resin_label = new Label(p->m_panel_printer_content, _L("Resin"));
+            p->combo_sla_material = new PlaterPresetComboBox(p->m_panel_printer_content, Preset::TYPE_SLA_MATERIAL);
+            auto *btn_edit_resin = new ScalableButton(p->m_panel_printer_content, wxID_ANY, "edit");
+            btn_edit_resin->SetToolTip(_L("Click to edit preset"));
+            btn_edit_resin->Bind(wxEVT_BUTTON, [this](wxCommandEvent &) { p->combo_sla_material->switch_to_tab(); });
+            p->resin_sizer = new wxBoxSizer(wxHORIZONTAL);
+            p->resin_sizer->Add(resin_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(SidebarProps::ElementSpacing()));
+            p->resin_sizer->Add(p->combo_sla_material, 1, wxALIGN_CENTER_VERTICAL);
+            p->resin_sizer->Add(btn_edit_resin, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(SidebarProps::ElementSpacing()));
+        }
+
         p->vsizer_printer = new wxBoxSizer(wxVERTICAL);
         p->layout_printer(true, true);
         p->m_panel_printer_content->SetSizer(p->vsizer_printer);
@@ -3415,11 +3453,13 @@ void Sidebar::update_presets(Preset::Type preset_type)
         break;
         }
     case Preset::TYPE_SLA_PRINT:
-        ;// p->combo_sla_print->update();
+        if (Tab* sla_print_tab = wxGetApp().get_tab(Preset::TYPE_SLA_PRINT))
+            sla_print_tab->get_combo_box()->update();
         break;
 
     case Preset::TYPE_SLA_MATERIAL:
-        ;// p->combo_sla_material->update();
+        if (p->combo_sla_material != nullptr)
+            p->combo_sla_material->update();
         break;
 
     case Preset::TYPE_PRINTER:
@@ -3888,6 +3928,8 @@ void Sidebar::sys_color_changed()
         combo->sys_color_changed();
 #endif
     p->combo_printer->sys_color_changed();
+    if (p->combo_sla_material != nullptr)
+        p->combo_sla_material->sys_color_changed();
     for (PlaterPresetComboBox* combo : p->combos_filament)
         combo->sys_color_changed();
 
@@ -5881,11 +5923,17 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
 
     this->q->SetFont(Slic3r::GUI::wxGetApp().normal_font());
 
+    // The resin print is shared by every plate. Register it before the first plate selects
+    // its technology, which picks this print when a resin printer is active.
+    background_process.set_resin_print(&resin_print);
+    resin_print.set_status_callback([this](const Slic3r::PrintBase::SlicingStatus &status) {
+        wxQueueEvent(this->q, new Slic3r::SlicingStatusEvent(EVT_SLICING_UPDATE, 0, status));
+    });
+
     //BBS: use the first partplate's print for background process
     partplate_list.update_slice_context_to_current_plate(background_process);
     /*
     background_process.set_fff_print(&fff_print);
-    background_process.set_resin_print(&resin_print);
     background_process.set_gcode_result(&gcode_result);
     background_process.set_thumbnail_cb([this](const ThumbnailsParams& params) { return this->generate_thumbnails(params, Camera::EType::Ortho); });
     background_process.set_slicing_completed_event(EVT_SLICING_COMPLETED);
@@ -17122,6 +17170,10 @@ void Plater::reslice()
 
 void Plater::record_slice_preset(std::string action)
 {
+    // Records filament and process presets, which a resin printer does not have.
+    if (printer_technology() != ptFFF)
+        return;
+
     // record slice preset
     try
     {
@@ -18290,8 +18342,14 @@ bool Plater::set_printer_technology(PrinterTechnology printer_technology)
     p->label_btn_export = printer_technology == ptFFF ? L("Export G-code") : L("Export");
     p->label_btn_send   = printer_technology == ptFFF ? L("Send G-code")   : L("Send to printer");
 
-    if (wxGetApp().mainframe != nullptr)
-        wxGetApp().mainframe->update_menubar();
+    if (MainFrame *mainframe = wxGetApp().mainframe; mainframe != nullptr) {
+        mainframe->update_menubar();
+        // Print, material and printer settings tabs differ between FFF and resin printers.
+        if (mainframe->m_param_panel != nullptr)
+            mainframe->m_param_panel->switch_printer_technology();
+        if (mainframe->m_param_dialog != nullptr)
+            mainframe->m_param_dialog->panel()->switch_printer_technology();
+    }
 
     p->sidebar->get_searcher().set_printer_technology(printer_technology);
 
@@ -20221,8 +20279,8 @@ bool Plater::prepare_msla_supports()
             show_info(this,
                 _L("No support geometry was generated: nothing on the plate needs a support "
                    "at the current settings.\n\n"
-                   "Supports stay unprepared. Turn supports off to slice this plate as it "
-                   "is, or change the model or the detection settings and generate again."),
+                   "You can slice the plate as it is, or change the model or the detection "
+                   "settings and generate again."),
                 _L("Generate MSLA Supports"));
             return false;
         }

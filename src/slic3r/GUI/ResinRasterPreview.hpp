@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 
+class wxSlider;
 class wxStaticBitmap;
 class wxStaticText;
 
@@ -34,6 +35,7 @@ private:
     uint32_t m_layer { 0 };
     std::vector<uint8_t> m_layer_pixels;
     wxStaticBitmap *m_bitmap { nullptr };
+    wxSlider *m_layer_slider { nullptr };
     wxStaticText *m_title { nullptr };
     wxStaticText *m_coordinate_note { nullptr };
     wxStaticText *m_layer_label { nullptr };

@@ -5,6 +5,7 @@
 #include <wx/bmpbuttn.h>
 #include <wx/image.h>
 #include <wx/sizer.h>
+#include <wx/slider.h>
 #include <wx/statbmp.h>
 #include <wx/stattext.h>
 
@@ -60,6 +61,11 @@ ResinRasterPreviewPanel::ResinRasterPreviewPanel(wxWindow *parent)
     m_coordinate_note = new wxStaticText(this, wxID_ANY, "Exact grayscale mask | printer-ready output coordinates");
 
     m_bitmap = new wxStaticBitmap(this, wxID_ANY, wxBitmap(1, 1));
+    m_layer_slider = new wxSlider(this, wxID_ANY, 1, 1, 1, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+    m_layer_slider->SetToolTip(_L("Drag, or use the arrow keys, to step through the layers"));
+    m_layer_slider->Bind(wxEVT_SLIDER, [this](wxCommandEvent &) {
+        set_layer(uint32_t(std::max(1, m_layer_slider->GetValue()) - 1));
+    });
     m_layer_label = new wxStaticText(this, wxID_ANY, "No Resin raster available");
     m_metrics_label = new wxStaticText(this, wxID_ANY, wxEmptyString);
     m_timeline_label = new wxStaticText(this, wxID_ANY, wxEmptyString);
@@ -73,6 +79,7 @@ ResinRasterPreviewPanel::ResinRasterPreviewPanel(wxWindow *parent)
     sizer->Add(m_title, 0, wxLEFT | wxRIGHT | wxTOP, gap);
     sizer->Add(m_coordinate_note, 0, wxLEFT | wxRIGHT | wxTOP, gap);
     sizer->Add(m_bitmap, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, gap);
+    sizer->Add(m_layer_slider, 0, wxEXPAND | wxLEFT | wxRIGHT, gap);
     sizer->Add(m_layer_label, 0, wxLEFT | wxRIGHT, gap);
     sizer->Add(m_metrics_label, 0, wxEXPAND | wxALL, gap);
     sizer->Add(m_timeline_label, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, gap);
@@ -95,6 +102,8 @@ void ResinRasterPreviewPanel::set_job(std::shared_ptr<const MSlicerResinJob> job
         clear();
         return;
     }
+    m_layer_slider->SetRange(1, int(m_job->layer_count()));
+    m_layer_slider->Enable();
     update_layer();
 }
 
@@ -109,6 +118,9 @@ void ResinRasterPreviewPanel::clear()
     m_timeline_label->SetLabel(wxEmptyString);
     m_diagnostics_label->SetLabel(wxEmptyString);
     m_bitmap->SetBitmap(wxBitmap(1, 1));
+    m_layer_slider->SetRange(1, 1);
+    m_layer_slider->SetValue(1);
+    m_layer_slider->Disable();
 }
 
 void ResinRasterPreviewPanel::set_layer(uint32_t layer)
@@ -116,6 +128,8 @@ void ResinRasterPreviewPanel::set_layer(uint32_t layer)
     if (!m_job || m_job->layer_count() == 0)
         return;
     m_layer = std::min(layer, m_job->layer_count() - 1);
+    if (m_layer_slider->GetValue() != int(m_layer) + 1)
+        m_layer_slider->SetValue(int(m_layer) + 1);
     update_layer();
 }
 

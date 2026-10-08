@@ -650,8 +650,7 @@ void Preview::load_print_as_sla()
         m_resin_raster_panel->Show(mslicer_job != nullptr);
         if (mslicer_job) {
             m_resin_raster_panel->set_job(mslicer_job, m_process->mslicer_resin_output_size());
-            // A mid-height layer says far more about the print than the
-            // first one; scrubbing comes with the slider integration.
+            // Open on a mid-height layer: it says far more about the print than the first one.
             m_resin_raster_panel->set_layer(mslicer_job->layer_count() / 2);
         } else {
             m_resin_raster_panel->clear();

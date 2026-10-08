@@ -60,6 +60,7 @@
 // Print now includes tbb, and tbb includes Windows. This breaks compilation of wxWidgets if included before wx.
 #include "libslic3r/Print.hpp"
 #include "libslic3r/SLAPrint.hpp"
+#include "libslic3r/SLA/Hollowing.hpp"
 
 #include "wxExtensions.hpp"
 
@@ -2079,6 +2080,7 @@ void GLCanvas3D::render(bool only_init)
         _render_shadows(camera.get_view_matrix(), camera.get_projection_matrix());
         _render_objects(GLVolumeCollection::ERenderType::Opaque, !m_gizmos.is_running());
         _render_sla_slices();
+        _render_msla_manual_points();
         _render_selection();
         _render_objects(GLVolumeCollection::ERenderType::Transparent, !m_gizmos.is_running());
         _render_wireframe_overlay();
@@ -2976,21 +2978,30 @@ void GLCanvas3D::reload_scene(bool refresh_immediately, bool force_full_scene_re
             //if (printer_technology != ptSLA || !contained_min_one)
             //    _set_warning_notification(EWarning::SlaSupportsOutside, false);
 
-            auto full_config_temp = wxGetApp().preset_bundle->full_config();
-            bool tpu_valid = cur_plate->check_tpu_printable_status(full_config_temp, wxGetApp().preset_bundle->get_used_tpu_filaments(cur_plate->get_extruders(true)));
-            _set_warning_notification(EWarning::TPUPrintableError, !tpu_valid);
+            bool tpu_valid          = true;
+            bool filament_printable = true;
+            // Filament checks read FFF-only settings that a resin config does not have.
+            if (current_printer_technology() == ptFFF) {
+                auto full_config_temp = wxGetApp().preset_bundle->full_config();
+                tpu_valid = cur_plate->check_tpu_printable_status(full_config_temp, wxGetApp().preset_bundle->get_used_tpu_filaments(cur_plate->get_extruders(true)));
+                _set_warning_notification(EWarning::TPUPrintableError, !tpu_valid);
 
-            bool filament_printable = cur_plate->check_filament_printable(full_config_temp, filament_printable_error_msg);
-            _set_warning_notification(EWarning::FilamentPrintableError, !filament_printable);
+                filament_printable = cur_plate->check_filament_printable(full_config_temp, filament_printable_error_msg);
+                _set_warning_notification(EWarning::FilamentPrintableError, !filament_printable);
 
-            bool mix_pla_and_petg = cur_plate->check_mixture_of_pla_and_petg(full_config_temp);
-            _set_warning_notification(EWarning::MixUsePLAAndPETG, !mix_pla_and_petg);
+                bool mix_pla_and_petg = cur_plate->check_mixture_of_pla_and_petg(full_config_temp);
+                _set_warning_notification(EWarning::MixUsePLAAndPETG, !mix_pla_and_petg);
 
-            bool filament_nozzle_compatible = cur_plate->check_compatible_of_nozzle_and_filament(full_config_temp, wxGetApp().preset_bundle->filament_presets, get_nozzle_filament_incompatible_text());
-            _set_warning_notification(EWarning::NozzleFilamentIncompatible, !filament_nozzle_compatible);
+                bool filament_nozzle_compatible = cur_plate->check_compatible_of_nozzle_and_filament(full_config_temp, wxGetApp().preset_bundle->filament_presets, get_nozzle_filament_incompatible_text());
+                _set_warning_notification(EWarning::NozzleFilamentIncompatible, !filament_nozzle_compatible);
 
-            bool filament_mixture_compatible = cur_plate->check_mixture_filament_compatible(full_config_temp, get_filament_mixture_warning_text());
-            _set_warning_notification(EWarning::MixtureFilamentIncompatible, !filament_mixture_compatible);
+                bool filament_mixture_compatible = cur_plate->check_mixture_filament_compatible(full_config_temp, get_filament_mixture_warning_text());
+                _set_warning_notification(EWarning::MixtureFilamentIncompatible, !filament_mixture_compatible);
+            } else {
+                for (EWarning warning : { EWarning::TPUPrintableError, EWarning::FilamentPrintableError, EWarning::MixUsePLAAndPETG,
+                                          EWarning::NozzleFilamentIncompatible, EWarning::MixtureFilamentIncompatible })
+                    _set_warning_notification(warning, false);
+            }
 
             bool model_fits = contained_min_one && !m_model->objects.empty() && !partlyOut && object_results.filaments.empty() && tpu_valid && filament_printable;
             // Honor the missing-plugin block so this geometry-only path does not re-enable slicing
@@ -10055,6 +10066,84 @@ void GLCanvas3D::_render_camera_target()
     }
 }
 #endif // ENABLE_SHOW_CAMERA_TARGET
+
+void GLCanvas3D::_render_msla_manual_points()
+{
+    if (!m_msla_manual_point_markers || m_model == nullptr)
+        return;
+    bool any = false;
+    for (const ModelObject *object : m_model->objects)
+        if (!object->sla_support_points.empty() || !object->sla_drain_holes.empty()) {
+            any = true;
+            break;
+        }
+    if (!any)
+        return;
+
+    GLShaderProgram *shader = wxGetApp().get_shader("gouraud_light");
+    if (shader == nullptr)
+        return;
+    if (!m_msla_point_marker.is_initialized())
+        m_msla_point_marker.init_from(its_make_sphere(1.0, double(PI) / 12.0));
+    if (!m_msla_hole_marker.is_initialized())
+        m_msla_hole_marker.init_from(its_make_cylinder(1.0, 1.0));
+
+    shader->start_using();
+    const Camera &camera = wxGetApp().plater()->get_camera();
+    const Transform3d &view_matrix = camera.get_view_matrix();
+    shader->set_uniform("projection_matrix", camera.get_projection_matrix());
+    shader->set_uniform("emission_factor", 0.5f);
+    glsafe(::glEnable(GL_DEPTH_TEST));
+
+    for (const ModelObject *object : m_model->objects) {
+        if (object->sla_support_points.empty() && object->sla_drain_holes.empty())
+            continue;
+        for (const ModelInstance *instance : object->instances) {
+            const Geometry::Transformation transformation(instance->get_matrix());
+            // Inverted instance scaling keeps the markers the same size whatever the object's scale.
+            const Transform3d scaling_inverse = transformation.get_scaling_factor_matrix().inverse();
+            if (transformation.is_left_handed())
+                glsafe(::glFrontFace(GL_CW));
+
+            // Support points: deep pink spheres, never smaller than a millimetre so they stay
+            // findable at plate-wide zoom.
+            m_msla_point_marker.set_color(ColorRGBA(0.85f, 0.11f, 0.38f, 1.0f));
+            for (const sla::SupportPoint &point : object->sla_support_points) {
+                const double radius = std::max(1.0, double(point.head_front_radius) * 2.5);
+                const Transform3d model_matrix = transformation.get_matrix() *
+                    Geometry::translation_transform(point.pos.cast<double>()) *
+                    scaling_inverse * Geometry::scale_transform(radius);
+                shader->set_uniform("view_model_matrix", view_matrix * model_matrix);
+                const Matrix3d view_normal_matrix = view_matrix.matrix().block(0, 0, 3, 3) *
+                    model_matrix.matrix().block(0, 0, 3, 3).inverse().transpose();
+                shader->set_uniform("view_normal_matrix", view_normal_matrix);
+                m_msla_point_marker.render();
+            }
+
+            // Drain holes: purple cylinders at their true size and axis, sticking out of the
+            // surface so a hole on the far wall is still visible.
+            m_msla_hole_marker.set_color(ColorRGBA(0.56f, 0.27f, 0.86f, 1.0f));
+            for (const sla::DrainHole &hole : object->sla_drain_holes) {
+                Eigen::Quaterniond rotation;
+                rotation.setFromTwoVectors(Vec3d::UnitZ(), scaling_inverse * (-hole.normal).cast<double>());
+                const Transform3d model_matrix = transformation.get_matrix() *
+                    Geometry::translation_transform(hole.pos.cast<double>()) *
+                    scaling_inverse *
+                    Transform3d(Eigen::AngleAxisd(rotation).toRotationMatrix()) *
+                    Geometry::translation_transform(-double(hole.height) * Vec3d::UnitZ()) *
+                    Geometry::scale_transform(Vec3d(hole.radius, hole.radius, hole.height + sla::HoleStickOutLength));
+                shader->set_uniform("view_model_matrix", view_matrix * model_matrix);
+                const Matrix3d view_normal_matrix = view_matrix.matrix().block(0, 0, 3, 3) *
+                    model_matrix.matrix().block(0, 0, 3, 3).inverse().transpose();
+                shader->set_uniform("view_normal_matrix", view_normal_matrix);
+                m_msla_hole_marker.render();
+            }
+            if (transformation.is_left_handed())
+                glsafe(::glFrontFace(GL_CCW));
+        }
+    }
+    shader->stop_using();
+}
 
 void GLCanvas3D::_render_sla_slices()
 {

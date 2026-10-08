@@ -590,6 +590,8 @@ private:
     // manual MSLA support points instead of starting drags or selections.
     bool m_msla_point_placement { false };
     bool m_msla_manual_point_markers { false };
+    GLModel m_msla_point_marker;
+    GLModel m_msla_hole_marker;
     bool m_tab_down;
     bool m_camera_movement;
     //BBS: add toolpath outside
@@ -1281,6 +1283,8 @@ private:
     void _render_platelist(const Transform3d& view_matrix, const Transform3d& projection_matrix, bool bottom, bool only_current, bool only_body = false, int hover_id = -1, bool render_cali = false, bool show_grid = true);
     //BBS: add outline drawing logic
     void _render_objects(GLVolumeCollection::ERenderType type, bool with_outline = true);
+    // Markers for the manual MSLA support points and drain holes of every object.
+    void _render_msla_manual_points();
     void _render_wireframe_overlay();
     //BBS: GUI refactor: add canvas size as parameters
     void _render_gcode(int canvas_width, int canvas_height);

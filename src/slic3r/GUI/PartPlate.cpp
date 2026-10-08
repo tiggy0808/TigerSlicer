@@ -3515,7 +3515,10 @@ void PartPlate::update_slice_context(BackgroundSlicingProcess & process)
 
 	process.set_fff_print(m_print);
 	process.set_gcode_result(m_gcode_result);
-	process.select_technology(this->printer_technology);
+	// A plate keeps the technology it was created with, but the process must slice with the
+	// printer selected now: resin plates go to the shared resin print, not the plate's FFF print.
+	// (Read from the preset: this also runs while the Plater is still being constructed.)
+	process.select_technology(wxGetApp().preset_bundle->printers.get_edited_preset().printer_technology());
 	process.set_current_plate(this);
 	m_print->set_status_callback(statuscb);
 	process.switch_print_preprocess();
@@ -4343,6 +4346,10 @@ void PartPlateList::release_icon_textures()
 
 void PartPlateList::set_default_wipe_tower_pos_for_plate(int plate_idx, bool init_pos)
 {
+    // Resin printers have no wipe tower, and their full config has none of its settings.
+    if (wxGetApp().preset_bundle->printers.get_edited_preset().printer_technology() != ptFFF)
+        return;
+
     DynamicConfig &     proj_cfg     = wxGetApp().preset_bundle->project_config;
     ConfigOptionFloats *wipe_tower_x = proj_cfg.opt<ConfigOptionFloats>("wipe_tower_x");
     ConfigOptionFloats *wipe_tower_y = proj_cfg.opt<ConfigOptionFloats>("wipe_tower_y");

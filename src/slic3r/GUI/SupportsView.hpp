@@ -19,6 +19,7 @@ class wxBoxSizer;
 class wxButton;
 class wxGLCanvas;
 class wxScrolledWindow;
+class wxSpinCtrlDouble;
 class wxStaticText;
 class wxToggleButton;
 
@@ -86,6 +87,10 @@ private:
     void on_place_point(const Vec2d &pos);
     void on_delete_point(const Vec2d &pos);
     void clear_manual_points();
+    // Drain holes, placed the same way while "Place drain holes" is armed.
+    void on_place_hole(const Vec2d &pos);
+    void on_delete_hole(const Vec2d &pos);
+    void clear_drain_holes();
 
     wxGLCanvas       *m_canvas_widget { nullptr };
     GLCanvas3D       *m_canvas { nullptr };
@@ -97,6 +102,8 @@ private:
     wxButton         *m_clear_points { nullptr };
     wxToggleButton   *m_place_holes { nullptr };
     wxButton         *m_clear_holes { nullptr };
+    wxSpinCtrlDouble *m_hole_diameter { nullptr };
+    wxSpinCtrlDouble *m_hole_depth { nullptr };
     wxButton         *m_auto_orient { nullptr };
     wxButton         *m_generate { nullptr };
     wxButton         *m_remove { nullptr };

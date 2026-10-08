@@ -127,7 +127,7 @@ PhysicalPrinterDialog::~PhysicalPrinterDialog()
 void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgroup)
 {
     m_optgroup->m_on_change = [this](t_config_option_key opt_key, boost::any value) {
-        if (opt_key == "host_type" || opt_key == "printhost_authorization_type")
+        if (opt_key == "host_type" || opt_key == "resin_host_type" || opt_key == "printhost_authorization_type")
             this->update();
         if (opt_key == "print_host")
             this->update_printhost_buttons();
@@ -138,6 +138,7 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
     };
 
     m_optgroup->append_single_option_line("host_type");
+    m_optgroup->append_single_option_line("resin_host_type");
 
     auto create_sizer_with_btn = [](wxWindow* parent, Button** btn, const std::string& icon_name, const wxString& label) {
         *btn = new Button(parent, label);
@@ -596,6 +597,7 @@ void PhysicalPrinterDialog::update(bool printer_change)
     // Only offer the host type selection for FFF, for SLA it's always the SL1 printer (at the moment)
     bool supports_multiple_printers = false;
     if (tech == ptFFF) {
+        m_optgroup->hide_field("resin_host_type");
         update_host_type(printer_change);
         const auto opt = m_config->option<ConfigOptionEnum<PrintHostType>>("host_type");
         m_optgroup->show_field("host_type");
@@ -709,14 +711,22 @@ void PhysicalPrinterDialog::update(bool printer_change)
         m_optgroup->set_value("host_type", int(PrintHostType::htOctoPrint), false);
         m_optgroup->hide_field("host_type");
         m_optgroup->hide_field("flashforge_serial_number");
+        m_optgroup->show_field("resin_host_type");
 
-        m_optgroup->show_field("printhost_authorization_type");
+        // ChiTu SDCP (Elegoo and other ChiTu-board printers) needs only the printer's LAN address.
+        const auto resin_opt = m_config->option<ConfigOptionEnum<ResinPrintHostType>>("resin_host_type");
+        const bool is_sdcp   = resin_opt != nullptr && resin_opt->value == rhtMSlicerSDCP;
+        m_optgroup->show_field("printhost_authorization_type", !is_sdcp);
 
         AuthorizationType auth_type = m_config->option<ConfigOptionEnum<AuthorizationType>>("printhost_authorization_type")->value;
-        m_optgroup->show_field("printhost_apikey", auth_type == AuthorizationType::atKeyPassword);
+        m_optgroup->show_field("printhost_apikey", !is_sdcp && auth_type == AuthorizationType::atKeyPassword);
 
         for (const char *opt_key : { "printhost_user", "printhost_password" })
-            m_optgroup->show_field(opt_key, auth_type == AuthorizationType::atUserPassword);
+            m_optgroup->show_field(opt_key, !is_sdcp && auth_type == AuthorizationType::atUserPassword);
+        m_optgroup->show_field("print_host_webui", !is_sdcp);
+        m_optgroup->show_field("printhost_cafile", !is_sdcp);
+        m_optgroup->show_field("printhost_ssl_ignore_revoke", !is_sdcp);
+        m_optgroup->hide_field("bbl_use_print_host_webui");
     }
 
     m_optgroup->show_field("printhost_port", supports_multiple_printers);

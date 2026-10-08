@@ -21,6 +21,7 @@
 #include "MKS.hpp"
 #include "ESP3D.hpp"
 #include "CrealityPrint.hpp"
+#include "MSlicerSDCPHost.hpp"
 #include "../GUI/PrintHostDialogs.hpp"
 #include "../GUI/MainFrame.hpp"
 #include "Obico.hpp"
@@ -74,6 +75,9 @@ PrintHost* PrintHost::get_print_host(DynamicPrintConfig *config)
             default:          return nullptr;
         }
     } else {
+        const auto resin_opt = config->option<ConfigOptionEnum<ResinPrintHostType>>("resin_host_type");
+        if (resin_opt != nullptr && resin_opt->value == rhtMSlicerSDCP)
+            return new MSlicerSDCPHost(config);
         return new SL1Host(config);
     }
 }

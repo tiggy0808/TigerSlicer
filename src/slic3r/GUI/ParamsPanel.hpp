@@ -146,6 +146,8 @@ class ParamsPanel : public wxPanel
 		~ParamsPanel();
 
         void rebuild_panels();
+        // Show the print / material / printer tabs of the newly selected printer technology.
+        void switch_printer_technology();
         void create_layout();
         //clear the right page
         void clear_page();

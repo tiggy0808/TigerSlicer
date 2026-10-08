@@ -1661,9 +1661,10 @@ void MainFrame::create_preset_tabs()
     add_created_tab(new TabPrintPart(m_param_panel), "cog");
     add_created_tab(new TabPrintLayer(m_param_panel), "cog");
     add_created_tab(new TabFilament(m_param_dialog->panel()), "spool");
-    /* BBS work around to avoid appearance bug */
-    //add_created_tab(new TabSLAPrint(m_param_panel));
-    //add_created_tab(new TabSLAMaterial(m_param_panel));
+    // Resin tabs sit beside their FFF counterparts; ParamsPanel shows whichever
+    // pair matches the selected printer's technology and hides the other.
+    add_created_tab(new TabSLAPrint(m_param_panel), "cog");
+    add_created_tab(new TabSLAMaterial(m_param_dialog->panel()), "spool");
     add_created_tab(new TabPrinter(m_param_dialog->panel()), "printer");
 
     m_param_panel->rebuild_panels();
@@ -1910,6 +1911,14 @@ bool MainFrame::can_reslice() const
     return (m_plater != nullptr) && !m_plater->model().objects.empty();
 }
 
+// Resin printers export a printer file (CTB, GOO, NanoDLP), not G-code.
+static wxString export_output_label()
+{
+    const Plater *plater = wxGetApp().plater();
+    return plater != nullptr && plater->printer_technology() == ptSLA ? _L("Export resin file") : _L("Export G-code file");
+}
+
+
 wxBoxSizer* MainFrame::create_side_tools()
 {
     enable_multi_machine = wxGetApp().is_enable_multi_machine();
@@ -2096,10 +2105,10 @@ wxBoxSizer* MainFrame::create_side_tools()
                 && !wxGetApp().preset_bundle->is_bbl_vendor()
                 && !wxGetApp().app_config->get_bool("use_printer_agents")) {
                 // ThirdParty Buttons
-                SideButton* export_gcode_btn = new SideButton(p, _L("Export G-code file"), "");
+                SideButton* export_gcode_btn = new SideButton(p, export_output_label(), "");
                 export_gcode_btn->SetCornerRadius(0);
                 export_gcode_btn->Bind(wxEVT_BUTTON, [this, p](wxCommandEvent&) {
-                    m_print_btn->SetLabel(_L("Export G-code file"));
+                    m_print_btn->SetLabel(export_output_label());
                     m_print_select = eExportGcode;
                     m_print_enable = get_enable_print_status();
                     m_print_btn->Enable(m_print_enable);
@@ -2264,10 +2273,10 @@ wxBoxSizer* MainFrame::create_side_tools()
                 }
                 p->append_button(export_sliced_file_btn);
                 p->append_button(export_all_sliced_file_btn);
-                SideButton* export_gcode_btn = new SideButton(p, _L("Export G-code file"), "");
+                SideButton* export_gcode_btn = new SideButton(p, export_output_label(), "");
                 export_gcode_btn->SetCornerRadius(0);
                 export_gcode_btn->Bind(wxEVT_BUTTON, [this, p](wxCommandEvent&) {
-                    m_print_btn->SetLabel(_L("Export G-code file"));
+                    m_print_btn->SetLabel(export_output_label());
                     m_print_select = eExportGcode;
                     m_print_enable = get_enable_print_status();
                     m_print_btn->Enable(m_print_enable);
@@ -4142,7 +4151,7 @@ void MainFrame::set_print_button_to_default(PrintSelectType select_type)
         m_print_btn->Enable(m_print_enable);
         this->Layout();
     } else if (select_type == PrintSelectType::eExportGcode) {
-        m_print_btn->SetLabel(_L("Export G-code file"));
+        m_print_btn->SetLabel(export_output_label());
         m_print_select = eExportGcode;
         if (m_print_enable)
             m_print_enable = get_enable_print_status() && can_send_gcode();
