@@ -1,4 +1,5 @@
 var	pModel              = {};
+const ResinVendor       = "TigerSlicerResin";
 var	ModelNozzleSelected = {};
 let SearchBox;
 let $content;
@@ -48,9 +49,10 @@ function HandleModelList( pVal )
 
 	// ORCA ensure list correctly ordered
 	pModel = pModel.sort((a, b)=>(a["vendor"].localeCompare(b["vendor"])))
-	pModel = [ // move custom printers to top
+	pModel = [ // move custom printers to top, then resin printers
 		...pModel.filter(i=>i.vendor === "Custom"),
-		...pModel.filter(i=>i.vendor !== "Custom")
+		...pModel.filter(i=>i.vendor === ResinVendor),
+		...pModel.filter(i=>i.vendor !== "Custom" && i.vendor !== ResinVendor)
 	];
 	
 	let nTotal=pModel.length;
@@ -234,16 +236,23 @@ function textInput(obj) {
 	FilterModelList(obj.value);
 }
 
+function VendorDisplayName(vendorName)
+{
+	if( vendorName == "BBL" )
+		return "Bambu Lab";
+	if( vendorName == "Custom")
+		return "Custom Printer";
+	if( vendorName == "Other")
+		return "Orca colosseum";
+	if( vendorName == ResinVendor)
+		return "Resin printers (MSLA)";
+	return vendorName;
+}
+
 function CreateVendorBlock(vendorName)
 {
-	let alt = vendorName;
-	if( alt == "BBL" )
-		alt = "Bambu Lab";
-	if( alt == "Custom")
-		alt = "Custom Printer";
-	if( alt == "Other")
-		alt = "Orca colosseum";
-	
+	let alt = VendorDisplayName(vendorName);
+
 	return 	'<div class="OneVendorBlock" Vendor="' + vendorName + '">' +
 			'	<div class="BlockBanner">' +
 			'		<a>' + alt + '</a>' +
@@ -283,8 +292,11 @@ function CreatePrinterBlock(OneModel)
 			'	</div>'+
 			'	<div class="PrinterInfoMark">?</div>'+
 			'	<div class="PrinterInfo">'+
+			( OneModel['technology'] == "SLA" ?
+			'		<div class="title">Type</div>'+
+			'		<div class="value">Resin (MSLA)</div>' :
 			'		<div class="title trans">Nozzle</div>'+
-			'		<div class="value">' + OneModel['nozzle_diameter'].replaceAll(";", " · ") + '</div>'+
+			'		<div class="value">' + OneModel['nozzle_diameter'].replaceAll(";", " · ") + '</div>' )+
 			'	</div>'+
 			'	<div style="display: flex;">'+
 			'		<div class="ModelCheckBox" vendor="' +vendor+ '" model="'+OneModel['model']+'"></div>'+
@@ -306,7 +318,8 @@ function UpdateSidebarVendors()
 	let SidebarHTML = "";
 	$(`.OneVendorBlock`).each((i, el)=>{
 		UpdateVendorCheckbox(el.getAttribute("vendor"));
-		SidebarHTML +=`<div class="SidebarItem" onclick="scrollToVendor(this.textContent)">${el.getAttribute('vendor')}</div>`;
+		const vendor = el.getAttribute('vendor');
+		SidebarHTML +=`<div class="SidebarItem" onclick="scrollToVendor('${vendor}')">${VendorDisplayName(vendor)}</div>`;
 	});
 	$('#SidebarVendors').html(SidebarHTML)
 }

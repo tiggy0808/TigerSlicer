@@ -1199,6 +1199,8 @@ int GuideFrame::LoadProfileData()
                 return 0;
         }
 
+        LoadResinProfileFamily();
+
         wxGetApp().CallAfter([this] {
             if (!m_destroy) {
                 //sync to appconfig first to populate current selections
@@ -1316,6 +1318,37 @@ void StringReplace(string &strBase, string strSrc, string strDes)
     }
 }
 
+
+// The resin vendor is an ini bundle, so the JSON loops in LoadProfileData skip it.
+// Its models each have the single variant "default", which the printer page
+// labels "Resin" instead of listing nozzle sizes.
+void GuideFrame::LoadResinProfileFamily()
+{
+    const auto &vendors = wxGetApp().preset_bundle->vendors;
+    const auto  it      = vendors.find(PresetBundle::TIGERSLICER_RESIN_VENDOR);
+    if (it == vendors.end())
+        return;
+
+    const boost::filesystem::path thumbnails = boost::filesystem::path(resources_dir()) / "profiles" / PresetBundle::TIGERSLICER_RESIN_VENDOR;
+    for (const VendorProfile::PrinterModel &model : it->second.models) {
+        if (model.technology != ptSLA || model.variants.empty())
+            continue;
+        std::string variants;
+        for (const VendorProfile::PrinterVariant &variant : model.variants)
+            variants += (variants.empty() ? "" : ";") + variant.name;
+
+        json one;
+        one["model"]           = model.id;
+        one["name"]            = model.name;
+        one["vendor"]          = PresetBundle::TIGERSLICER_RESIN_VENDOR;
+        one["technology"]      = "SLA";
+        one["nozzle_diameter"] = variants;
+        one["materials"]       = "";
+        one["cover"]           = (thumbnails / (model.id + "_thumbnail.png")).make_preferred().string();
+        one["nozzle_selected"] = "";
+        m_ProfileJson["model"].push_back(one);
+    }
+}
 
 int GuideFrame::LoadProfileFamily(std::string strVendor, std::string strFilePath)
 {
