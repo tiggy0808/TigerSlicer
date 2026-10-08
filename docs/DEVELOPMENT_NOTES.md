@@ -12,6 +12,15 @@ OrcaSlicer.
 Theme: make resin printing reachable and usable. Developed and verified on macOS; nothing here is
 platform-specific, but the Windows build has not been run yet.
 
+Commits, oldest first (all on `main`):
+
+| Commit | Subject |
+|---|---|
+| `0cd41bccb` | fix(resin): bundled resin printers use their real bed and real profiles |
+| `1b6ba0e2a` | feat(resin): list resin printers in the setup wizard |
+| `7265c6026` | feat(resin): resin settings, hollowing and drain holes, layer slider and SDCP upload |
+| `93bfd87a2` | chore: release 0.0.2 |
+
 ### Resin printers are selectable
 - `PresetBundle::TIGERSLICER_RESIN_VENDOR` (`"TigerSlicerResin"`) names the ini-based resin vendor.
   `apply_vendor_config` skips it when installing vendor `.json` bundles (there is none, so selecting a
