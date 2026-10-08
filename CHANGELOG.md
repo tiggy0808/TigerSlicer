@@ -34,7 +34,8 @@ This release makes TigerSlicer fully its own app instead of a renamed OrcaSlicer
 
 The first TigerSlicer release built on OrcaSlicer, replacing the PrusaSlicer-based 1.0.0. Windows x64.
 
-- Resin (MSLA) printing in the same app, with native printer file export and a raster inspector.
+- Resin (MSLA) printing in the same app: slicing, generated supports, native printer file export and
+  a preview of the exposed layer image.
 - Independent tool layer heights for multi-tool printers.
 - Full Spectrum colour mixing.
 - A Physical Printer tab for printer connections.

@@ -16,10 +16,12 @@ library), plus the features below.
 
 ## Features
 
-- **Resin (MSLA) printing in the same app.** Switch a plate to resin and slice it with the
-  [mslicer](https://github.com/connorslade/mslicer) engine. Exports native printer files (Chitu `.ctb`,
-  Elegoo `.goo`, NanoDLP) and can send them straight to a networked printer. The preview includes a
-  layer-by-layer raster inspector.
+- **Resin (MSLA) printing in the same app.** Choose a resin printer profile and TigerSlicer slices with
+  the [mslicer](https://github.com/connorslade/mslicer) engine, then exports a native printer file
+  (Chitu `.ctb`, Elegoo `.goo` or NanoDLP). Supports are generated in the Supports workspace (View menu),
+  and the preview shows the exact image a layer will expose. Resin support is still early: printer and
+  resin settings come from the bundled profiles, and sending files to a printer over the network isn't
+  connected yet.
 - **Independent tool layer heights.** On a multi-tool printer, each tool can print at its own layer
   height, so a fine nozzle and a fast nozzle work on the same print at their own pace.
 - **Full Spectrum colour mixing.** Mix new colours from the filaments you have loaded and paint them onto
