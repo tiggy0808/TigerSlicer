@@ -18,6 +18,7 @@ Commits, oldest first (all on `main`):
 |---|---|
 | `6104cfd89` | fix(resin): picking a resin printer or exporting no longer crashes |
 | `5a4133d2e` | docs: development notes for the resin switch and export fixes |
+| `d93371f2f` | chore: release 0.0.3 |
 
 ### Switching to a resin printer at run time
 The first Windows build crashed as soon as a resin printer was selected, and again on export. The
