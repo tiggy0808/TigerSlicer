@@ -3,6 +3,17 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
+## 0.0.3 (2026-10-08)
+
+Fixes for resin printing, found in the first Windows build of 0.0.2.
+
+**Fixed**
+- TigerSlicer crashed right after you added a resin printer, in the setup wizard or with
+  "Select/Remove printers" in the printer list.
+- Switching between a resin printer and a filament printer in the printer list crashed.
+- Picking a resin printer in the printer list left the Process box empty.
+- "Export resin file" crashed.
+
 ## 0.0.2 (2026-10-08)
 
 Resin printing now works from start to finish.
