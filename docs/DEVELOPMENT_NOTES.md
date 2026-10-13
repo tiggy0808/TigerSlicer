@@ -10,6 +10,10 @@ OrcaSlicer.
 ## 0.0.6 (2026-10-13)
 
 Theme: the filament library needs no installing, so its UI goes.
+
+Commits: `63555a3ba` feat(filaments): list materials directly and drop filament installing;
+`147a7dd9b` chore: release 0.0.6.
+
 - `PlaterPresetComboBox::update()`: system filaments get no group, so they are listed directly
   instead of under their `filament_vendor` ("Generic") submenu. User, bundle and project presets keep
   their grouping options.
