@@ -3,6 +3,20 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
+## 0.0.4 (2026-10-12)
+
+The first macOS build with the 0.0.3 resin fixes, and no more Home tab.
+
+**Changed**
+- The Home tab (New project, Open project, recent projects) is gone. TigerSlicer opens straight to
+  Prepare. Save and open projects as `.3mf` from the File menu, which still lists recent files.
+  The "Default page" preference is removed with it.
+
+**Fixed**
+- Adding a resin printer with "Select/Remove printers" could still crash on macOS.
+- Switching from a filament printer to a resin printer in the printer list crashed when a model was
+  on the plate.
+
 ## 0.0.3 (2026-10-08)
 
 Fixes for resin printing, found in the first Windows build of 0.0.2.

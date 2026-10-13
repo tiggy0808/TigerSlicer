@@ -7,6 +7,64 @@ OrcaSlicer.
 
 ---
 
+## 0.0.4 (2026-10-12)
+
+Theme: the macOS build of the 0.0.3 resin fixes, and no Home tab.
+
+### A leftover settings page could still crash on a resin switch
+The first macOS build of 0.0.3 (`6deebe1d6`) crashed once: first-run wizard with Custom → Klipper,
+then "Select/Remove printers (system presets)" → Elegoo Mars 3 → Confirm. SIGSEGV at 0x0 in
+`__dynamic_cast` ← `ConfigOptionsGroup::get_config_value` ← `reload_config` ← `TabPrinter::reload_config`
+← `Tab::load_current_preset` ← `GUI_App::load_current_presets` ← `GUI_App::run_wizard`. The return
+address (`get_config_value+3188`) is right after the call to `DynamicConfig::opt_float()`: an option
+group asked the new (resin) printer config for a float option that config does not have, so the
+printer tab still had an active page from the FFF page set. Two later attempts, including the same
+wizard-first order, did not reproduce it, so the leftover page depends on event timing.
+- `ConfigOptionsGroup::reload_config()` skips, and logs at error level, any option missing from the
+  group's config (`"<group>" has option <key> that this config doesn't have, skipped`). Every missing
+  option crashed in `get_config_value()` before, except `bed_type`, `first_layer_sequence_choice`,
+  `other_layers_sequence_choice` and `curr_bed_type`, which it fills in on purpose and which are still
+  passed through. The guard is shared code, so it also covers Windows.
+
+### Switching to a resin printer with a model on the plate
+- `GLCanvas3D::reload_scene()` ran the filament checks (TPU, filament printable, PLA/PETG mixing)
+  when `current_printer_technology()` was FFF. On a printer-combo switch from an FFF printer to a
+  resin one, `Tab::load_current_preset()` calls `ObjectList::update_objects_list_filament_column()`,
+  which redraws the scene while the background process still reports FFF but `full_config()` is
+  already the resin config: `PartPlate::check_mixture_of_pla_and_petg()` read `filament_type` from it
+  and crashed (SIGSEGV at 0x8). The checks now go by the edited printer preset's technology, the same
+  source `full_config()` uses. Only reachable with an object on the plate, so 0.0.3's Windows check,
+  which switched printers before loading the cube, did not hit it.
+
+### No Home tab
+- `MainFrame`: the `WebViewPanel` Home page is no longer created or added (`m_webview` stays null);
+  `EVT_LOAD_URL` opens the URL in the default browser instead. Every `m_webview->` call is null-checked.
+- Startup, "Delete all" (`Plater::reset_with_confirm`) and Ctrl+1 inside a settings field select
+  Prepare instead of Home. The tab bar handles a missing Home page already: Prepare and Preview are
+  inserted at position 0 when `FindPageByName(TAB_ID_HOME)` fails.
+- Preferences: the "Default page" (Home/Prepare) choice is removed; `default_page` in the config is
+  ignored.
+- The File menu keeps New/Open/Save project and "Recent files".
+
+### Verification (macOS)
+- Release build on macOS 15 (Apple Silicon), version 0.0.4.
+- A temporary self-test (an environment-variable hook in `GUI_App::post_init`, removed before commit)
+  drove the app through the code the buttons use, started in the background with a throwaway
+  `--datadir` already on Generic Klipper Printer:
+  - No Home tab; the app opens on Prepare.
+  - Elegoo Mars 3 added through `GuideFrame::apply_config()` + `GUI_App::load_current_presets()`, as
+    "Select/Remove printers" → Confirm does: Generic Standard Resin, process
+    `0.05 mm MSlicer Standard`, and the Process box shows it.
+  - 20 mm cube, export: proposed `cube20.ctb`, 2,107,421 bytes, starts `07 01 FD 12` (CTB v5).
+  - Printer combo Mars 3 → Klipper → Mars 3 (`Tab::select_preset` as the combo calls it): correct
+    presets and Process box each time. This step found the crash above; it passes with the fix.
+  - Normal Quit (Apple Event) after the whole run: no crash report.
+- Not reproduced: two crashes on quit (`ParamsDialog::~ParamsDialog` → `wxWindowDisabler` →
+  `EndModalSession`) from test instances that were still running while their app bundle was deleted
+  and rebuilt. Unchanged upstream code; watch for it.
+- Not run: the guard in `ConfigOptionsGroup::reload_config()` never fired in these runs, because the
+  original leftover-page crash did not happen again.
+
 ## 0.0.3 (2026-10-08)
 
 Theme: resin printing on Windows. Fixes for the crashes the first Windows build of 0.0.2 hit when a
