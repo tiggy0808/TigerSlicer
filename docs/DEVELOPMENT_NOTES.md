@@ -51,14 +51,33 @@ Commits: `63555a3ba` feat(filaments): list materials directly and drop filament 
 - A copy of a real data folder last used with 0.0.3: bundles re-installed (library 02.04.00.05), the
   four user filaments load (parents `Generic PLA/PETG/PLA High Speed @System` and `Bambu PAHT-CF
   @System` resolve to PLA, PETG and PA6-CF), normal exit. No new kinds of log errors.
-- Seen, not fixed:
-  - The system filament list is not in the table order: PLA, PETG, ABS, TPU 85A/90A/95A come first,
-    then the rest alphabetically. `PlaterPresetComboBox::update()` looks up full preset names
-    ("PLA @System") in `filament_orders`, which holds aliases, so the table order never applies.
-  - Older than 0.0.4: every launch logs "Failed to install bundled TigerSlicer Resin profile" twice
-    (`setup_directories()` copies into `<data>/vendor`, which a new data folder lacks); a user
-    filament limited to `Prusa CORE One L 0.6 nozzle` is not listed for a user printer inheriting it
-    (0.0.3 does the same).
+- Seen: the system filament list was not in table order, and every launch logged "Failed to install
+  bundled TigerSlicer Resin profile" twice. Both are fixed after the tag (below). A user filament
+  limited to `Prusa CORE One L 0.6 nozzle` was not listed for the user printer "Core One L 450C"
+  (0.0.3 does the same); that is the data folder, not the code (below).
+
+### Found in the Windows check (fixed after the tag, `f84322c33`, `b072ff5fd`)
+- Filament list order: `PlaterPresetComboBox::update()` sorted "System presets" with a table of
+  aliases ("PLA") but looked up the map key, the full preset name ("PLA @System"). Nothing matched,
+  so PLA, PETG, ABS and TPU came first (Orca's `first_types`) and the rest alphabetically. The sort
+  now keys on `Preset::alias`. The display label (`preset_aliases`) cannot be used, because an edited
+  preset's label starts with "(modified)". The table is now `PresetBundle::filament_library_order()`.
+  A `[filament_library]` test checks it against `OrcaFilamentLibrary.json`'s `filament_list` and the
+  loaded aliases.
+- Resin bundle log error: `PresetBundle::setup_directories()` copied `TigerSlicerResin.ini/.idx` into
+  `<data>/vendor` on every launch, a step left from the PrusaSlicer-based 1.0.0. The folder is never
+  created, so the copy failed. Nothing reads it, since `load_tigerslicer_resin_bundle()` reads the ini
+  from `resources/profiles`. The copy is removed.
+- Hidden user filament, not a code change: `PresetCollection::load_presets()` loads `base/` (detached
+  "custom root" presets) before the type folder and skips a later file with the same name ("Preset
+  already present, not loading"). The data folder had both `machine/base/Core One L 450C.json`
+  (detached, 2026-09-29) and `machine/Core One L 450C.json` (inherits `Prusa CORE One L 0.6 nozzle`).
+  The detached copy wins, so `is_compatible_with_parent_printer()` has no parent to match against
+  the filament's `compatible_printers`. Both copies are already in `user_backup-v0.0.0`.
+- Verified on Windows: `libslic3r_tests` 1,029 cases, 88,370 assertions, all pass (`[filament_library]`:
+  5 cases, 281 assertions). In the app with an empty `--datadir`, the list runs PLA, PLA-CF, PLA-GF,
+  PETG ... TPU 95A, TPU 90A, TPU 85A, PVA, BVOH, HIPS. An edited, unsaved PLA stays first. The log
+  has no resin bundle error, and no `vendor` folder is created.
 
 ## 0.0.5 (2026-10-13)
 
