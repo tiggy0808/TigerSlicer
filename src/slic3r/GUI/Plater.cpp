@@ -2881,7 +2881,8 @@ Sidebar::Sidebar(Plater *parent)
             return;
         // ORCA exclude area of del button from titlebar collapse/expand feature to fix undesired collapse when user spams del filament button
         // also block fold/unfold feature when user clicks to spacing between icons
-        int exclude_pt = p->m_bpButton_set_filament->GetPosition().x; // maximum fixed item
+        int exclude_pt = p->m_bpButton_set_filament->IsShown() ? p->m_bpButton_set_filament->GetPosition().x // maximum fixed item
+                                                               : p->m_panel_filament_title->GetSize().GetWidth();
         if      (p->m_purge_mode_btn->IsShown())        exclude_pt = p->m_purge_mode_btn->GetPosition().x;
         else if (p->m_flushing_volume_btn->IsShown())   exclude_pt = p->m_flushing_volume_btn->GetPosition().x;
         else if (p->m_bpButton_add_filament->IsShown()) exclude_pt = p->m_bpButton_add_filament->GetPosition().x - FromDIP(30); // reserve spacing for delete button
@@ -2998,6 +2999,8 @@ Sidebar::Sidebar(Plater *parent)
         // wxGetApp().get_tab(Preset::TYPE_FILAMENT)->restore_last_select_item();
         wxGetApp().run_wizard(ConfigWizard::RR_USER, ConfigWizard::SP_FILAMENTS);
         });
+    // TigerSlicer: every library filament is always offered, so there is nothing to choose here.
+    set_btn->Hide();
     p->m_bpButton_set_filament = set_btn;
 
     bSizer39->Add(set_btn, 0, wxALIGN_CENTER | wxLEFT, FromDIP(SidebarProps::WideSpacing()));

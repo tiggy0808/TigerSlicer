@@ -1410,6 +1410,9 @@ void PlaterPresetComboBox::update()
                                     : groupName == "by_type"     ? (preset_filament_types[it->first].empty()   ? _L("Unspecified") : from_u8(preset_filament_types[it->first]))
                                     : groupName == "by_vendor"   ? (preset_filament_vendors[it->first].empty() ? _L("Unspecified") : from_u8(preset_filament_vendors[it->first]))
                                     : groupByGroup               ? groupName
+                                    // TigerSlicer: system filaments are one per material, listed directly
+                                    // instead of under a "Generic" vendor submenu.
+                                    : m_type == Preset::TYPE_FILAMENT ? wxString()
                                     : from_u8(preset_filament_vendors[it->first]);
                     int  index = groupName == "by_bundle"
                         ? Append(from_u8(preset_aliases[it->first]), *it->second,
@@ -1489,13 +1492,12 @@ void PlaterPresetComboBox::update()
         }
     }*/
 
-    if (m_type == Preset::TYPE_PRINTER || m_type == Preset::TYPE_FILAMENT || m_type == Preset::TYPE_SLA_MATERIAL) {
+    // TigerSlicer: no "Add/Remove filament" entry; every library filament is always offered.
+    if (m_type == Preset::TYPE_PRINTER || m_type == Preset::TYPE_SLA_MATERIAL) {
         wxBitmap* bmp = get_bmp("edit_preset_list", wide_icons, "edit_uni");
         assert(bmp);
 
-        if (m_type == Preset::TYPE_FILAMENT)
-            set_label_marker(Append(separator(L("Add/Remove filament")), *bmp), LABEL_ITEM_WIZARD_FILAMENTS);
-        else if (m_type == Preset::TYPE_SLA_MATERIAL)
+        if (m_type == Preset::TYPE_SLA_MATERIAL)
             set_label_marker(Append(separator(L("Add/Remove materials")), *bmp), LABEL_ITEM_WIZARD_MATERIALS);
         else {
             set_label_marker(Append(separator(L("Select/Remove printers (system presets)")), *bmp), LABEL_ITEM_WIZARD_PRINTERS);
