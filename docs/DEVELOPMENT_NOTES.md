@@ -27,6 +27,39 @@ Commits: `63555a3ba` feat(filaments): list materials directly and drop filament 
   could not be inspected from the build machine (no screenshots; accessibility scripting sees no
   windows), so the visible result is checked by hand.
 
+### Verification (Windows)
+- Clean release build of `abe278153` (MSVC 17.14, `build_release_vs2022.bat slicer`, old
+  `build\OrcaSlicer` deleted first): no errors, `TigerSlicer.exe` reports 0.0.6. The package's
+  `resources\profiles` has no filament JSON outside `OrcaFilamentLibrary`, whose `filament` folder
+  holds the 51 `<material> @System.json` files and `base`. The Setup.exe test install matches the
+  build output (9,413 files).
+- `libslic3r_tests`: 1,028 test cases, 88,317 assertions, all pass (`[filament_library]`: 4 cases,
+  228 assertions).
+- In the app with an empty `--datadir`:
+  - Wizard with only Klipper: Next on the printer page goes straight to the last page; Finish opens
+    the app on Prepare, no Home tab.
+  - Filament list: the 51 materials directly under "System presets", no "Generic" submenu, brand
+    names or "Add/Remove filament"; PLA selected. The header has only "Add one filament".
+  - Select/Remove printers → Elegoo Mars 3: Resin "Generic Standard Resin", Process
+    "0.05 mm MSlicer Standard".
+  - 20 mm cube, slice (400 layers, 8.02 ml), "Export resin file" proposes `cube20.ctb`: 2,107,421
+    bytes, starts `07 01 FD 12`.
+  - Cube on the plate, Mars 3 → Klipper → Mars 3: no crash, Process "0.05 mm MSlicer Standard".
+  - Klipper: PLA edited and saved as "Test PLA" (inherits `PLA @System`, empty
+    `compatible_printers`); after adding a Creality Ender-3 V3 SE, "Test PLA" is in its list.
+  - Quit without saving the project: normal exit, no crash log or dump.
+- A copy of a real data folder last used with 0.0.3: bundles re-installed (library 02.04.00.05), the
+  four user filaments load (parents `Generic PLA/PETG/PLA High Speed @System` and `Bambu PAHT-CF
+  @System` resolve to PLA, PETG and PA6-CF), normal exit. No new kinds of log errors.
+- Seen, not fixed:
+  - The system filament list is not in the table order: PLA, PETG, ABS, TPU 85A/90A/95A come first,
+    then the rest alphabetically. `PlaterPresetComboBox::update()` looks up full preset names
+    ("PLA @System") in `filament_orders`, which holds aliases, so the table order never applies.
+  - Older than 0.0.4: every launch logs "Failed to install bundled TigerSlicer Resin profile" twice
+    (`setup_directories()` copies into `<data>/vendor`, which a new data folder lacks); a user
+    filament limited to `Prusa CORE One L 0.6 nozzle` is not listed for a user printer inheriting it
+    (0.0.3 does the same).
+
 ## 0.0.5 (2026-10-13)
 
 Theme: filaments by material. Developed and verified on macOS; nothing here is platform-specific.
