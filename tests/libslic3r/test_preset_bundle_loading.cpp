@@ -222,16 +222,16 @@ TEST_CASE("find_preset2 auto-matches removed Generic vendor profiles to the libr
     PresetBundle bundle;
 
     // The OrcaFilamentLibrary replacement that removed empty "<vendor> Generic" profiles map to.
-    add_inmemory_preset(bundle.filaments, "Generic PLA @System");
+    add_inmemory_preset(bundle.filaments, "PLA @System");
 
     // Plain lookups do NOT fuzzy-match a removed vendor profile.
     CHECK(bundle.filaments.find_preset("Voron Generic PLA") == nullptr);
     CHECK(bundle.filaments.find_preset2("Voron Generic PLA", /*auto_match=*/false) == nullptr);
 
-    // With auto_match, the removed "Voron Generic PLA" resolves to "Generic PLA @System".
+    // With auto_match, the removed "Voron Generic PLA" resolves to "PLA @System".
     const Preset *matched = bundle.filaments.find_preset2("Voron Generic PLA", /*auto_match=*/true);
     REQUIRE(matched != nullptr);
-    CHECK(matched->name == "Generic PLA @System");
+    CHECK(matched->name == "PLA @System");
 
     // No library preset exists for an unrelated material => still no match.
     CHECK(bundle.filaments.find_preset2("BrandX Generic PETG", /*auto_match=*/true) == nullptr);
@@ -269,7 +269,7 @@ TEST_CASE("Removed Generic parent is normalized into a loaded filament's inherit
     ScopedTemporaryDir temp_dir;
     PresetBundle  bundle;
 
-    add_inmemory_preset(bundle.filaments, "Generic PLA @System");
+    add_inmemory_preset(bundle.filaments, "PLA @System");
 
     // A user filament that still inherits a removed "<vendor> Generic PLA" profile.
     write_preset_with_inherits(bundle.filaments.default_preset().config,
@@ -281,9 +281,9 @@ TEST_CASE("Removed Generic parent is normalized into a loaded filament's inherit
 
     const Preset *child = bundle.filaments.find_preset("MyPLA");
     REQUIRE(child != nullptr);
-    CHECK(child->inherits() == "Generic PLA @System");
+    CHECK(child->inherits() == "PLA @System");
     REQUIRE(bundle.filaments.get_preset_parent(*child) != nullptr);
-    CHECK(bundle.filaments.get_preset_parent(*child)->name == "Generic PLA @System");
+    CHECK(bundle.filaments.get_preset_parent(*child)->name == "PLA @System");
 }
 
 namespace {
@@ -575,4 +575,120 @@ TEST_CASE("Bundled resin printers carry their bed and select real resin profiles
     CHECK(bundle.sla_materials.get_selected_preset_name() == "Generic Standard Resin @MSlicer");
 
     set_resources_dir(old_resources);
+}
+
+namespace {
+// Builds a collection's "renamed_from" lookup, which PresetBundle::load_presets() does after loading.
+struct RenameMapAccess : PresetCollection
+{
+    static void update(PresetCollection &collection) { (collection.*(&RenameMapAccess::update_map_system_profile_renamed))(); }
+};
+
+// The bundled filament library, loaded from resources/profiles.
+void load_filament_library(PresetBundle &bundle)
+{
+    const fs::path profiles = (fs::path(std::string(TEST_DATA_DIR)) / ".." / ".." / "resources" / "profiles").lexically_normal();
+    bundle.load_vendor_configs_from_json(profiles.string(), PresetBundle::ORCA_FILAMENT_LIBRARY, PresetBundle::LoadSystem,
+                                         ForwardCompatibilitySubstitutionRule::Disable);
+    RenameMapAccess::update(bundle.filaments);
+}
+} // namespace
+
+TEST_CASE("The filament library has one profile per material for every printer", "[Preset][Bundle][filament_library]")
+{
+    PresetBundle bundle;
+    load_filament_library(bundle);
+
+    size_t library_profiles = 0;
+    for (const Preset &preset : bundle.filaments)
+        if (preset.is_system && preset.vendor != nullptr && preset.vendor->name == PresetBundle::ORCA_FILAMENT_LIBRARY) {
+            ++library_profiles;
+            INFO(preset.name);
+            CHECK(preset.config.option<ConfigOptionStrings>("compatible_printers")->values.empty());
+            CHECK(preset.config.opt_string("compatible_printers_condition").empty());
+            // Shown by material alone, e.g. "PA6-CF", and fibre filled ones ask for a hardened nozzle.
+            CHECK(preset.name == preset.alias + " @System");
+            const std::string &type = preset.config.option<ConfigOptionStrings>("filament_type")->values.front();
+            const bool fibre = type.size() > 3 && (type.substr(type.size() - 3) == "-CF" || type.substr(type.size() - 3) == "-GF");
+            CHECK(preset.config.option<ConfigOptionInts>("required_nozzle_HRC")->values.front() == (fibre ? 40 : 3));
+        }
+    CHECK(library_profiles == 51);
+
+    const Preset *pla = bundle.filaments.find_preset("PLA @System");
+    REQUIRE(pla != nullptr);
+    CHECK(pla->alias == "PLA");
+    CHECK(pla->name == PresetBundle::ORCA_DEFAULT_FILAMENT);
+    REQUIRE(bundle.filaments.find_preset("TPU 85A @System") != nullptr);
+    CHECK(bundle.filaments.find_preset("TPU 85A @System")->config.option<ConfigOptionStrings>("filament_type")->values.front() == "TPU");
+}
+
+TEST_CASE("Every library material is offered without installing it", "[Preset][Bundle][filament_library]")
+{
+    PresetBundle bundle;
+    load_filament_library(bundle);
+
+    // A configuration that installed none of them, e.g. from before the library was rebuilt.
+    AppConfig app_config;
+    bundle.load_selections(app_config);
+
+    size_t visible = 0;
+    for (const Preset &preset : bundle.filaments)
+        if (preset.is_system && preset.vendor != nullptr && preset.vendor->name == PresetBundle::ORCA_FILAMENT_LIBRARY && preset.is_visible)
+            ++visible;
+    CHECK(visible == 51);
+}
+
+TEST_CASE("Removed brand filament profiles resolve to their material", "[Preset][Bundle][filament_library]")
+{
+    PresetBundle bundle;
+    load_filament_library(bundle);
+
+    auto resolves_to = [&bundle](const std::string &old_name) {
+        const Preset *preset = bundle.filaments.find_preset(old_name);
+        return preset == nullptr ? std::string("<none>") : preset->name;
+    };
+    CHECK(resolves_to("Bambu PLA Basic @BBL X1C") == "PLA @System");
+    CHECK(resolves_to("Generic PLA High Speed @System") == "PLA @System");
+    CHECK(resolves_to("Generic PETG @System") == "PETG @System");
+    CHECK(resolves_to("Bambu PPA-CF @System") == "PPA-CF @System");
+    CHECK(resolves_to("Bambu PA6-CF @BBL X1C") == "PA6-CF @System");
+    CHECK(resolves_to("Bambu Support For PLA @BBL X1C") == "PLA @System");
+}
+
+TEST_CASE("New filament profiles work with every printer", "[Preset][filament_library]")
+{
+    ScopedTemporaryDir temp_dir;
+    PresetBundle       bundle;
+    load_filament_library(bundle);
+    PresetsConfigSubstitutions substitutions;
+    bundle.filaments.load_presets(temp_dir.path().string(), PRESET_FILAMENT_NAME, substitutions, ForwardCompatibilitySubstitutionRule::Disable);
+
+    SECTION("Save as") {
+        REQUIRE(bundle.filaments.select_preset_by_name("PETG-CF @System", true));
+        Preset &edited = bundle.filaments.get_edited_preset();
+        edited.config.option<ConfigOptionStrings>("compatible_printers", true)->values = {"Some Printer"};
+        edited.config.option<ConfigOptionString>("compatible_printers_condition", true)->value = "printer_model == \"X\"";
+        bundle.filaments.save_current_preset("My PETG-CF", false);
+
+        const Preset *saved = bundle.filaments.find_preset("My PETG-CF");
+        REQUIRE(saved != nullptr);
+        CHECK(saved->inherits() == "PETG-CF @System");
+        CHECK(saved->config.option<ConfigOptionStrings>("compatible_printers")->values.empty());
+        CHECK(saved->config.opt_string("compatible_printers_condition").empty());
+    }
+    SECTION("Create filament") {
+        const Preset *petg = bundle.filaments.find_preset("PETG @System");
+        REQUIRE(petg != nullptr);
+        DynamicConfig changes;
+        changes.set_key_value("filament_vendor", new ConfigOptionStrings({"Acme"}));
+        changes.set_key_value("filament_type", new ConfigOptionStrings({"PETG"}));
+        std::vector<std::string> failures;
+        REQUIRE(bundle.filaments.clone_filament_for_all_printers(petg, failures, "Acme PETG Tough", "P1234567", changes));
+
+        const Preset *created = bundle.filaments.find_preset("Acme PETG Tough");
+        REQUIRE(created != nullptr);
+        CHECK(created->config.option<ConfigOptionStrings>("compatible_printers")->values.empty());
+        CHECK(created->config.option<ConfigOptionStrings>("filament_vendor")->values.front() == "Acme");
+        CHECK(created->filament_id == "P1234567");
+    }
 }
