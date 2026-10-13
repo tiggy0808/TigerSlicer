@@ -7,6 +7,22 @@ OrcaSlicer.
 
 ---
 
+## 0.0.6 (2026-10-13)
+
+Theme: the filament library needs no installing, so its UI goes.
+- `PlaterPresetComboBox::update()`: system filaments get no group, so they are listed directly
+  instead of under their `filament_vendor` ("Generic") submenu. User, bundle and project presets keep
+  their grouping options.
+- The "Add/Remove filament" entry (`LABEL_ITEM_WIZARD_FILAMENTS`) is no longer added to the filament
+  combo. The sidebar's "Set filaments to use" button beside "Project Filaments" is created but hidden
+  (the title bar's click-to-collapse area falls back to the full width when it is hidden).
+- Setup wizard: `guide/21/21.js` `GotoFinishPage()` goes from the printer page to the finish page
+  (`guide/5`); the filament page (`guide/22`) is no longer reached. Finishing without it is fine:
+  `SaveProfile()` keeps the previous filament selection and every library filament is visible anyway.
+- Verified: build, and a background launch on a fresh data folder (no errors). The changed controls
+  could not be inspected from the build machine (no screenshots; accessibility scripting sees no
+  windows), so the visible result is checked by hand.
+
 ## 0.0.5 (2026-10-13)
 
 Theme: filaments by material. Developed and verified on macOS; nothing here is platform-specific.

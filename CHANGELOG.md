@@ -3,6 +3,14 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
+## 0.0.6 (2026-10-13)
+
+**Changed**
+- The filament list shows the materials directly instead of inside a "Generic" submenu.
+- There is nothing to install for filaments any more: the setup wizard goes from printers straight
+  to the end, and "Add/Remove filament" and the filament settings button beside "Project Filaments"
+  are gone.
+
 ## 0.0.5 (2026-10-13)
 
 One filament profile per material, for every printer.
