@@ -21,6 +21,9 @@ library), plus the features below.
   file (Chitu `.ctb`, Elegoo `.goo` or NanoDLP) or sends it to an Elegoo or other ChiTu-board printer on
   your network. Generate supports, hollow the model and place drain holes in the Supports workspace
   (View menu), and step through the exact image of every layer in the preview.
+- **One filament profile per material.** PLA, PETG, ABS, ASA, PC, nylons, PPS, PEEK and the rest,
+  each with carbon and glass fibre versions, tuned once and offered on every printer instead of a
+  list of brands.
 - **Independent tool layer heights.** On a multi-tool printer, each tool can print at its own layer
   height, so a fine nozzle and a fast nozzle work on the same print at their own pace.
 - **Full Spectrum colour mixing.** Mix new colours from the filaments you have loaded and paint them onto

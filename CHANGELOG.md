@@ -3,6 +3,20 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
+## 0.0.5 (2026-10-13)
+
+One filament profile per material, for every printer.
+
+**Changed**
+- **Filaments are listed by material, not brand.** The thousands of brand profiles (Bambu PLA Basic,
+  Elegoo PLA, Generic PLA and so on) are replaced by one profile per material: PLA, PETG, PCTG, ABS,
+  ASA, PC, PA6, PA12, PA612, PPA, PPS, PEI, PEKK, PEEK and PP, each also as a carbon fibre (CF) and
+  glass fibre (GF) version, plus TPU 95A, TPU 90A, TPU 85A, PVA, BVOH and HIPS. All of them work with
+  every printer and are always in the filament list.
+- Filament profiles you create, with "Save as" or "Create filament", work with every printer.
+- Your own filament profiles and older projects that used a removed brand profile now use the profile
+  for its material instead.
+
 ## 0.0.4 (2026-10-12)
 
 The first macOS build with the 0.0.3 resin fixes, and no more Home tab.

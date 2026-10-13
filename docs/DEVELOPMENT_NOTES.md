@@ -7,6 +7,53 @@ OrcaSlicer.
 
 ---
 
+## 0.0.5 (2026-10-13)
+
+Theme: filaments by material. Developed and verified on macOS; nothing here is platform-specific.
+
+### The filament library
+- `scripts/tigerslicer_filaments.py` holds the material table (base template, filament_id, nozzle,
+  bed and chamber temperatures, fan, max volumetric speed, density, softening temperature, flow ratio,
+  cost) and writes `resources/profiles/OrcaFilamentLibrary/filament/<material> @System.json`, listed
+  in `OrcaFilamentLibrary.json` after the untouched `filament/base/fdm_filament_*` templates. The
+  bundle keeps its name because the code treats `ORCA_FILAMENT_LIBRARY` as the printer-independent
+  library (always installed, loaded before the vendors). 51 profiles: 15 materials with -CF and -GF
+  versions (+10 °C nozzle, ≤40 % fan, 80 % volumetric speed, `required_nozzle_HRC` 40), plus TPU
+  95A/90A/85A, PVA, BVOH and HIPS. A name like "PLA @System" shows as "PLA" (the alias drops "@…").
+- filament_ids keep the old generic ids where the material matches (OGFL99 PLA, OGFG99 PETG, OGFN98
+  PA6-CF…); new materials use TSF* ids. `MoonrakerPrinterAgent::map_filament_type_to_generic_id()`
+  (also used by the Snapmaker agent) maps every material and the usual other spellings to them.
+- The one-time migration (`--migrate`) deleted every vendor's `filament/` folder (7,662 files across
+  140 vendors and the library's brand folders) and emptied each vendor's `filament_list`, rewrote
+  `default_filament_profile` in machine presets and `default_materials` in machine models to the new
+  names, and bumped every vendor bundle's version so installed copies in the data folder are
+  replaced. Each new profile's `renamed_from` lists the 6,477 removed names of its material (by
+  resolved `filament_type`, fibre from the type or name), so `find_preset()` resolves old names in
+  user presets' `inherits`, projects and printer defaults.
+
+### Code
+- `PresetBundle::load_installed_filaments`: every library profile is visible, whatever the
+  `[filaments]` section holds.
+- `PresetCollection::save_current_preset`: a new filament preset gets empty `compatible_printers` and
+  `compatible_printers_condition` (all printers). `clone_filament_for_all_printers()` does the same for
+  the Create filament dialog, which now makes one profile named "<vendor> <type> <name>" from the first
+  ticked printer's profile instead of one "@printer" copy per ticked printer.
+- `ORCA_DEFAULT_FILAMENT` is "PLA @System"; `find_preset2()`'s fallback for "<anything> Generic X" now
+  tries "X @System"; unknown AMS material and the object table default to "PLA"; the filament combo
+  sorts the library in the table's order.
+
+### Verification (macOS)
+- `libslic3r_tests`: 1,028 cases pass, including new `[filament_library]` cases: 51 profiles, all
+  compatible with every printer, shown by material, fibre versions need a hardened nozzle; all 51
+  visible with an empty `[filaments]` section; old names (Bambu PLA Basic @BBL X1C, Generic PETG
+  @System, Bambu PPA-CF @System…) resolve to their material; "Save as" and Create filament make
+  all-printer profiles.
+- The app on a copy of a real 0.0.4 data folder: vendor bundles re-installed from resources, the four
+  user filaments (two on removed parents) load, no new errors or crashes. A fresh Klipper setup picks
+  "PLA".
+- Seen, not caused by this change (0.0.4 does the same): with that copied data folder, a Quit Apple
+  Event is answered "User canceled" and the app stays open.
+
 ## 0.0.4 (2026-10-12)
 
 Theme: the macOS build of the 0.0.3 resin fixes, and no Home tab.
