@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "PA6 @System",
+    "inherits": "fdm_filament_pa",
+    "from": "system",
+    "setting_id": "TS0080b1075fbf02",
+    "filament_id": "OGFN99",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "PA6"
+    ],
+    "nozzle_temperature": [
+        "270"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "275"
+    ],
+    "nozzle_temperature_range_low": [
+        "250"
+    ],
+    "nozzle_temperature_range_high": [
+        "290"
+    ],
+    "chamber_temperatures": [
+        "50"
+    ],
+    "fan_min_speed": [
+        "0"
+    ],
+    "fan_max_speed": [
+        "30"
+    ],
+    "filament_max_volumetric_speed": [
+        "10"
+    ],
+    "filament_density": [
+        "1.14"
+    ],
+    "filament_flow_ratio": [
+        "0.96"
+    ],
+    "filament_cost": [
+        "35"
+    ],
+    "temperature_vitrification": [
+        "108"
+    ],
+    "required_nozzle_HRC": [
+        "3"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "90"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "90"
+    ],
+    "textured_plate_temp": [
+        "90"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "90"
+    ],
+    "eng_plate_temp": [
+        "90"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "90"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "renamed_from": "\"Anker Generic PA\";\"Anker Generic PA 0.2 nozzle\";\"Anker Generic PA 0.25 nozzle\";\"Anycubic Generic PA\";\"Anycubic PA @Anycubic Kobra S1 Max 0.4 nozzle\";\"Anycubic PA @Anycubic Kobra S1 Max 0.6 nozzle\";\"Anycubic PA @Anycubic Kobra S1 Max 0.8 nozzle\";\"Arena Support G @Arena X1C\";\"Artillery PA @Artillery M1 Pro 0.4 nozzle\";\"Bambu Support For PA/PET @BBL A1\";\"Bambu Support For PA/PET @BBL H2C\";\"Bambu Support For PA/PET @BBL H2C 0.4 nozzle\";\"Bambu Support For PA/PET @BBL H2D\";\"Bambu Support For PA/PET @BBL H2DP\";\"Bambu Support For PA/PET @BBL H2S\";\"Bambu Support For PA/PET @BBL P1P\";\"Bambu Support For PA/PET @BBL P2S\";\"Bambu Support For PA/PET @BBL X1C\";\"Bambu Support For PA/PET @BBL X2D\";\"Bambu Support For PA/PET @BBL X2D 0.4 nozzle\";\"Bambu Support For PA/PET @System\";\"Bambu Support G @BBL A1\";\"Bambu Support G @BBL H2C\";\"Bambu Support G @BBL H2C 0.4 nozzle\";\"Bambu Support G @BBL H2D\";\"Bambu Support G @BBL H2DP\";\"Bambu Support G @BBL H2S\";\"Bambu Support G @BBL P1P\";\"Bambu Support G @BBL P2S\";\"Bambu Support G @BBL X1C\";\"Bambu Support G @BBL X1E\";\"Bambu Support G @BBL X2D\";\"Bambu Support G @BBL X2D 0.4 nozzle\";\"Bambu Support G @System\";\"Blocks Generic PA\";\"COEX NYLEX UNFILLED  @BBL X1C\";\"CR-Nylon @K1 Max_CFS-C-all\";\"CR-Nylon @K1C-all\";\"CR-Nylon @K1C_CFS-C-all\";\"CR-Nylon @K1_CFS-C-all\";\"CR-Nylon @K2 Plus-all\";\"Creality Generic PA @Ender-5Max-all\";\"Eryone PA\";\"Eryone PA @0.2 nozzle\";\"FILL3D PA @System\";\"FLSun Generic PA\";\"Fiberthree PACF Pro P1 @iQ TiQ2 0.4 Nozzle\";\"Fiberthree PACF Pro P2 @iQ TiQ2 0.4 Nozzle\";\"Flashforge PA @FF G4\";\"Flashforge PA @FF G4 0.6 HF nozzle\";\"Flashforge PA @FF G4 HF\";\"Flashforge PA @FF G4P\";\"Flashforge PA @FF G4P 0.6 HF nozzle\";\"Flashforge PA @FF G4P HF\";\"FusRock PAHT @FF G4 0.6 nozzle\";\"FusRock PAHT @FF G4P 0.6 nozzle\";\"Generic PA\";\"Generic PA @BBL A1\";\"Generic PA @BBL H2C\";\"Generic PA @BBL H2C 0.4 nozzle\";\"Generic PA @BBL H2D\";\"Generic PA @BBL H2DP\";\"Generic PA @BBL H2S 0.4 nozzle\";\"Generic PA @BBL P1P\";\"Generic PA @BBL P2S\";\"Generic PA @BBL X2D\";\"Generic PA @BBL X2D 0.4 nozzle\";\"Generic PA @Elegoo\";\"Generic PA @K1 Max_CFS-C-all\";\"Generic PA @K1C-all\";\"Generic PA @K1C_CFS-C-all\";\"Generic PA @K1_CFS-C-all\";\"Generic PA @K2 Plus-all\";\"Generic PA @K2 Pro-all\";\"Generic PA @K2-all\";\"Generic PA @MyToolChanger\";\"Generic PA @System\";\"Generic PA @Z-Bolt 0.4 nozzle\";\"Generic PA @Z-Bolt 0.6 nozzle\";\"Generic PA @Z-Bolt 0.8 nozzle\";\"Generic Support for PA @K2 Plus-all\";\"OrcaArena Generic PA\";\"Polymaker CoPA @FF G4 0.6 HF nozzle\";\"Polymaker CoPA @FF G4 0.6 nozzle\";\"Polymaker CoPA @FF G4 0.8 HF nozzle\";\"Polymaker CoPA @FF G4P 0.6 HF nozzle\";\"Polymaker CoPA @FF G4P 0.6 nozzle\";\"Polymaker CoPA @FF G4P 0.8 HF nozzle\";\"Polymaker Generic CoPA\";\"Polymaker Generic S1\";\"Prusa Generic PA\";\"Prusa Generic PA @MINIIS\";\"Prusa Generic PA @MINIIS 0.25\";\"Prusa Generic PA @MINIIS 0.6\";\"Prusa Generic PA @MINIIS 0.8\";\"Prusa Generic PA @MK3.5\";\"Prusa Generic PA @MK3.5 0.25\";\"Prusa Generic PA @MK3.5 0.6\";\"Prusa Generic PA @MK3.5 0.8\";\"QIDI PA-Ultra\";\"QIDI PA-Ultra @Qidi Q1 Pro 0.4 nozzle\";\"QIDI PA-Ultra @Qidi Q1 Pro 0.6 nozzle\";\"QIDI PA-Ultra @Qidi Q1 Pro 0.8 nozzle\";\"QIDI PA-Ultra @Qidi X-Plus 4 0.4 nozzle\";\"QIDI PA-Ultra @Qidi X-Plus 4 0.6 nozzle\";\"QIDI PA-Ultra @Qidi X-Plus 4 0.8 nozzle\";\"QIDI UltraPA @Qidi Q2 0.4 nozzle\";\"QIDI UltraPA @Qidi Q2 0.6 nozzle\";\"QIDI UltraPA @Qidi Q2 0.8 nozzle\";\"QIDI UltraPA @Qidi Q2C 0.4 nozzle\";\"QIDI UltraPA @Qidi Q2C 0.6 nozzle\";\"QIDI UltraPA @Qidi Q2C 0.8 nozzle\";\"QIDI UltraPA @Qidi X-Max 4 0.4 nozzle\";\"QIDI UltraPA @Qidi X-Max 4 0.6 nozzle\";\"QIDI UltraPA @Qidi X-Max 4 0.8 nozzle\";\"QIDI UltraPA @Qidi X-Plus 5 0.4 nozzle\";\"QIDI UltraPA @Qidi X-Plus 5 0.6 nozzle\";\"QIDI UltraPA @Qidi X-Plus 5 0.8 nozzle\";\"Qidi Generic PA\";\"RatRig Generic PA\";\"SecKit Generic PA\";\"Tiertime Generic PA\";\"Tiertime Generic PA@300HS\";\"Volumic NYLON Ultra\";\"Volumic NYLON Ultra (Performance)\";\"Vzbot Generic PA\";\"addnorth PA Adura\";\"addnorth PA Adura FDA\";\"addnorth PA6 Addlantis\";\"addnorth PVDF Adamant S1\""
+}

@@ -8,5 +8,5 @@
 	"bed_model": "WEMAKE3D PhoenixProV1_buildplate_model.stl",
 	"bed_texture": "WEMAKE3D PhoenixProV1_buildplate_texture.svg",
 	"hotend_model": "",
-	"default_materials": "Generic PETG @System;Generic PLA @System"
+	"default_materials": "PETG @System;PLA @System"
 }

@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "PP-GF @System",
+    "inherits": "fdm_filament_pp",
+    "from": "system",
+    "setting_id": "TSf735994df5f5ee",
+    "filament_id": "TSFP96",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "PP-GF"
+    ],
+    "nozzle_temperature": [
+        "240"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "245"
+    ],
+    "nozzle_temperature_range_low": [
+        "230"
+    ],
+    "nozzle_temperature_range_high": [
+        "260"
+    ],
+    "chamber_temperatures": [
+        "0"
+    ],
+    "fan_min_speed": [
+        "20"
+    ],
+    "fan_max_speed": [
+        "40"
+    ],
+    "filament_max_volumetric_speed": [
+        "8.0"
+    ],
+    "filament_density": [
+        "1.05"
+    ],
+    "filament_flow_ratio": [
+        "0.98"
+    ],
+    "filament_cost": [
+        "48"
+    ],
+    "temperature_vitrification": [
+        "90"
+    ],
+    "required_nozzle_HRC": [
+        "40"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "80"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "80"
+    ],
+    "textured_plate_temp": [
+        "80"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "80"
+    ],
+    "eng_plate_temp": [
+        "80"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "80"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "renamed_from": "\"Generic PP-GF @BBL A1\";\"Generic PP-GF @BBL H2C\";\"Generic PP-GF @BBL H2C 0.4 nozzle\";\"Generic PP-GF @BBL H2D\";\"Generic PP-GF @BBL H2DP\";\"Generic PP-GF @BBL H2S 0.4 nozzle\";\"Generic PP-GF @BBL P2S\";\"Generic PP-GF @BBL X1C\";\"Generic PP-GF @BBL X2D\";\"Generic PP-GF @BBL X2D 0.4 nozzle\";\"Generic PP-GF @System\";\"Tiertime Generic PP-GF\";\"Tiertime Generic PP-GF@300HS\""
+}

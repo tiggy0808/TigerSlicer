@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "ABS-CF @System",
+    "inherits": "fdm_filament_abs",
+    "from": "system",
+    "setting_id": "TS5509d47592edde",
+    "filament_id": "TSFB97",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "ABS-CF"
+    ],
+    "nozzle_temperature": [
+        "265"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "270"
+    ],
+    "nozzle_temperature_range_low": [
+        "250"
+    ],
+    "nozzle_temperature_range_high": [
+        "280"
+    ],
+    "chamber_temperatures": [
+        "40"
+    ],
+    "fan_min_speed": [
+        "10"
+    ],
+    "fan_max_speed": [
+        "40"
+    ],
+    "filament_max_volumetric_speed": [
+        "12.8"
+    ],
+    "filament_density": [
+        "1.1"
+    ],
+    "filament_flow_ratio": [
+        "0.95"
+    ],
+    "filament_cost": [
+        "32"
+    ],
+    "temperature_vitrification": [
+        "100"
+    ],
+    "required_nozzle_HRC": [
+        "40"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "100"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "100"
+    ],
+    "textured_plate_temp": [
+        "100"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "100"
+    ],
+    "eng_plate_temp": [
+        "100"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "100"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "renamed_from": "\"Eryone ABS-CF\";\"Eryone ABS-CF @0.2 nozzle\";\"Flashforge ABS-CF @FF G4\";\"Flashforge ABS-CF @FF G4 0.6 nozzle\";\"Flashforge ABS-CF @FF G4P\";\"Flashforge ABS-CF @FF G4P 0.6 nozzle\";\"Generic ABS-CF @Elegoo Centauri\""
+}

@@ -8,7 +8,7 @@
 	"single_extruder_multi_material": "0",
 	"wait_for_temp_on_wipe_tower": "1",
 	"default_filament_profile": [
-		"Generic PLA @MyToolChanger"
+		"PLA @System"
 	],
 	"default_print_profile": "0.20mm Standard @MyToolChanger",
 	"max_layer_height": [

@@ -9,5 +9,5 @@
 	"bed_texture": "flashforge_adventurer3_buildplate_texture.svg",
 	"default_bed_type": "Textured PEI Plate",
 	"hotend_model": "",
-	"default_materials": "Flashforge ABS;Flashforge PETG;Flashforge PLA"
+	"default_materials": "ABS @System;PETG @System;PLA @System"
 }

@@ -1,7 +1,7 @@
 {
 	"name": "WonderMaker",
 	"url": "",
-	"version": "02.04.00.01",
+	"version": "02.04.00.02",
 	"force_update": "0",
 	"description": "WonderMaker configurations",
 	"machine_model_list": [
@@ -280,144 +280,7 @@
 			"sub_path": "process/0.56mm Extra Draft @WonderMaker ZR Ultra 0.8 nozzle.json"
 		}
 	],
-	"filament_list": [
-		{
-			"name": "fdm_filament_common",
-			"sub_path": "filament/fdm_filament_common.json"
-		},
-		{
-			"name": "fdm_filament_abs",
-			"sub_path": "filament/fdm_filament_abs.json"
-		},
-		{
-			"name": "fdm_filament_asa",
-			"sub_path": "filament/fdm_filament_asa.json"
-		},
-		{
-			"name": "fdm_filament_bvoh",
-			"sub_path": "filament/fdm_filament_bvoh.json"
-		},
-		{
-			"name": "fdm_filament_eva",
-			"sub_path": "filament/fdm_filament_eva.json"
-		},
-		{
-			"name": "fdm_filament_hips",
-			"sub_path": "filament/fdm_filament_hips.json"
-		},
-		{
-			"name": "fdm_filament_pa",
-			"sub_path": "filament/fdm_filament_pa.json"
-		},
-		{
-			"name": "fdm_filament_pc",
-			"sub_path": "filament/fdm_filament_pc.json"
-		},
-		{
-			"name": "fdm_filament_pctg",
-			"sub_path": "filament/fdm_filament_pctg.json"
-		},
-		{
-			"name": "fdm_filament_pe",
-			"sub_path": "filament/fdm_filament_pe.json"
-		},
-		{
-			"name": "fdm_filament_pet",
-			"sub_path": "filament/fdm_filament_pet.json"
-		},
-		{
-			"name": "fdm_filament_pha",
-			"sub_path": "filament/fdm_filament_pha.json"
-		},
-		{
-			"name": "fdm_filament_pla",
-			"sub_path": "filament/fdm_filament_pla.json"
-		},
-		{
-			"name": "fdm_filament_pp",
-			"sub_path": "filament/fdm_filament_pp.json"
-		},
-		{
-			"name": "fdm_filament_ppa",
-			"sub_path": "filament/fdm_filament_ppa.json"
-		},
-		{
-			"name": "fdm_filament_pps",
-			"sub_path": "filament/fdm_filament_pps.json"
-		},
-		{
-			"name": "fdm_filament_pva",
-			"sub_path": "filament/fdm_filament_pva.json"
-		},
-		{
-			"name": "fdm_filament_sbs",
-			"sub_path": "filament/fdm_filament_sbs.json"
-		},
-		{
-			"name": "fdm_filament_tpu",
-			"sub_path": "filament/fdm_filament_tpu.json"
-		},
-		{
-			"name": "WonderMaker ABS",
-			"sub_path": "filament/WonderMaker ABS.json"
-		},
-		{
-			"name": "WonderMaker ASA",
-			"sub_path": "filament/WonderMaker ASA.json"
-		},
-		{
-			"name": "WonderMaker PET-CF",
-			"sub_path": "filament/WonderMaker PET-CF.json"
-		},
-		{
-			"name": "WonderMaker PETG Basic",
-			"sub_path": "filament/WonderMaker PETG Basic.json"
-		},
-		{
-			"name": "WonderMaker PLA Basic",
-			"sub_path": "filament/WonderMaker PLA Basic.json"
-		},
-		{
-			"name": "WonderMaker PLA Marble",
-			"sub_path": "filament/WonderMaker PLA Marble.json"
-		},
-		{
-			"name": "WonderMaker PLA Matte",
-			"sub_path": "filament/WonderMaker PLA Matte.json"
-		},
-		{
-			"name": "WonderMaker PLA Metal",
-			"sub_path": "filament/WonderMaker PLA Metal.json"
-		},
-		{
-			"name": "WonderMaker PLA Silk",
-			"sub_path": "filament/WonderMaker PLA Silk.json"
-		},
-		{
-			"name": "WonderMaker PLA Wood",
-			"sub_path": "filament/WonderMaker PLA Wood.json"
-		},
-		{
-			"name": "WonderMaker PVA",
-			"sub_path": "filament/WonderMaker PVA.json"
-		},
-		{
-			"name": "WonderMaker TPU 95A",
-			"sub_path": "filament/WonderMaker TPU 95A.json"
-		},
-		{
-			"name": "WonderMaker ABS @WonderMaker ZR Ultra S",
-			"sub_path": "filament/WonderMaker ABS @WonderMaker ZR Ultra S.json"
-		},
-		{
-			"name": "WonderMaker ASA @WonderMaker ZR Ultra S",
-			"sub_path": "filament/WonderMaker ASA @WonderMaker ZR Ultra S.json"
-		},
-		{
-			"name": "WonderMaker PET-CF @WonderMaker ZR Ultra S",
-			"sub_path": "filament/WonderMaker PET-CF @WonderMaker ZR Ultra S.json"
-		}
-	],
+	"filament_list": [],
 	"machine_list": [
 		{
 			"name": "fdm_machine_common",

@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "ABS-GF @System",
+    "inherits": "fdm_filament_abs",
+    "from": "system",
+    "setting_id": "TS51344a05fd2c1e",
+    "filament_id": "TSFB96",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "ABS-GF"
+    ],
+    "nozzle_temperature": [
+        "265"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "270"
+    ],
+    "nozzle_temperature_range_low": [
+        "250"
+    ],
+    "nozzle_temperature_range_high": [
+        "280"
+    ],
+    "chamber_temperatures": [
+        "40"
+    ],
+    "fan_min_speed": [
+        "10"
+    ],
+    "fan_max_speed": [
+        "40"
+    ],
+    "filament_max_volumetric_speed": [
+        "12.8"
+    ],
+    "filament_density": [
+        "1.13"
+    ],
+    "filament_flow_ratio": [
+        "0.95"
+    ],
+    "filament_cost": [
+        "32"
+    ],
+    "temperature_vitrification": [
+        "100"
+    ],
+    "required_nozzle_HRC": [
+        "40"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "100"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "100"
+    ],
+    "textured_plate_temp": [
+        "100"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "100"
+    ],
+    "eng_plate_temp": [
+        "100"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "100"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "renamed_from": "\"Bambu ABS-GF @BBL A1\";\"Bambu ABS-GF @BBL H2C\";\"Bambu ABS-GF @BBL H2C 0.4 nozzle\";\"Bambu ABS-GF @BBL H2D\";\"Bambu ABS-GF @BBL H2DP\";\"Bambu ABS-GF @BBL H2S\";\"Bambu ABS-GF @BBL P1P\";\"Bambu ABS-GF @BBL P2S\";\"Bambu ABS-GF @BBL X1C\";\"Bambu ABS-GF @BBL X2D\";\"Bambu ABS-GF @BBL X2D 0.4 nozzle\";\"Bambu ABS-GF @System\";\"DREMC ABS-GF @System\";\"Fiberon PPS-GF20 @Snapmaker U1\";\"Flashforge ABS-GF @FF C5\";\"Flashforge ABS-GF @FF C5P\";\"FusRock ABS-GF @BBL A1\";\"FusRock ABS-GF @BBL H2D\";\"FusRock ABS-GF @BBL P1P\";\"FusRock ABS-GF @BBL X1C\";\"FusRock ABS-GF @System\";\"Peopoly Lancer ABS-GF\";\"QIDI ABS-GF\";\"QIDI ABS-GF @Qidi Q1 Pro 0.4 nozzle\";\"QIDI ABS-GF @Qidi Q1 Pro 0.6 nozzle\";\"QIDI ABS-GF @Qidi Q1 Pro 0.8 nozzle\";\"QIDI ABS-GF @Qidi Q2 0.4 nozzle\";\"QIDI ABS-GF @Qidi Q2 0.6 nozzle\";\"QIDI ABS-GF @Qidi Q2 0.8 nozzle\";\"QIDI ABS-GF @Qidi Q2C 0.4 nozzle\";\"QIDI ABS-GF @Qidi Q2C 0.6 nozzle\";\"QIDI ABS-GF @Qidi Q2C 0.8 nozzle\";\"QIDI ABS-GF @Qidi X-Max 4 0.4 nozzle\";\"QIDI ABS-GF @Qidi X-Max 4 0.6 nozzle\";\"QIDI ABS-GF @Qidi X-Max 4 0.8 nozzle\";\"QIDI ABS-GF @Qidi X-Plus 4 0.4 nozzle\";\"QIDI ABS-GF @Qidi X-Plus 4 0.6 nozzle\";\"QIDI ABS-GF @Qidi X-Plus 4 0.8 nozzle\";\"QIDI ABS-GF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI ABS-GF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI ABS-GF @Qidi X-Plus 5 0.8 nozzle\";\"QIDI ABS-GF10\";\"QIDI ABS-GF10 @Qidi Q1 Pro 0.4 nozzle\";\"QIDI ABS-GF10 @Qidi Q1 Pro 0.6 nozzle\";\"QIDI ABS-GF10 @Qidi Q1 Pro 0.8 nozzle\";\"QIDI ABS-GF10 @Qidi X-Plus 4 0.4 nozzle\";\"QIDI ABS-GF10 @Qidi X-Plus 4 0.6 nozzle\";\"QIDI ABS-GF10 @Qidi X-Plus 4 0.8 nozzle\";\"QIDI ABS-GF25\";\"QIDI ABS-GF25 @Qidi Q1 Pro 0.4 nozzle\";\"QIDI ABS-GF25 @Qidi Q1 Pro 0.6 nozzle\";\"QIDI ABS-GF25 @Qidi Q1 Pro 0.8 nozzle\";\"QIDI ABS-GF25 @Qidi X-Plus 4 0.4 nozzle\";\"QIDI ABS-GF25 @Qidi X-Plus 4 0.6 nozzle\";\"QIDI ABS-GF25 @Qidi X-Plus 4 0.8 nozzle\""
+}

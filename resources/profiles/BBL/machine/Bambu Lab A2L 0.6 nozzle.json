@@ -11,7 +11,7 @@
 	"printer_model": "Bambu Lab A2L",
 	"printer_variant": "0.6",
 	"default_filament_profile": [
-		"Bambu PLA Basic @BBL A2L 0.6 nozzle"
+		"PLA @System"
 	],
 	"default_print_profile": "0.30mm Standard @BBL A2L 0.6 nozzle",
 	"machine_max_speed_x": [

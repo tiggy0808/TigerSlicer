@@ -8,7 +8,7 @@
 	"printer_model": "Artillery Sidewinder X3 Plus",
 	"default_print_profile": "0.20mm Standard @Artillery Genius",
 	"default_filament_profile": [
-		"Artillery PLA Basic"
+		"PLA @System"
 	],
 	"printer_settings_id": "Artillery X3Plus 0.4 nozzle",
 	"adaptive_bed_mesh_margin": "0",

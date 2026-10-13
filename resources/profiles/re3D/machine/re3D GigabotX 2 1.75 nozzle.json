@@ -26,7 +26,7 @@
 		"0.6"
 	],
 	"default_filament_profile": [
-		"re3D rPETG @1.75 nozzle"
+		"PETG @System"
 	],
 	"default_print_profile": "1.0 Standard",
 	"printer_settings_id": "re3d_gbx_175",

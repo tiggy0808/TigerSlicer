@@ -1,6 +1,6 @@
 {
 	"name": "TwoTrees",
-	"version": "02.04.00.01",
+	"version": "02.04.00.02",
 	"force_update": "1",
 	"description": "TwoTrees configurations",
 	"machine_model_list": [
@@ -79,16 +79,7 @@
 			"sub_path": "process/fdm_process_TwoTrees_common.json"
 		}
 	],
-	"filament_list": [
-		{
-			"name": "TwoTrees Generic 95A TPU @SK1",
-			"sub_path": "filament/TwoTrees Generic 95A TPU @SK1.json"
-		},
-		{
-			"name": "TwoTrees Generic HS PLA @SK1",
-			"sub_path": "filament/TwoTrees Generic HS PLA @SK1.json"
-		}
-	],
+	"filament_list": [],
 	"machine_list": [
 		{
 			"name": "fdm_machine_common",

@@ -27,8 +27,8 @@
 		"0.2"
 	],
 	"default_filament_profile": [
-		"re3D PLA @0.8 nozzle",
-		"re3D PETG @0.8 nozzle"
+		"PLA @System",
+		"PETG @System"
 	],
 	"default_print_profile": "0.4 Standard",
 	"printer_settings_id": "re3d_gigbot4_08",

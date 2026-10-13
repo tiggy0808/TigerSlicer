@@ -1,0 +1,79 @@
+{
+    "type": "filament",
+    "name": "PEEK-GF @System",
+    "inherits": "fdm_filament_pps",
+    "from": "system",
+    "setting_id": "TS2809b4602736f1",
+    "filament_id": "TSFE32",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "PEEK-GF"
+    ],
+    "nozzle_temperature": [
+        "410"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "410"
+    ],
+    "nozzle_temperature_range_low": [
+        "390"
+    ],
+    "nozzle_temperature_range_high": [
+        "430"
+    ],
+    "chamber_temperatures": [
+        "90"
+    ],
+    "fan_min_speed": [
+        "0"
+    ],
+    "fan_max_speed": [
+        "0"
+    ],
+    "filament_max_volumetric_speed": [
+        "4.0"
+    ],
+    "filament_density": [
+        "1.5"
+    ],
+    "filament_flow_ratio": [
+        "0.96"
+    ],
+    "filament_cost": [
+        "400"
+    ],
+    "temperature_vitrification": [
+        "150"
+    ],
+    "required_nozzle_HRC": [
+        "40"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "120"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "120"
+    ],
+    "textured_plate_temp": [
+        "120"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "120"
+    ],
+    "eng_plate_temp": [
+        "120"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "120"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ]
+}

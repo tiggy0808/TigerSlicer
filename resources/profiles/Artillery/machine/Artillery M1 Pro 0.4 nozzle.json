@@ -77,7 +77,7 @@
 		"0.4"
 	],
 	"default_filament_profile": [
-		"Artillery PLA Basic"
+		"PLA @System"
 	],
 	"adaptive_bed_mesh_margin": "0",
 	"auxiliary_fan": "1",

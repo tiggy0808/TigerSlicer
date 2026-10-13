@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "PC-CF @System",
+    "inherits": "fdm_filament_pc",
+    "from": "system",
+    "setting_id": "TS4aa1ea835559fa",
+    "filament_id": "TSFC98",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "PC-CF"
+    ],
+    "nozzle_temperature": [
+        "280"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "280"
+    ],
+    "nozzle_temperature_range_low": [
+        "270"
+    ],
+    "nozzle_temperature_range_high": [
+        "300"
+    ],
+    "chamber_temperatures": [
+        "50"
+    ],
+    "fan_min_speed": [
+        "0"
+    ],
+    "fan_max_speed": [
+        "30"
+    ],
+    "filament_max_volumetric_speed": [
+        "9.6"
+    ],
+    "filament_density": [
+        "1.22"
+    ],
+    "filament_flow_ratio": [
+        "0.94"
+    ],
+    "filament_cost": [
+        "48"
+    ],
+    "temperature_vitrification": [
+        "130"
+    ],
+    "required_nozzle_HRC": [
+        "40"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "110"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "110"
+    ],
+    "textured_plate_temp": [
+        "110"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "110"
+    ],
+    "eng_plate_temp": [
+        "110"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "110"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "renamed_from": "\"Anycubic PC-CF @Anycubic Kobra S1 Max 0.4 nozzle\";\"Anycubic PC-CF @Anycubic Kobra S1 Max 0.6 nozzle\";\"Anycubic PC-CF @Anycubic Kobra S1 Max 0.8 nozzle\";\"Generic PC-CF @Elegoo\";\"Generic PCCF @E3NG v1.2S\";\"LHS PC CF\";\"Prusament PC-CF @CORE One\";\"Prusament PC-CF @CORE One 0.6\";\"Prusament PC-CF @CORE One 0.8\";\"Prusament PC-CF @XL\";\"Prusament PC-CF @XL 5T\""
+}

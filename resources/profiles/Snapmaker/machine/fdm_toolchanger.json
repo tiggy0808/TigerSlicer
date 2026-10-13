@@ -124,7 +124,7 @@
 		"1"
 	],
 	"default_filament_profile": [
-		"Snapmaker PLA"
+		"PLA @System"
 	],
 	"default_print_profile": "0.20mm Standard @Snapmaker",
 	"bed_exclude_area": [

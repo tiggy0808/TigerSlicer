@@ -21,7 +21,6 @@
 		"69x-120"
 	],
 	"default_filament_profile": [
-		"DeltaMaker Brand PLA",
-		"DeltaMaker Generic PLA"
+		"PLA @System"
 	]
 }

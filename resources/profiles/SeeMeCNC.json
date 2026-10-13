@@ -1,6 +1,6 @@
 {
 	"name": "SeeMeCNC",
-	"version": "2.4.0.02",
+	"version": "2.4.0.03",
 	"force_update": "1",
 	"description": "SeeMeCNC configurations - Full profile set for Artemis, BOSSdelta, and RostockMAX printers",
 	"machine_model_list": [
@@ -563,36 +563,7 @@
 			"sub_path": "process/0.70mm Extra Draft @SeeMeCNC RostockMAX v4 1.0.json"
 		}
 	],
-	"filament_list": [
-		{
-			"name": "SeeMeCNC filament base",
-			"sub_path": "filament/SeeMeCNC_filament_base.json"
-		},
-		{
-			"name": "SeeMeCNC ABS",
-			"sub_path": "filament/SeeMeCNC_ABS.json"
-		},
-		{
-			"name": "SeeMeCNC PA-CF",
-			"sub_path": "filament/SeeMeCNC_PA-CF.json"
-		},
-		{
-			"name": "SeeMeCNC PETG",
-			"sub_path": "filament/SeeMeCNC_PETG.json"
-		},
-		{
-			"name": "SeeMeCNC PETG-CF",
-			"sub_path": "filament/SeeMeCNC_PETG-CF.json"
-		},
-		{
-			"name": "SeeMeCNC TPU",
-			"sub_path": "filament/SeeMeCNC_TPU.json"
-		},
-		{
-			"name": "SeeMeCNC PLA",
-			"sub_path": "filament/SeeMeCNC_PLA.json"
-		}
-	],
+	"filament_list": [],
 	"machine_list": [
 		{
 			"name": "SeeMeCNC Artemis 0.4 nozzle",

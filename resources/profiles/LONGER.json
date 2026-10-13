@@ -1,6 +1,6 @@
 {
 	"name": "LONGER",
-	"version": "02.04.00.01",
+	"version": "02.04.00.02",
 	"force_update": "0",
 	"description": "LONGER configurations",
 	"machine_model_list": [
@@ -249,34 +249,5 @@
 			"sub_path": "process/0.28mm Extra Draft @LONGER LK10 Plus (0.8 nozzle).json"
 		}
 	],
-	"filament_list": [
-		{
-			"name": "fdm_filament_common",
-			"sub_path": "filament/fdm_filament_common.json"
-		},
-		{
-			"name": "fdm_filament_pet",
-			"sub_path": "filament/fdm_filament_pet.json"
-		},
-		{
-			"name": "fdm_filament_pla",
-			"sub_path": "filament/fdm_filament_pla.json"
-		},
-		{
-			"name": "Generic PETG @LONGER LK10",
-			"sub_path": "filament/Generic PETG @LONGER LK10.json"
-		},
-		{
-			"name": "Generic PETG @LONGER LK10 Plus",
-			"sub_path": "filament/Generic PETG @LONGER LK10 Plus.json"
-		},
-		{
-			"name": "Generic PLA @LONGER LK10",
-			"sub_path": "filament/Generic PLA @LONGER LK10.json"
-		},
-		{
-			"name": "Generic PLA @LONGER LK10 Plus",
-			"sub_path": "filament/Generic PLA @LONGER LK10 Plus.json"
-		}
-	]
+	"filament_list": []
 }

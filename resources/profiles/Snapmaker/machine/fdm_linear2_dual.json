@@ -19,8 +19,8 @@
 		"18"
 	],
 	"default_filament_profile": [
-		"Snapmaker PLA",
-		"Snapmaker PETG"
+		"PLA @System",
+		"PETG @System"
 	],
 	"extruder_offset": [
 		"0x0",

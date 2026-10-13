@@ -16,7 +16,7 @@
 		"0x0"
 	],
 	"default_filament_profile": [
-		"Arena PLA Basic @Arena X1C"
+		"PLA @System"
 	],
 	"default_print_profile": "0.16mm Optimal @Arena X1C",
 	"extruder_colour": [

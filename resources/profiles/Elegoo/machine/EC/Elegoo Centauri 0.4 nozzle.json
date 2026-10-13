@@ -42,7 +42,7 @@
 		"20000"
 	],
 	"default_filament_profile": [
-		"Elegoo PLA @EC"
+		"PLA @System"
 	],
 	"default_print_profile": "0.20mm Standard @Elegoo C 0.4 nozzle",
 	"extruder_offset": [

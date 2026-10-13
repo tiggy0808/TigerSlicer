@@ -33,7 +33,7 @@
 		"200x0, 810x0, 810x805, 200x805"
 	],
 	"default_filament_profile": [
-		"Elegoo PLA @Elegoo Giga"
+		"PLA @System"
 	],
 	"head_wrap_detect_zone": [],
 	"machine_load_filament_time": "25",

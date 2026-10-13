@@ -124,7 +124,7 @@
 		"1"
 	],
 	"default_filament_profile": [
-		""
+		"PLA @System"
 	],
 	"default_print_profile": "0.20mm Standard @Tiertime UP400 Pro",
 	"bed_exclude_area": [

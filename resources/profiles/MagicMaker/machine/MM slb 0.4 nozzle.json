@@ -115,7 +115,7 @@
 		"0.4"
 	],
 	"default_filament_profile": [
-		"Generic PLA @System"
+		"PLA @System"
 	],
 	"machine_max_acceleration_x": [
 		"2000",

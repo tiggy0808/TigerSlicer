@@ -8,5 +8,5 @@
 	"bed_model": "",
 	"bed_texture": "bedtexture-rook-green-120.svg",
 	"hotend_model": "",
-	"default_materials": "Generic PLA @System;Generic PETG @System"
+	"default_materials": "PLA @System;PETG @System"
 }

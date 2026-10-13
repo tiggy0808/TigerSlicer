@@ -14,7 +14,7 @@
 	"bed_exclude_area": [],
 	"best_object_pos": "0.7x0.5",
 	"default_filament_profile": [
-		"Bambu PLA Basic @BBL A1M"
+		"PLA @System"
 	],
 	"default_print_profile": "0.20mm Standard @BBL A1M",
 	"enable_long_retraction_when_cut": "2",

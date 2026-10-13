@@ -8,5 +8,5 @@
 	"machine_tech": "FFF",
 	"family": "Elegoo",
 	"hotend_model": "",
-	"default_materials": "Elegoo PLA @Elegoo Giga;Elegoo PETG PRO @Elegoo Giga;Elegoo ASA @Elegoo Giga;Elegoo PLA Matte @Elegoo Giga;Elegoo Rapid PETG @Elegoo Giga;Elegoo Rapid PLA+ @Elegoo Giga;Elegoo PLA Basic @0.2 nozzle;Elegoo PLA Basic @Elegoo Giga;Elegoo PLA Galaxy @Elegoo Giga;Elegoo PLA Marble @Elegoo Giga;Elegoo PLA Sparkle @Elegoo Giga;Elegoo PLA Wood @Elegoo Giga;Elegoo Rapid TPU 95A @Elegoo Giga;Elegoo PETG-CF @Elegoo Giga;Elegoo PETG-GF @Elegoo Giga;Elegoo PETG Translucent @0.2 nozzle;Elegoo PETG Translucent @Elegoo Giga"
+	"default_materials": "PLA @System;PETG @System;ASA @System;TPU 95A @System;PETG-CF @System;PETG-GF @System"
 }

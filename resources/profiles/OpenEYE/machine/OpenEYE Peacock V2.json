@@ -9,5 +9,5 @@
 	"family": "OpenEYE",
 	"machine_tech": "FFF",
 	"model_id": "openeye_01",
-	"default_materials": "Generic ABS @System;Generic PLA @System;Generic PLA-CF @System;Generic PETG @System;Generic TPU @System;Generic ASA @System;Generic PC @System;Generic PVA @System;Generic PA @System;Generic PA-CF @System"
+	"default_materials": "ABS @System;PLA @System;PLA-CF @System;PETG @System;TPU 95A @System;ASA @System;PC @System;PVA @System;PA6 @System;PA6-CF @System"
 }

@@ -115,6 +115,6 @@
 	"machine_pause_gcode": "PAUSE\n",
 	"change_filament_gcode": "M600\n",
 	"default_filament_profile": [
-		"Generic PLA @Sovol SV08 MAX"
+		"PLA @System"
 	]
 }

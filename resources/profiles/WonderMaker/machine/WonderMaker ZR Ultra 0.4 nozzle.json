@@ -9,7 +9,7 @@
 	"default_print_profile": "0.20mm Standard @WonderMaker ZR Ultra",
 	"default_bed_type": "4",
 	"default_filament_profile": [
-		"WonderMaker PLA Basic"
+		"PLA @System"
 	],
 	"single_extruder_multi_material": "0",
 	"nozzle_diameter": [

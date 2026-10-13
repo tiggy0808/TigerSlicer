@@ -6,7 +6,9 @@
 	"setting_id": "t8KY1zhDKOtHo3I4",
 	"instantiation": "true",
 	"printer_model": "Tronxy X5SA 400 Marlin Firmware",
-	"default_filament_profile": "Generic PLA @System",
+	"default_filament_profile": [
+		"PLA @System"
+	],
 	"default_print_profile": "0.20mm Standard @Tronxy",
 	"nozzle_diameter": [
 		"0.4"

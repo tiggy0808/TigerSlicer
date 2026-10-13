@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "PETG-GF @System",
+    "inherits": "fdm_filament_pet",
+    "from": "system",
+    "setting_id": "TS30b0910ea1529d",
+    "filament_id": "TSFG96",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "PETG-GF"
+    ],
+    "nozzle_temperature": [
+        "255"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "255"
+    ],
+    "nozzle_temperature_range_low": [
+        "230"
+    ],
+    "nozzle_temperature_range_high": [
+        "270"
+    ],
+    "chamber_temperatures": [
+        "0"
+    ],
+    "fan_min_speed": [
+        "30"
+    ],
+    "fan_max_speed": [
+        "40"
+    ],
+    "filament_max_volumetric_speed": [
+        "9.6"
+    ],
+    "filament_density": [
+        "1.38"
+    ],
+    "filament_flow_ratio": [
+        "0.96"
+    ],
+    "filament_cost": [
+        "35"
+    ],
+    "temperature_vitrification": [
+        "70"
+    ],
+    "required_nozzle_HRC": [
+        "40"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "75"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "75"
+    ],
+    "textured_plate_temp": [
+        "75"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "75"
+    ],
+    "eng_plate_temp": [
+        "75"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "75"
+    ],
+    "cool_plate_temp": [
+        "60"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "60"
+    ],
+    "renamed_from": "\"Elegoo PETG-GF @EC\";\"Elegoo PETG-GF @EC2\";\"Elegoo PETG-GF @ECC\";\"Elegoo PETG-GF @ECC2\";\"Elegoo PETG-GF @EN2 Series\";\"Elegoo PETG-GF @EN3 Series\";\"Elegoo PETG-GF @EN4 Series\";\"Elegoo PETG-GF @Elegoo Giga\";\"Elegoo PETG-GF @System\";\"FusRock Generic PET-GF\";\"Generic PETG-GF @K2 Plus-all\";\"Generic PETG-GF @K2 Pro-all\";\"Generic PETG-GF @K2-all\";\"Hyper PETG-GF @K1C-all\";\"Hyper PETG-GF @K2 Plus-all\";\"Hyper PETG-GF @K2 Pro-all\";\"Hyper PETG-GF @K2-all\";\"QIDI PET-GF\";\"QIDI PET-GF @0.6 nozzle\";\"QIDI PET-GF @0.8 nozzle\";\"QIDI PET-GF @Qidi Q1 Pro 0.4 nozzle\";\"QIDI PET-GF @Qidi Q1 Pro 0.6 nozzle\";\"QIDI PET-GF @Qidi Q1 Pro 0.8 nozzle\";\"QIDI PET-GF @Qidi Q2 0.4 nozzle\";\"QIDI PET-GF @Qidi Q2 0.6 nozzle\";\"QIDI PET-GF @Qidi Q2 0.8 nozzle\";\"QIDI PET-GF @Qidi Q2C 0.4 nozzle\";\"QIDI PET-GF @Qidi Q2C 0.6 nozzle\";\"QIDI PET-GF @Qidi Q2C 0.8 nozzle\";\"QIDI PET-GF @Qidi X-Max 4 0.4 nozzle\";\"QIDI PET-GF @Qidi X-Max 4 0.6 nozzle\";\"QIDI PET-GF @Qidi X-Max 4 0.8 nozzle\";\"QIDI PET-GF @Qidi X-Plus 4 0.4 nozzle\";\"QIDI PET-GF @Qidi X-Plus 4 0.6 nozzle\";\"QIDI PET-GF @Qidi X-Plus 4 0.8 nozzle\";\"QIDI PET-GF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI PET-GF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI PET-GF @Qidi X-Plus 5 0.8 nozzle\";\"QIDI PETG-GF\";\"QIDI PETG-GF @Qidi Q1 Pro 0.4 nozzle\";\"QIDI PETG-GF @Qidi Q1 Pro 0.6 nozzle\";\"QIDI PETG-GF @Qidi Q1 Pro 0.8 nozzle\";\"QIDI PETG-GF @Qidi Q2 0.4 nozzle\";\"QIDI PETG-GF @Qidi Q2 0.6 nozzle\";\"QIDI PETG-GF @Qidi Q2 0.8 nozzle\";\"QIDI PETG-GF @Qidi Q2C 0.4 nozzle\";\"QIDI PETG-GF @Qidi Q2C 0.6 nozzle\";\"QIDI PETG-GF @Qidi Q2C 0.8 nozzle\";\"QIDI PETG-GF @Qidi X-Max 4 0.4 nozzle\";\"QIDI PETG-GF @Qidi X-Max 4 0.6 nozzle\";\"QIDI PETG-GF @Qidi X-Max 4 0.8 nozzle\";\"QIDI PETG-GF @Qidi X-Plus 4 0.4 nozzle\";\"QIDI PETG-GF @Qidi X-Plus 4 0.6 nozzle\";\"QIDI PETG-GF @Qidi X-Plus 4 0.8 nozzle\";\"QIDI PETG-GF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI PETG-GF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI PETG-GF @Qidi X-Plus 5 0.8 nozzle\""
+}

@@ -6,7 +6,9 @@
 	"setting_id": "V7Nb0x13KMPKlEKB",
 	"instantiation": "true",
 	"printer_model": "Kingroon KLP1",
-	"default_filament_profile": "Generic PLA @System",
+	"default_filament_profile": [
+		"PLA @System"
+	],
 	"default_print_profile": "0.20mm Standard @Kingroon KLP1",
 	"thumbnails": [
 		"100x100"

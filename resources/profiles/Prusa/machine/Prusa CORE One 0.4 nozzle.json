@@ -5,7 +5,9 @@
 	"from": "system",
 	"setting_id": "ClISXCZS5bKTAlyp",
 	"instantiation": "true",
-	"default_filament_profile": "Prusament PLA @CORE One",
+	"default_filament_profile": [
+		"PLA @System"
+	],
 	"default_print_profile": "0.20mm SPEED @CORE One 0.4",
 	"nozzle_diameter": [
 		"0.4"

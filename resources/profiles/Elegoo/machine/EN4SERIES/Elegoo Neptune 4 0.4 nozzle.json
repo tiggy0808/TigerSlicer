@@ -101,7 +101,7 @@
 	"change_filament_gcode": "M600",
 	"machine_pause_gcode": "M600",
 	"default_filament_profile": [
-		"Elegoo PLA @EN4 Series"
+		"PLA @System"
 	],
 	"extruder_clearance_radius": "47",
 	"extruder_clearance_height_to_rod": "34",

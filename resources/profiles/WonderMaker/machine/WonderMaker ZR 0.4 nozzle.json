@@ -12,7 +12,7 @@
 		"0.4"
 	],
 	"default_filament_profile": [
-		"WonderMaker PLA Basic"
+		"PLA @System"
 	],
 	"purge_in_prime_tower": "0",
 	"enable_filament_ramming": "0",

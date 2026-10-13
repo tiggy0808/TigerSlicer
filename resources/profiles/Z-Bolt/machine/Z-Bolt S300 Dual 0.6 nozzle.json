@@ -13,7 +13,7 @@
 	"printer_model": "Z-Bolt S300 Dual",
 	"printer_variant": "0.6",
 	"default_filament_profile": [
-		"Generic PLA @Z-Bolt 0.6 nozzle"
+		"PLA @System"
 	],
 	"default_print_profile": "0.30mm Standard @Z-Bolt S300 0.6 nozzle",
 	"max_layer_height": [

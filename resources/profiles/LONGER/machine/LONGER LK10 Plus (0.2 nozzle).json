@@ -26,7 +26,7 @@
 	"nozzle_volume": "0",
 	"gcode_flavor": "klipper",
 	"default_filament_profile": [
-		"Generic PLA @System"
+		"PLA @System"
 	],
 	"thumbnails": [
 		"300x300"

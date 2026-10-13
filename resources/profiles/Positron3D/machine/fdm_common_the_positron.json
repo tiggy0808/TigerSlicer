@@ -124,7 +124,7 @@
 		"1"
 	],
 	"default_filament_profile": [
-		"Generic PLA @System"
+		"PLA @System"
 	],
 	"default_print_profile": "0.20mm Standard @The Positron",
 	"bed_exclude_area": [

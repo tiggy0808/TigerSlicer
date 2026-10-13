@@ -12,7 +12,7 @@
 	"printer_model": "Z-Bolt S1000",
 	"printer_variant": "0.8",
 	"default_filament_profile": [
-		"Generic PLA @Z-Bolt 0.8 nozzle"
+		"PLA @System"
 	],
 	"default_print_profile": "0.40mm Standard @Z-Bolt S1000 0.8 nozzle",
 	"max_layer_height": [

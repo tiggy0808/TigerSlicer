@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "PA12-CF @System",
+    "inherits": "fdm_filament_pa",
+    "from": "system",
+    "setting_id": "TS4d6c3a5e5ed3e9",
+    "filament_id": "TSFN13",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "PA12-CF"
+    ],
+    "nozzle_temperature": [
+        "265"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "270"
+    ],
+    "nozzle_temperature_range_low": [
+        "250"
+    ],
+    "nozzle_temperature_range_high": [
+        "290"
+    ],
+    "chamber_temperatures": [
+        "40"
+    ],
+    "fan_min_speed": [
+        "0"
+    ],
+    "fan_max_speed": [
+        "30"
+    ],
+    "filament_max_volumetric_speed": [
+        "8.0"
+    ],
+    "filament_density": [
+        "1.06"
+    ],
+    "filament_flow_ratio": [
+        "0.96"
+    ],
+    "filament_cost": [
+        "64"
+    ],
+    "temperature_vitrification": [
+        "90"
+    ],
+    "required_nozzle_HRC": [
+        "40"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "80"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "80"
+    ],
+    "textured_plate_temp": [
+        "80"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "80"
+    ],
+    "eng_plate_temp": [
+        "80"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "80"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "renamed_from": "\"Prusament PA-CF @XL\";\"Prusament PA-CF @XL 5T\";\"QIDI PA12-CF\";\"QIDI PA12-CF @Qidi Q1 Pro 0.4 nozzle\";\"QIDI PA12-CF @Qidi Q1 Pro 0.6 nozzle\";\"QIDI PA12-CF @Qidi Q1 Pro 0.8 nozzle\";\"QIDI PA12-CF @Qidi Q2 0.4 nozzle\";\"QIDI PA12-CF @Qidi Q2 0.6 nozzle\";\"QIDI PA12-CF @Qidi Q2 0.8 nozzle\";\"QIDI PA12-CF @Qidi Q2C 0.4 nozzle\";\"QIDI PA12-CF @Qidi Q2C 0.6 nozzle\";\"QIDI PA12-CF @Qidi Q2C 0.8 nozzle\";\"QIDI PA12-CF @Qidi X-Max 4 0.4 nozzle\";\"QIDI PA12-CF @Qidi X-Max 4 0.6 nozzle\";\"QIDI PA12-CF @Qidi X-Max 4 0.8 nozzle\";\"QIDI PA12-CF @Qidi X-Plus 4 0.4 nozzle\";\"QIDI PA12-CF @Qidi X-Plus 4 0.6 nozzle\";\"QIDI PA12-CF @Qidi X-Plus 4 0.8 nozzle\";\"QIDI PA12-CF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI PA12-CF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI PA12-CF @Qidi X-Plus 5 0.8 nozzle\""
+}

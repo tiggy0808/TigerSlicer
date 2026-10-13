@@ -7,7 +7,7 @@
 	"instantiation": "true",
 	"printer_model": "Geeetech M1",
 	"default_filament_profile": [
-		"Generic PLA @System"
+		"PLA @System"
 	],
 	"printer_variant": "0.2",
 	"default_print_profile": "0.10mm Standard @Geeetech M1 0.2 nozzle",

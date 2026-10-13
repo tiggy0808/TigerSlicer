@@ -1,0 +1,79 @@
+{
+    "type": "filament",
+    "name": "PA12-GF @System",
+    "inherits": "fdm_filament_pa",
+    "from": "system",
+    "setting_id": "TS65a18f2dc9c745",
+    "filament_id": "TSFN14",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "PA12-GF"
+    ],
+    "nozzle_temperature": [
+        "265"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "270"
+    ],
+    "nozzle_temperature_range_low": [
+        "250"
+    ],
+    "nozzle_temperature_range_high": [
+        "290"
+    ],
+    "chamber_temperatures": [
+        "40"
+    ],
+    "fan_min_speed": [
+        "0"
+    ],
+    "fan_max_speed": [
+        "30"
+    ],
+    "filament_max_volumetric_speed": [
+        "8.0"
+    ],
+    "filament_density": [
+        "1.2"
+    ],
+    "filament_flow_ratio": [
+        "0.96"
+    ],
+    "filament_cost": [
+        "64"
+    ],
+    "temperature_vitrification": [
+        "90"
+    ],
+    "required_nozzle_HRC": [
+        "40"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "80"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "80"
+    ],
+    "textured_plate_temp": [
+        "80"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "80"
+    ],
+    "eng_plate_temp": [
+        "80"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "80"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ]
+}

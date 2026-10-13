@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "PETG-CF @System",
+    "inherits": "fdm_filament_pet",
+    "from": "system",
+    "setting_id": "TS0dac28a0929d3c",
+    "filament_id": "TSFG98",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "PETG-CF"
+    ],
+    "nozzle_temperature": [
+        "255"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "255"
+    ],
+    "nozzle_temperature_range_low": [
+        "230"
+    ],
+    "nozzle_temperature_range_high": [
+        "270"
+    ],
+    "chamber_temperatures": [
+        "0"
+    ],
+    "fan_min_speed": [
+        "30"
+    ],
+    "fan_max_speed": [
+        "40"
+    ],
+    "filament_max_volumetric_speed": [
+        "9.6"
+    ],
+    "filament_density": [
+        "1.3"
+    ],
+    "filament_flow_ratio": [
+        "0.96"
+    ],
+    "filament_cost": [
+        "35"
+    ],
+    "temperature_vitrification": [
+        "70"
+    ],
+    "required_nozzle_HRC": [
+        "40"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "75"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "75"
+    ],
+    "textured_plate_temp": [
+        "75"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "75"
+    ],
+    "eng_plate_temp": [
+        "75"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "75"
+    ],
+    "cool_plate_temp": [
+        "60"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "60"
+    ],
+    "renamed_from": "\"AliZ PETG-CF @P1-X1\";\"AliZ PETG-CF @System\";\"Anker Generic PETG-CF\";\"Anycubic PET-CF @Anycubic Kobra S1 Max 0.4 nozzle\";\"Anycubic PET-CF @Anycubic Kobra S1 Max 0.6 nozzle\";\"Anycubic PET-CF @Anycubic Kobra S1 Max 0.8 nozzle\";\"Anycubic PETG-CF @Anycubic Kobra S1 Max 0.4 nozzle\";\"Anycubic PETG-CF @Anycubic Kobra S1 Max 0.6 nozzle\";\"Anycubic PETG-CF @Anycubic Kobra S1 Max 0.8 nozzle\";\"Arena PET-CF @Arena X1C\";\"Arena PETG-CF @Arena X1C\";\"Artillery PETG-CF @Artillery M1 Pro 0.4 nozzle\";\"BETA PETG-CF @BBL A1 0.4 nozzle\";\"BETA PETG-CF @BBL A1M 0.4 nozzle\";\"BETA PETG-CF @BBL H2D 0.4 nozzle\";\"BETA PETG-CF @BBL P1P 0.4 nozzle\";\"BETA PETG-CF @BBL X1C 0.4 nozzle\";\"BETA PETG-GF @BBL A1 0.4 nozzle\";\"BETA PETG-GF @BBL A1M 0.4 nozzle\";\"BETA PETG-GF @BBL H2D 0.4 nozzle\";\"BETA PETG-GF @BBL P1P 0.4 nozzle\";\"BETA PETG-GF @BBL X1C 0.4 nozzle\";\"Bambu PET-CF @BBL A1\";\"Bambu PET-CF @BBL H2C\";\"Bambu PET-CF @BBL H2C 0.4 nozzle\";\"Bambu PET-CF @BBL H2D\";\"Bambu PET-CF @BBL H2DP\";\"Bambu PET-CF @BBL H2S\";\"Bambu PET-CF @BBL P1P\";\"Bambu PET-CF @BBL P2S\";\"Bambu PET-CF @BBL X1C\";\"Bambu PET-CF @BBL X1E\";\"Bambu PET-CF @BBL X2D\";\"Bambu PET-CF @BBL X2D 0.4 nozzle\";\"Bambu PET-CF @System\";\"Bambu PETG-CF @BBL A1 0.4 nozzle\";\"Bambu PETG-CF @BBL A1 0.8 nozzle\";\"Bambu PETG-CF @BBL A1M\";\"Bambu PETG-CF @BBL A1M 0.4 nozzle\";\"Bambu PETG-CF @BBL A2L\";\"Bambu PETG-CF @BBL A2L 0.4 nozzle\";\"Bambu PETG-CF @BBL A2L 0.8 nozzle\";\"Bambu PETG-CF @BBL H2C\";\"Bambu PETG-CF @BBL H2C 0.4 nozzle\";\"Bambu PETG-CF @BBL H2D 0.4 nozzle\";\"Bambu PETG-CF @BBL H2D 0.6 nozzle\";\"Bambu PETG-CF @BBL H2DP 0.4 nozzle\";\"Bambu PETG-CF @BBL H2DP 0.6 nozzle\";\"Bambu PETG-CF @BBL H2S\";\"Bambu PETG-CF @BBL P1P\";\"Bambu PETG-CF @BBL P1P 0.4 nozzle\";\"Bambu PETG-CF @BBL P2S 0.4 nozzle\";\"Bambu PETG-CF @BBL P2S 0.6 nozzle\";\"Bambu PETG-CF @BBL X1C\";\"Bambu PETG-CF @BBL X1C 0.4 nozzle\";\"Bambu PETG-CF @BBL X2D\";\"Bambu PETG-CF @BBL X2D 0.4 nozzle\";\"Bambu PETG-CF @BBL X2D 0.8 nozzle\";\"Bambu PETG-CF @System\";\"Chuanying Generic PETG-CF10\";\"Creality Generic PETG-CF @Hi-all\";\"Elegoo PET-CF @EC2\";\"Elegoo PET-CF @ECC2\";\"Elegoo PET-CF @System\";\"Elegoo PETG-CF @EC\";\"Elegoo PETG-CF @EC2\";\"Elegoo PETG-CF @ECC\";\"Elegoo PETG-CF @ECC2\";\"Elegoo PETG-CF @EN2 Series\";\"Elegoo PETG-CF @EN3 Series\";\"Elegoo PETG-CF @EN4 Series\";\"Elegoo PETG-CF @Elegoo Giga\";\"Elegoo PETG-CF @System\";\"Eryone PETG-CF\";\"Eryone PETG-CF @0.2 nozzle\";\"FILL3D PETG CF @System\";\"Fiberon PET-CF @BBL H2D\";\"Fiberon PET-CF @BBL X1C\";\"Fiberon PET-CF @System\";\"Fiberon PET-CF17 @BBL X1\";\"Fiberon PETG-rCF @BBL H2D\";\"Fiberon PETG-rCF @BBL X1C\";\"Fiberon PETG-rCF @System\";\"Fiberon PETG-rCF08 @BBL X1\";\"Flashforge Generic PETG-CF @G3U\";\"Flashforge Generic PETG-CF @G3U 0.6 Nozzle\";\"Flashforge Generic PETG-CF @G3U 0.8 Nozzle\";\"Flashforge Generic PETG-CF10\";\"Flashforge PET-CF\";\"Flashforge PET-CF @FF C5\";\"Flashforge PET-CF @FF C5P\";\"Flashforge PETG-CF\";\"Flashforge PETG-CF @FF AD5X\";\"Flashforge PETG-CF @FF AD5X 0.6 nozzle\";\"Flashforge PETG-CF @FF AD5X 0.8 nozzle\";\"Flashforge PETG-CF @FF C5\";\"Flashforge PETG-CF @FF C5P\";\"Flashforge PETG-CF @FF G4\";\"Flashforge PETG-CF @FF G4 0.6 nozzle\";\"Flashforge PETG-CF @FF G4P\";\"Flashforge PETG-CF @FF G4P 0.6 nozzle\";\"FusRock Generic PET-CF\";\"FusRock Generic PET-CF @G3U 0.6 Nozzle\";\"FusRock Generic S-Multi @G3U 0.6 Nozzle\";\"FusRock PET-CF @FF G4\";\"FusRock PET-CF @FF G4 0.6 nozzle\";\"FusRock PET-CF @FF G4P\";\"FusRock PET-CF @FF G4P 0.6 nozzle\";\"Generic PET-CF @Elegoo Centauri\";\"Generic PET-CF @K1 Max_CFS-C-all\";\"Generic PET-CF @K1C-all\";\"Generic PET-CF @K1C_CFS-C-all\";\"Generic PET-CF @K1_CFS-C-all\";\"Generic PET-CF @K2 Plus-all\";\"Generic PET-CF @K2 Pro-all\";\"Generic PETG-CF @BBL A1\";\"Generic PETG-CF @BBL A1M\";\"Generic PETG-CF @BBL A2L\";\"Generic PETG-CF @BBL H2C\";\"Generic PETG-CF @BBL H2C 0.4 nozzle\";\"Generic PETG-CF @BBL H2D\";\"Generic PETG-CF @BBL H2DP\";\"Generic PETG-CF @BBL H2S\";\"Generic PETG-CF @BBL P1P\";\"Generic PETG-CF @BBL P2S\";\"Generic PETG-CF @BBL X1C\";\"Generic PETG-CF @BBL X2D\";\"Generic PETG-CF @BBL X2D 0.4 nozzle\";\"Generic PETG-CF @Elegoo Centauri\";\"Generic PETG-CF @K1 Max_CFS-C-all\";\"Generic PETG-CF @K1C-all\";\"Generic PETG-CF @K1C_CFS-C-all\";\"Generic PETG-CF @K1_CFS-C-all\";\"Generic PETG-CF @K2 Plus-all\";\"Generic PETG-CF @K2 Pro-all\";\"Generic PETG-CF @K2-all\";\"Generic PETG-CF @SPARKX i7-all\";\"Generic PETG-CF @System\";\"Generic PETG-CF10 @Flashforge AD4\";\"Hyper PETG-CF @K1 Max_CFS-C-all\";\"Hyper PETG-CF @K1C-all\";\"Hyper PETG-CF @K1C_CFS-C-all\";\"Hyper PETG-CF @K1_CFS-C-all\";\"Hyper PETG-CF @K2 Plus-all\";\"Hyper PETG-CF @K2 Pro-all\";\"Hyper PETG-CF @K2-all\";\"Hyper PETG-CF @SPARKX i7-all\";\"OrcaArena Generic PETG-CF @Arena X1C\";\"Peopoly Lancer PET-CF\";\"QIDI PET-CF\";\"QIDI PET-CF @Qidi Q1 Pro 0.4 nozzle\";\"QIDI PET-CF @Qidi Q1 Pro 0.6 nozzle\";\"QIDI PET-CF @Qidi Q1 Pro 0.8 nozzle\";\"QIDI PET-CF @Qidi Q2 0.4 nozzle\";\"QIDI PET-CF @Qidi Q2 0.6 nozzle\";\"QIDI PET-CF @Qidi Q2 0.8 nozzle\";\"QIDI PET-CF @Qidi Q2C 0.4 nozzle\";\"QIDI PET-CF @Qidi Q2C 0.6 nozzle\";\"QIDI PET-CF @Qidi Q2C 0.8 nozzle\";\"QIDI PET-CF @Qidi X-Max 4 0.4 nozzle\";\"QIDI PET-CF @Qidi X-Max 4 0.6 nozzle\";\"QIDI PET-CF @Qidi X-Max 4 0.8 nozzle\";\"QIDI PET-CF @Qidi X-Plus 4 0.4 nozzle\";\"QIDI PET-CF @Qidi X-Plus 4 0.6 nozzle\";\"QIDI PET-CF @Qidi X-Plus 4 0.8 nozzle\";\"QIDI PET-CF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI PET-CF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI PET-CF @Qidi X-Plus 5 0.8 nozzle\";\"QIDI PETG-CF\";\"QIDI PETG-CF @Qidi Q1 Pro 0.4 nozzle\";\"QIDI PETG-CF @Qidi Q1 Pro 0.6 nozzle\";\"QIDI PETG-CF @Qidi Q1 Pro 0.8 nozzle\";\"QIDI PETG-CF @Qidi Q2 0.4 nozzle\";\"QIDI PETG-CF @Qidi Q2 0.6 nozzle\";\"QIDI PETG-CF @Qidi Q2 0.8 nozzle\";\"QIDI PETG-CF @Qidi Q2C 0.4 nozzle\";\"QIDI PETG-CF @Qidi Q2C 0.6 nozzle\";\"QIDI PETG-CF @Qidi Q2C 0.8 nozzle\";\"QIDI PETG-CF @Qidi X-Max 4 0.4 nozzle\";\"QIDI PETG-CF @Qidi X-Max 4 0.6 nozzle\";\"QIDI PETG-CF @Qidi X-Max 4 0.8 nozzle\";\"QIDI PETG-CF @Qidi X-Plus 4 0.4 nozzle\";\"QIDI PETG-CF @Qidi X-Plus 4 0.6 nozzle\";\"QIDI PETG-CF @Qidi X-Plus 4 0.8 nozzle\";\"QIDI PETG-CF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI PETG-CF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI PETG-CF @Qidi X-Plus 5 0.8 nozzle\";\"Qidi Generic PETG-CF\";\"RatRig PunkFil PETG CF\";\"SeeMeCNC PETG-CF\";\"Snapmaker Dual PETG-CF\";\"Snapmaker J1 PETG-CF\";\"Snapmaker PETG-CF\";\"Snapmaker PETG-CF @U1\";\"Tiertime Generic PETG-CF\";\"Tiertime Generic PETG-CF@300HS\";\"Tiertime PET-CF\";\"Tiertime PET-CF@300HS\";\"WonderMaker PET-CF\";\"WonderMaker PET-CF @WonderMaker ZR Ultra S\";\"addnorth PETG-CF Rigid X\""
+}

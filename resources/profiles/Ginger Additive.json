@@ -1,6 +1,6 @@
 {
 	"name": "Ginger Additive",
-	"version": "02.04.00.03",
+	"version": "02.04.00.04",
 	"force_update": "1",
 	"description": "Ginger configuration",
 	"machine_model_list": [
@@ -61,18 +61,5 @@
 			"sub_path": "process/4.00mm Standard.json"
 		}
 	],
-	"filament_list": [
-		{
-			"name": "fdm_filament_common",
-			"sub_path": "filament/fdm_filament_common.json"
-		},
-		{
-			"name": "Ginger Generic PETG",
-			"sub_path": "filament/Ginger Generic PETG.json"
-		},
-		{
-			"name": "Ginger Generic PLA",
-			"sub_path": "filament/Ginger Generic PLA.json"
-		}
-	]
+	"filament_list": []
 }

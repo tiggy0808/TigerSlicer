@@ -5,7 +5,9 @@
 	"from": "system",
 	"setting_id": "I8pxHOhnyeLASVOC",
 	"instantiation": "true",
-	"default_filament_profile": "Prusament PLA @CORE One HF 0.5",
+	"default_filament_profile": [
+		"PLA @System"
+	],
 	"default_print_profile": "0.20mm SPEED @CORE One HF 0.5",
 	"deretraction_speed": "25",
 	"max_layer_height": "0.32",

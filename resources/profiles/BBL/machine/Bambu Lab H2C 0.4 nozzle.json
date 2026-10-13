@@ -13,7 +13,7 @@
 	"printer_variant": "0.4",
 	"farthest_point_timelapse": "1",
 	"default_filament_profile": [
-		"Bambu PLA Basic @BBL H2C"
+		"PLA @System"
 	],
 	"default_print_profile": "0.20mm Standard @BBL H2C",
 	"enable_long_retraction_when_cut": [

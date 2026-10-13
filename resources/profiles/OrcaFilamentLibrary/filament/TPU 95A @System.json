@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "TPU 95A @System",
+    "inherits": "fdm_filament_tpu",
+    "from": "system",
+    "setting_id": "TS7de39ffa281810",
+    "filament_id": "OGFU99",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "TPU"
+    ],
+    "nozzle_temperature": [
+        "225"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "225"
+    ],
+    "nozzle_temperature_range_low": [
+        "210"
+    ],
+    "nozzle_temperature_range_high": [
+        "240"
+    ],
+    "chamber_temperatures": [
+        "0"
+    ],
+    "fan_min_speed": [
+        "100"
+    ],
+    "fan_max_speed": [
+        "100"
+    ],
+    "filament_max_volumetric_speed": [
+        "3.6"
+    ],
+    "filament_density": [
+        "1.21"
+    ],
+    "filament_flow_ratio": [
+        "1.0"
+    ],
+    "filament_cost": [
+        "30"
+    ],
+    "temperature_vitrification": [
+        "30"
+    ],
+    "required_nozzle_HRC": [
+        "3"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "45"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "45"
+    ],
+    "textured_plate_temp": [
+        "45"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "45"
+    ],
+    "eng_plate_temp": [
+        "45"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "45"
+    ],
+    "cool_plate_temp": [
+        "35"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "35"
+    ],
+    "renamed_from": "\"Afinia TPU@HS\";\"Anker Generic TPU\";\"Anycubic Generic TPU\";\"Anycubic PEBA 95A @Anycubic Kobra 3 Max 0.4 nozzle\";\"Anycubic PEBA @Anycubic Kobra S1 Max 0.4 nozzle\";\"Anycubic PEBA @Anycubic Kobra S1 Max 0.6 nozzle\";\"Anycubic PEBA @Anycubic Kobra S1 Max 0.8 nozzle\";\"Anycubic TPU 95A @Anycubic Kobra S1 Max 0.4 nozzle\";\"Anycubic TPU 95A @Anycubic Kobra S1 Max 0.6 nozzle\";\"Anycubic TPU 95A @Anycubic Kobra S1 Max 0.8 nozzle\";\"Anycubic TPU 95A @Anycubic Kobra X 0.4 nozzle\";\"Anycubic TPU @Anycubic Kobra 3 Max 0.4 nozzle\";\"Anycubic TPU @Anycubic Kobra 3 Max 0.6 nozzle\";\"Anycubic TPU @Anycubic Kobra 3 Max 0.8 nozzle\";\"Anycubic TPU @Anycubic Kobra S1 0.4 nozzle\";\"Anycubic TPU for ACE @Anycubic Kobra S1 Max 0.4 nozzle\";\"Anycubic TPU for ACE @Anycubic Kobra S1 Max 0.6 nozzle\";\"Anycubic TPU for ACE @Anycubic Kobra S1 Max 0.8 nozzle\";\"Anycubic TPU for ACE @Anycubic Kobra X 0.4 nozzle\";\"Arena TPU 95A @Arena X1C\";\"Artillery Generic TPU\";\"Artillery TPU\";\"Artillery TPU @Artillery M1 Pro 0.4 nozzle\";\"Artillery TPU @Artillery M1 Pro 0.6 nozzle\";\"Artillery TPU @Artillery M1 Pro 0.8 nozzle\";\"BETA TPU 95A @BBL A1\";\"BETA TPU 95A @BBL A1M\";\"BETA TPU 95A @BBL H2D\";\"BETA TPU 95A @BBL P1P\";\"BETA TPU 95A @BBL X1C\";\"BETA TPU 98A @BBL A1\";\"BETA TPU 98A @BBL A1M\";\"BETA TPU 98A @BBL H2D\";\"BETA TPU 98A @BBL P1P\";\"BETA TPU 98A @BBL X1C\";\"BETA TPU Matte @BBL A1\";\"BETA TPU Matte @BBL A1M\";\"BETA TPU Matte @BBL H2D\";\"BETA TPU Matte @BBL P1P\";\"BETA TPU Matte @BBL X1C\";\"Bambu TPU 95A @BBL A1\";\"Bambu TPU 95A @BBL A1M\";\"Bambu TPU 95A @BBL A2L\";\"Bambu TPU 95A @BBL H2C\";\"Bambu TPU 95A @BBL H2C 0.4 nozzle\";\"Bambu TPU 95A @BBL H2D\";\"Bambu TPU 95A @BBL H2DP\";\"Bambu TPU 95A @BBL H2S\";\"Bambu TPU 95A @BBL P1P\";\"Bambu TPU 95A @BBL P2S\";\"Bambu TPU 95A @BBL X1\";\"Bambu TPU 95A @BBL X1C\";\"Bambu TPU 95A @BBL X2D\";\"Bambu TPU 95A @BBL X2D 0.4 nozzle\";\"Bambu TPU 95A @System\";\"Bambu TPU 95A HF @BBL A1\";\"Bambu TPU 95A HF @BBL A1M\";\"Bambu TPU 95A HF @BBL A2L\";\"Bambu TPU 95A HF @BBL A2L 0.6 nozzle\";\"Bambu TPU 95A HF @BBL A2L 0.8 nozzle\";\"Bambu TPU 95A HF @BBL H2C\";\"Bambu TPU 95A HF @BBL H2C 0.4 nozzle\";\"Bambu TPU 95A HF @BBL H2D\";\"Bambu TPU 95A HF @BBL H2D 0.4 nozzle\";\"Bambu TPU 95A HF @BBL H2DP\";\"Bambu TPU 95A HF @BBL H2DP 0.4 nozzle\";\"Bambu TPU 95A HF @BBL H2S\";\"Bambu TPU 95A HF @BBL P1P\";\"Bambu TPU 95A HF @BBL P1S\";\"Bambu TPU 95A HF @BBL P2S\";\"Bambu TPU 95A HF @BBL X1\";\"Bambu TPU 95A HF @BBL X1C\";\"Bambu TPU 95A HF @BBL X1E\";\"Bambu TPU 95A HF @BBL X2D\";\"Bambu TPU 95A HF @BBL X2D 0.4 nozzle\";\"Bambu TPU 95A HF @System\";\"Bambu TPU for AMS @BBL A1\";\"Bambu TPU for AMS @BBL A1M\";\"Bambu TPU for AMS @BBL A2L\";\"Bambu TPU for AMS @BBL A2L 0.6 nozzle\";\"Bambu TPU for AMS @BBL A2L 0.8 nozzle\";\"Bambu TPU for AMS @BBL H2C\";\"Bambu TPU for AMS @BBL H2C 0.4 nozzle\";\"Bambu TPU for AMS @BBL H2D\";\"Bambu TPU for AMS @BBL H2DP\";\"Bambu TPU for AMS @BBL H2S\";\"Bambu TPU for AMS @BBL P1P\";\"Bambu TPU for AMS @BBL P2S\";\"Bambu TPU for AMS @BBL X1C\";\"Bambu TPU for AMS @BBL X2D\";\"Bambu TPU for AMS @BBL X2D 0.4 nozzle\";\"Blocks Generic TPU\";\"COEX TPE 30D @BBL A1\";\"COEX TPE 30D @BBL A1M\";\"COEX TPE 30D @BBL P1P\";\"COEX TPE 30D @BBL X1\";\"COEX TPE 30D @BBL X1C\";\"COEX TPE 30D @System\";\"COEX TPE 40D @BBL A1\";\"COEX TPE 40D @BBL A1 0.2 nozzle\";\"COEX TPE 40D @BBL A1M\";\"COEX TPE 40D @BBL A1M 0.2 nozzle\";\"COEX TPE 40D @BBL P1P\";\"COEX TPE 40D @BBL P1P 0.2 nozzle\";\"COEX TPE 40D @BBL X1\";\"COEX TPE 40D @BBL X1 0.2 nozzle\";\"COEX TPE 40D @BBL X1C\";\"COEX TPE 40D @BBL X1C 0.2 nozzle\";\"COEX TPE 40D @System\";\"COEX TPE 60D @BBL A1\";\"COEX TPE 60D @BBL A1 0.2 nozzle\";\"COEX TPE 60D @BBL A1M\";\"COEX TPE 60D @BBL A1M 0.2 nozzle\";\"COEX TPE 60D @BBL P1P\";\"COEX TPE 60D @BBL P1P 0.2 nozzle\";\"COEX TPE 60D @BBL X1\";\"COEX TPE 60D @BBL X1 0.2 nozzle\";\"COEX TPE 60D @BBL X1C\";\"COEX TPE 60D @BBL X1C 0.2 nozzle\";\"COEX TPE 60D @System\";\"COEX TPU 60A @BBL X1C\";\"COEX TPU 60A @System\";\"CR-TPU @K1 Max_CFS-C-all\";\"CR-TPU @K1C-all\";\"CR-TPU @K1C_CFS-C-all\";\"CR-TPU @K1_CFS-C-all\";\"CR-TPU @K2 Plus-all\";\"CR-TPU @K2 Pro-all\";\"CR-TPU @K2-all\";\"CR-TPU @SPARKX i7-all\";\"Chuanying Generic TPU\";\"CoLiDo Generic TPU @CoLiDo DIY 4.0\";\"CoLiDo Generic TPU @CoLiDo X16\";\"CoPrint Generic TPU\";\"Creality Generic TPU\";\"Creality Generic TPU @Ender-3V3-all\";\"Creality Generic TPU @Ender-5Max-all\";\"Creality Generic TPU @Hi-all\";\"Creality Generic TPU @K1-all\";\"Creality Generic TPU @K2-all\";\"DeltaMaker Generic TPU\";\"Elegoo Rapid TPU 95A @EC\";\"Elegoo Rapid TPU 95A @EC2\";\"Elegoo Rapid TPU 95A @ECC\";\"Elegoo Rapid TPU 95A @ECC2\";\"Elegoo Rapid TPU 95A @EN2 Series\";\"Elegoo Rapid TPU 95A @EN3 Series\";\"Elegoo Rapid TPU 95A @EN4 Series\";\"Elegoo Rapid TPU 95A @Elegoo Giga\";\"Elegoo Rapid TPU 95A @System\";\"Elegoo TPU 95A @EC\";\"Elegoo TPU 95A @EC2\";\"Elegoo TPU 95A @ECC\";\"Elegoo TPU 95A @ECC2\";\"Elegoo TPU 95A @EN3 Series\";\"Elegoo TPU 95A @EN4 Series\";\"Elegoo TPU 95A @System\";\"Eolas Prints TPU D60 UV Resistant @System\";\"Eolas Prints TPU Flex 93A @System\";\"Eolas Prints TPU Flex D53 @System\";\"Eolas Prints TPU Transition @System\";\"Eryone TPU\";\"Eryone TPU @0.2 nozzle\";\"FDplast TPU @System\";\"FLSun Generic TPU\";\"FLSun S1 TPU\";\"FLSun T1 TPU\";\"Flashforge Generic TPU\";\"Flashforge TPU 65D @FF G4 0.6 HF nozzle\";\"Flashforge TPU 65D @FF G4 0.6 nozzle\";\"Flashforge TPU 65D @FF G4 0.8 HF nozzle\";\"Flashforge TPU 65D @FF G4P 0.6 HF nozzle\";\"Flashforge TPU 65D @FF G4P 0.6 nozzle\";\"Flashforge TPU 65D @FF G4P 0.8 HF nozzle\";\"Flashforge TPU 95A\";\"Flashforge TPU 95A @FF AD5X\";\"Flashforge TPU 95A @FF AD5X 0.6 nozzle\";\"Flashforge TPU 95A @FF AD5X 0.8 nozzle\";\"Flashforge TPU 95A @FF G4\";\"Flashforge TPU 95A @FF G4 0.6 HF nozzle\";\"Flashforge TPU 95A @FF G4 0.6 nozzle\";\"Flashforge TPU 95A @FF G4 0.8 HF nozzle\";\"Flashforge TPU 95A @FF G4P\";\"Flashforge TPU 95A @FF G4P 0.6 HF nozzle\";\"Flashforge TPU 95A @FF G4P 0.6 nozzle\";\"Flashforge TPU 95A @FF G4P 0.8 HF nozzle\";\"Flashforge TPU-64D @FF C5\";\"Flashforge TPU-64D @FF C5P\";\"Flashforge TPU-95A @FF C5\";\"Flashforge TPU-95A @FF C5P\";\"FlyingBear Generic TPU\";\"FlyingBear TPU @S1\";\"FlyingBear TPU Basic @Ghost7\";\"Generic TPU\";\"Generic TPU 64D @K2 Plus-all\";\"Generic TPU 64D @SPARKX i7-all\";\"Generic TPU 95A @Qidi Q2 0.4 nozzle\";\"Generic TPU 95A @Qidi Q2 0.6 nozzle\";\"Generic TPU 95A @Qidi Q2 0.8 nozzle\";\"Generic TPU 95A @Qidi Q2C 0.4 nozzle\";\"Generic TPU 95A @Qidi Q2C 0.6 nozzle\";\"Generic TPU 95A @Qidi Q2C 0.8 nozzle\";\"Generic TPU 95A @Qidi X-Max 4 0.4 nozzle\";\"Generic TPU 95A @Qidi X-Max 4 0.6 nozzle\";\"Generic TPU 95A @Qidi X-Max 4 0.8 nozzle\";\"Generic TPU 95A @Qidi X-Plus 5 0.4 nozzle\";\"Generic TPU 95A @Qidi X-Plus 5 0.6 nozzle\";\"Generic TPU 95A @Qidi X-Plus 5 0.8 nozzle\";\"Generic TPU @Anycubic Kobra 3 0.4 nozzle\";\"Generic TPU @BBL A1\";\"Generic TPU @BBL A1M\";\"Generic TPU @BBL A2L\";\"Generic TPU @BBL H2C\";\"Generic TPU @BBL H2C 0.4 nozzle\";\"Generic TPU @BBL H2D\";\"Generic TPU @BBL H2DP\";\"Generic TPU @BBL H2S\";\"Generic TPU @BBL P1P\";\"Generic TPU @BBL P2S\";\"Generic TPU @BBL X2D\";\"Generic TPU @BBL X2D 0.4 nozzle\";\"Generic TPU @E3NG v1.2S\";\"Generic TPU @Ender-3 V4-all\";\"Generic TPU @Flashforge AD4\";\"Generic TPU @K1 Max_CFS-C-all\";\"Generic TPU @K1 SE-all\";\"Generic TPU @K1 SE_CFS-C-all\";\"Generic TPU @K1C-all\";\"Generic TPU @K1C_CFS-C-all\";\"Generic TPU @K1_CFS-C-all\";\"Generic TPU @K2 Plus-all\";\"Generic TPU @K2 Pro-all\";\"Generic TPU @K2 SE-all\";\"Generic TPU @K2-all\";\"Generic TPU @MyToolChanger\";\"Generic TPU @SPARKX i7-all\";\"Generic TPU @Sovol SV08 MAX\";\"Generic TPU @System\";\"Generic TPU for AMS @BBL A1\";\"Generic TPU for AMS @BBL A1M\";\"Generic TPU for AMS @BBL A2L\";\"Generic TPU for AMS @BBL H2C\";\"Generic TPU for AMS @BBL H2C 0.4 nozzle\";\"Generic TPU for AMS @BBL H2D\";\"Generic TPU for AMS @BBL H2DP\";\"Generic TPU for AMS @BBL H2S\";\"Generic TPU for AMS @BBL P1P\";\"Generic TPU for AMS @BBL P2S\";\"Generic TPU for AMS @BBL X1C\";\"Generic TPU for AMS @BBL X2D\";\"Generic TPU for AMS @BBL X2D 0.4 nozzle\";\"Generic TPU-64D @FF C5\";\"Generic TPU-64D @FF C5P\";\"Generic TPU-95A @FF C5\";\"Generic TPU-95A @FF C5P\";\"HP-TPU @Ender-3 V4-all\";\"HP-TPU @Hi-all\";\"HP-TPU @K1 Max_CFS-C-all\";\"HP-TPU @K1 SE-all\";\"HP-TPU @K1 SE_CFS-C-all\";\"HP-TPU @K1C-all\";\"HP-TPU @K1C_CFS-C-all\";\"HP-TPU @K1_CFS-C-all\";\"HP-TPU @K2 Plus-all\";\"HP-TPU @K2 Pro-all\";\"HP-TPU @K2 SE-all\";\"HP-TPU @K2-all\";\"HP-TPU @SPARKX i7-all\";\"InfiMech Generic TPU\";\"InfiMech TPU @HSN\";\"InfiMech TPU Basic @EX\";\"InfiMech TPU Basic @EX+APS\";\"LHS TPU\";\"LHS TPU Foamy 78A\";\"OrcaArena Generic TPU\";\"Other TPU\";\"Other TPU @HSN\";\"Other TPU @S1\";\"Overture TPU @BBL A1\";\"Overture TPU @BBL A1 0.2 nozzle\";\"Overture TPU @BBL A1M\";\"Overture TPU @BBL A1M 0.2 nozzle\";\"Overture TPU @BBL P1P\";\"Overture TPU @BBL P1P 0.2 nozzle\";\"Overture TPU @BBL X1\";\"Overture TPU @BBL X1 0.2 nozzle\";\"Overture TPU @BBL X1C\";\"Overture TPU @BBL X1C 0.2 nozzle\";\"Overture TPU @System\";\"Prusa Generic FLEX @XL\";\"Prusa Generic FLEX @XL 5T\";\"Prusa Generic TPU\";\"Prusa Generic TPU @CORE One\";\"Prusa Generic TPU @CORE One 0.6\";\"Prusa Generic TPU @CORE One 0.8\";\"Prusa Generic TPU @MINIIS\";\"Prusa Generic TPU @MK3.5\";\"Prusa Generic TPU @MK4\";\"Prusa Generic TPU @MK4S\";\"Prusa Generic TPU @MK4S 0.6\";\"Prusa Generic TPU @MK4S 0.8\";\"Prusa Generic TPU HF @MINIIS\";\"Prusa Generic TPU HF @MK3.5\";\"QIDI PEBA 95A\";\"QIDI PEBA 95A @Qidi Q1 Pro 0.4 nozzle\";\"QIDI PEBA 95A @Qidi Q1 Pro 0.6 nozzle\";\"QIDI PEBA 95A @Qidi Q2 0.4 nozzle\";\"QIDI PEBA 95A @Qidi Q2 0.6 nozzle\";\"QIDI PEBA 95A @Qidi Q2C 0.4 nozzle\";\"QIDI PEBA 95A @Qidi Q2C 0.6 nozzle\";\"QIDI PEBA 95A @Qidi X-Max 4 0.4 nozzle\";\"QIDI PEBA 95A @Qidi X-Max 4 0.6 nozzle\";\"QIDI PEBA 95A @Qidi X-Plus 4 0.4 nozzle\";\"QIDI PEBA 95A @Qidi X-Plus 4 0.6 nozzle\";\"QIDI PEBA 95A @Qidi X-Plus 5 0.4 nozzle\";\"QIDI PEBA 95A @Qidi X-Plus 5 0.6 nozzle\";\"QIDI TPU 95A-HF @Qidi Q2 0.4 nozzle\";\"QIDI TPU 95A-HF @Qidi Q2 0.6 nozzle\";\"QIDI TPU 95A-HF @Qidi Q2 0.8 nozzle\";\"QIDI TPU 95A-HF @Qidi Q2C 0.4 nozzle\";\"QIDI TPU 95A-HF @Qidi Q2C 0.6 nozzle\";\"QIDI TPU 95A-HF @Qidi Q2C 0.8 nozzle\";\"QIDI TPU 95A-HF @Qidi X-Max 4 0.4 nozzle\";\"QIDI TPU 95A-HF @Qidi X-Max 4 0.6 nozzle\";\"QIDI TPU 95A-HF @Qidi X-Max 4 0.8 nozzle\";\"QIDI TPU 95A-HF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI TPU 95A-HF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI TPU 95A-HF @Qidi X-Plus 5 0.8 nozzle\";\"QIDI TPU-Aero\";\"QIDI TPU-Aero @Qidi Q1 Pro 0.4 nozzle\";\"QIDI TPU-Aero @Qidi Q1 Pro 0.6 nozzle\";\"QIDI TPU-Aero @Qidi Q2 0.4 nozzle\";\"QIDI TPU-Aero @Qidi Q2 0.6 nozzle\";\"QIDI TPU-Aero @Qidi Q2C 0.4 nozzle\";\"QIDI TPU-Aero @Qidi Q2C 0.6 nozzle\";\"QIDI TPU-Aero @Qidi X-Max 4 0.4 nozzle\";\"QIDI TPU-Aero @Qidi X-Max 4 0.6 nozzle\";\"QIDI TPU-Aero @Qidi X-Plus 4 0.4 nozzle\";\"QIDI TPU-Aero @Qidi X-Plus 4 0.6 nozzle\";\"QIDI TPU-Aero @Qidi X-Plus 5 0.4 nozzle\";\"QIDI TPU-Aero @Qidi X-Plus 5 0.6 nozzle\";\"QIDI TPU-GF\";\"QIDI TPU-GF @Qidi Q1 Pro 0.4 nozzle\";\"QIDI TPU-GF @Qidi Q1 Pro 0.6 nozzle\";\"QIDI TPU-GF @Qidi Q1 Pro 0.8 nozzle\";\"QIDI TPU-GF @Qidi Q2 0.4 nozzle\";\"QIDI TPU-GF @Qidi Q2 0.6 nozzle\";\"QIDI TPU-GF @Qidi Q2 0.8 nozzle\";\"QIDI TPU-GF @Qidi Q2C 0.4 nozzle\";\"QIDI TPU-GF @Qidi Q2C 0.6 nozzle\";\"QIDI TPU-GF @Qidi Q2C 0.8 nozzle\";\"QIDI TPU-GF @Qidi X-Max 4 0.4 nozzle\";\"QIDI TPU-GF @Qidi X-Max 4 0.6 nozzle\";\"QIDI TPU-GF @Qidi X-Max 4 0.8 nozzle\";\"QIDI TPU-GF @Qidi X-Plus 4 0.4 nozzle\";\"QIDI TPU-GF @Qidi X-Plus 4 0.6 nozzle\";\"QIDI TPU-GF @Qidi X-Plus 4 0.8 nozzle\";\"QIDI TPU-GF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI TPU-GF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI TPU-GF @Qidi X-Plus 5 0.8 nozzle\";\"Qidi Generic TPU\";\"Qidi Generic TPU 95A\";\"Qidi Generic TPU 95A @Qidi Q1 Pro 0.8 nozzle\";\"Qidi Generic TPU 95A @Qidi X-Plus 4 0.8 nozzle\";\"Qidi Generic TPU @Qidi Q1 Pro 0.4 nozzle\";\"Qidi Generic TPU @Qidi X-Plus 4 0.4 nozzle\";\"Qidi TPU 95A-HF\";\"Qidi TPU 95A-HF @Qidi Q1 Pro 0.4 nozzle\";\"Qidi TPU 95A-HF @Qidi Q1 Pro 0.8 nozzle\";\"Qidi TPU 95A-HF @Qidi X-Plus 4 0.4 nozzle\";\"Qidi TPU 95A-HF @Qidi X-Plus 4 0.8 nozzle\";\"RatRig BigNozzle TPU\";\"RatRig Generic TPU\";\"SecKit Generic TPU\";\"SeeMeCNC TPU\";\"Snapmaker Dual TPE\";\"Snapmaker Dual TPU\";\"Snapmaker Dual TPU High-Flow\";\"Snapmaker J1 TPE\";\"Snapmaker J1 TPU\";\"Snapmaker J1 TPU High-Flow\";\"Snapmaker TPE\";\"Snapmaker TPE @U1\";\"Snapmaker TPU\";\"Snapmaker TPU 95A @U1\";\"Snapmaker TPU 95A HF @U1\";\"Snapmaker TPU 95A HF @U1 0.6 nozzle\";\"Snapmaker TPU 95A HF @U1 0.8 nozzle\";\"Snapmaker TPU @U1\";\"Snapmaker TPU High-Flow @U1\";\"Sovol SV06 ACE TPU\";\"Sovol SV06 Plus ACE TPU\";\"Sovol SV08 TPU\";\"Sovol Zero TPU\";\"Tiertime Generic TPU\";\"Tiertime Generic TPU@300HS\";\"Tiertime TPU 95A\";\"Tiertime TPU 95A@300HS\";\"TwoTrees Generic 95A TPU @SK1\";\"Volumic FLEX93 Ultra\";\"Volumic FLEX93 Ultra (Performance)\";\"Vzbot Generic TPU\";\"WonderMaker TPU 95A\";\"addnorth TPU EasyFlex\";\"addnorth TPU Pro Matte 95A\""
+}

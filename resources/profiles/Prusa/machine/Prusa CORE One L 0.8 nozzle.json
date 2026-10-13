@@ -5,7 +5,9 @@
 	"from": "system",
 	"setting_id": "l8oMNiUo6qDtXq8i",
 	"instantiation": "true",
-	"default_filament_profile": "Prusament PLA @CORE One 0.8",
+	"default_filament_profile": [
+		"PLA @System"
+	],
 	"default_print_profile": "0.40mm QUALITY @CORE One 0.8",
 	"nozzle_diameter": [
 		"0.8"

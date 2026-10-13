@@ -1,6 +1,6 @@
 {
 	"name": "Dremel",
-	"version": "02.04.00.01",
+	"version": "02.04.00.02",
 	"force_update": "0",
 	"description": "Dremel configurations",
 	"machine_model_list": [
@@ -79,32 +79,7 @@
 			"sub_path": "process/.34mm SuperDraft @Dremel 3D45 0.4.json"
 		}
 	],
-	"filament_list": [
-		{
-			"name": "fdm_filament_common",
-			"sub_path": "filament/fdm_filament_common.json"
-		},
-		{
-			"name": "fdm_filament_pla",
-			"sub_path": "filament/fdm_filament_pla.json"
-		},
-		{
-			"name": "Dremel Generic PLA",
-			"sub_path": "filament/Dremel Generic PLA.json"
-		},
-		{
-			"name": "Dremel Generic PLA @3D20 all",
-			"sub_path": "filament/Dremel Generic PLA @3D20 all.json"
-		},
-		{
-			"name": "Dremel Generic PLA @3D40 all",
-			"sub_path": "filament/Dremel Generic PLA @3D40 all.json"
-		},
-		{
-			"name": "Dremel Generic PLA @3D45 all",
-			"sub_path": "filament/Dremel Generic PLA @3D45 all.json"
-		}
-	],
+	"filament_list": [],
 	"machine_list": [
 		{
 			"name": "fdm_machine_common",

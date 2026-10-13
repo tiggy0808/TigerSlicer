@@ -6,7 +6,7 @@
 	"setting_id": "DrFTCJ0UXdEP6Zuo",
 	"instantiation": "true",
 	"default_filament_profile": [
-		"QIDI PLA Rapido"
+		"PLA @System"
 	],
 	"default_print_profile": "0.40mm Standard @Q2 0.8 nozzle",
 	"max_layer_height": [

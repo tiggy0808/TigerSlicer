@@ -10,7 +10,7 @@
 		"0.4"
 	],
 	"default_filament_profile": [
-		"LHS PLA"
+		"PLA @System"
 	],
 	"printer_variant": "0.4"
 }

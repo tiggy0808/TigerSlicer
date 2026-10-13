@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "HIPS @System",
+    "inherits": "fdm_filament_hips",
+    "from": "system",
+    "setting_id": "TScb7b4856dba4eb",
+    "filament_id": "OGFS98",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "HIPS"
+    ],
+    "nozzle_temperature": [
+        "240"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "240"
+    ],
+    "nozzle_temperature_range_low": [
+        "220"
+    ],
+    "nozzle_temperature_range_high": [
+        "260"
+    ],
+    "chamber_temperatures": [
+        "40"
+    ],
+    "fan_min_speed": [
+        "10"
+    ],
+    "fan_max_speed": [
+        "40"
+    ],
+    "filament_max_volumetric_speed": [
+        "8"
+    ],
+    "filament_density": [
+        "1.04"
+    ],
+    "filament_flow_ratio": [
+        "1.0"
+    ],
+    "filament_cost": [
+        "25"
+    ],
+    "temperature_vitrification": [
+        "90"
+    ],
+    "required_nozzle_HRC": [
+        "3"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "100"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "100"
+    ],
+    "textured_plate_temp": [
+        "100"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "100"
+    ],
+    "eng_plate_temp": [
+        "100"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "100"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "renamed_from": "\"BETA HIPS @BBL H2D\";\"BETA HIPS @BBL X1C\";\"Chuanying Generic HIPS\";\"FDplast HIPS @System\";\"Flashforge Generic HIPS\";\"Flashforge Generic HIPS @G3U 0.6 Nozzle\";\"Flashforge HIPS @FF C5\";\"Flashforge HIPS @FF C5P\";\"Flashforge HIPS @FF G4\";\"Flashforge HIPS @FF G4 HF\";\"Flashforge HIPS @FF G4P\";\"Flashforge HIPS @FF G4P HF\";\"Generic HIPS @BBL A1\";\"Generic HIPS @BBL A1 0.2 nozzle\";\"Generic HIPS @BBL A1M\";\"Generic HIPS @BBL A1M 0.2 nozzle\";\"Generic HIPS @BBL A2L\";\"Generic HIPS @BBL A2L 0.2 nozzle\";\"Generic HIPS @BBL H2C\";\"Generic HIPS @BBL H2C 0.2 nozzle\";\"Generic HIPS @BBL H2C 0.4 nozzle\";\"Generic HIPS @BBL H2D\";\"Generic HIPS @BBL H2D 0.2 nozzle\";\"Generic HIPS @BBL H2DP\";\"Generic HIPS @BBL H2DP 0.2 nozzle\";\"Generic HIPS @BBL H2S 0.2 nozzle\";\"Generic HIPS @BBL H2S 0.4 nozzle\";\"Generic HIPS @BBL P2S\";\"Generic HIPS @BBL P2S 0.2 nozzle\";\"Generic HIPS @BBL X1C\";\"Generic HIPS @BBL X1C 0.2 nozzle\";\"Generic HIPS @BBL X2D\";\"Generic HIPS @BBL X2D 0.2 nozzle\";\"Generic HIPS @BBL X2D 0.4 nozzle\";\"Generic HIPS @K1 Max_CFS-C-all\";\"Generic HIPS @K1C-all\";\"Generic HIPS @K1C_CFS-C-all\";\"Generic HIPS @K1_CFS-C-all\";\"Generic HIPS @K2 Plus-all\";\"Generic HIPS @System\";\"Tiertime Generic HIPS\";\"Tiertime Generic HIPS@300HS\""
+}

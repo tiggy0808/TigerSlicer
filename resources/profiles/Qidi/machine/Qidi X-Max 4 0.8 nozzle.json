@@ -6,7 +6,7 @@
 	"setting_id": "pJbz2SGfvEar8cGh",
 	"instantiation": "true",
 	"default_filament_profile": [
-		"QIDI PLA Rapido @Qidi X-Max 4 0.8 nozzle"
+		"PLA @System"
 	],
 	"default_print_profile": "0.40mm Standard @X-Max 4 0.8 nozzle",
 	"max_layer_height": [

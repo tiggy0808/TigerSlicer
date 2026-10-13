@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "PP-CF @System",
+    "inherits": "fdm_filament_pp",
+    "from": "system",
+    "setting_id": "TS48ac4589b4fd64",
+    "filament_id": "TSFP98",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "PP-CF"
+    ],
+    "nozzle_temperature": [
+        "240"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "245"
+    ],
+    "nozzle_temperature_range_low": [
+        "230"
+    ],
+    "nozzle_temperature_range_high": [
+        "260"
+    ],
+    "chamber_temperatures": [
+        "0"
+    ],
+    "fan_min_speed": [
+        "20"
+    ],
+    "fan_max_speed": [
+        "40"
+    ],
+    "filament_max_volumetric_speed": [
+        "8.0"
+    ],
+    "filament_density": [
+        "0.98"
+    ],
+    "filament_flow_ratio": [
+        "0.98"
+    ],
+    "filament_cost": [
+        "48"
+    ],
+    "temperature_vitrification": [
+        "90"
+    ],
+    "required_nozzle_HRC": [
+        "40"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "80"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "80"
+    ],
+    "textured_plate_temp": [
+        "80"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "80"
+    ],
+    "eng_plate_temp": [
+        "80"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "80"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "renamed_from": "\"Eryone PP-CF\";\"Eryone PP-CF @0.2 nozzle\";\"Generic PE-CF @BBL A1\";\"Generic PE-CF @BBL A1M\";\"Generic PE-CF @BBL A2L\";\"Generic PE-CF @BBL H2C\";\"Generic PE-CF @BBL H2C 0.4 nozzle\";\"Generic PE-CF @BBL H2D\";\"Generic PE-CF @BBL H2DP\";\"Generic PE-CF @BBL H2S 0.4 nozzle\";\"Generic PE-CF @BBL P2S\";\"Generic PE-CF @BBL X1C\";\"Generic PE-CF @BBL X2D\";\"Generic PE-CF @BBL X2D 0.4 nozzle\";\"Generic PE-CF @System\";\"Generic PP-CF @BBL A1\";\"Generic PP-CF @BBL H2C\";\"Generic PP-CF @BBL H2C 0.4 nozzle\";\"Generic PP-CF @BBL H2D\";\"Generic PP-CF @BBL H2DP\";\"Generic PP-CF @BBL H2S 0.4 nozzle\";\"Generic PP-CF @BBL P2S\";\"Generic PP-CF @BBL X1C\";\"Generic PP-CF @BBL X2D\";\"Generic PP-CF @BBL X2D 0.4 nozzle\";\"Generic PP-CF @K2 Plus-all\";\"Generic PP-CF @System\";\"Tiertime Generic PE-CF\";\"Tiertime Generic PE-CF@300HS\";\"Tiertime Generic PP-CF\";\"Tiertime Generic PP-CF@300HS\""
+}

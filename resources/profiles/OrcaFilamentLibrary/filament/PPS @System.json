@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "PPS @System",
+    "inherits": "fdm_filament_pps",
+    "from": "system",
+    "setting_id": "TS1c319b3f8c6d32",
+    "filament_id": "TSFS50",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "PPS"
+    ],
+    "nozzle_temperature": [
+        "320"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "320"
+    ],
+    "nozzle_temperature_range_low": [
+        "310"
+    ],
+    "nozzle_temperature_range_high": [
+        "340"
+    ],
+    "chamber_temperatures": [
+        "60"
+    ],
+    "fan_min_speed": [
+        "0"
+    ],
+    "fan_max_speed": [
+        "30"
+    ],
+    "filament_max_volumetric_speed": [
+        "6"
+    ],
+    "filament_density": [
+        "1.35"
+    ],
+    "filament_flow_ratio": [
+        "0.96"
+    ],
+    "filament_cost": [
+        "80"
+    ],
+    "temperature_vitrification": [
+        "200"
+    ],
+    "required_nozzle_HRC": [
+        "3"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "110"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "110"
+    ],
+    "textured_plate_temp": [
+        "110"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "110"
+    ],
+    "eng_plate_temp": [
+        "110"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "110"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "renamed_from": "\"FlashForge PPS @FF G4 0.6 HF nozzle\";\"FlashForge PPS @FF G4 0.6 nozzle\";\"FlashForge PPS @FF G4 0.8 HF nozzle\";\"FlashForge PPS @FF G4P 0.6 HF nozzle\";\"FlashForge PPS @FF G4P 0.6 nozzle\";\"FlashForge PPS @FF G4P 0.8 HF nozzle\";\"Flashforge PPS @FF G4\";\"Flashforge PPS @FF G4P\";\"Generic PPS @BBL H2C\";\"Generic PPS @BBL H2C 0.4 nozzle\";\"Generic PPS @BBL H2D\";\"Generic PPS @BBL H2DP\";\"Generic PPS @BBL H2S 0.4 nozzle\";\"Generic PPS @BBL X1E\";\"Generic PPS @K1 Max_CFS-C-all\";\"Generic PPS @K1C-all\";\"Generic PPS @K1C_CFS-C-all\";\"Generic PPS @K1_CFS-C-all\";\"Generic PPS @K2 Plus-all\";\"Tiertime Generic PPS\";\"Tiertime Generic PPS@300HS\""
+}

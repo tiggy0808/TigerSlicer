@@ -13,7 +13,7 @@
 	"bed_exclude_area": [],
 	"bed_temperature_formula": "by_highest_temp",
 	"default_filament_profile": [
-		"Bambu PLA Basic @BBL H2D"
+		"PLA @System"
 	],
 	"default_nozzle_volume_type": [
 		"Standard",

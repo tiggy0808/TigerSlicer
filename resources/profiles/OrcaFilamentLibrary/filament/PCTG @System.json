@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "PCTG @System",
+    "inherits": "fdm_filament_pctg",
+    "from": "system",
+    "setting_id": "TS52a19df3407ff7",
+    "filament_id": "OGFG97",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "PCTG"
+    ],
+    "nozzle_temperature": [
+        "255"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "255"
+    ],
+    "nozzle_temperature_range_low": [
+        "240"
+    ],
+    "nozzle_temperature_range_high": [
+        "270"
+    ],
+    "chamber_temperatures": [
+        "0"
+    ],
+    "fan_min_speed": [
+        "20"
+    ],
+    "fan_max_speed": [
+        "60"
+    ],
+    "filament_max_volumetric_speed": [
+        "12"
+    ],
+    "filament_density": [
+        "1.23"
+    ],
+    "filament_flow_ratio": [
+        "0.97"
+    ],
+    "filament_cost": [
+        "25"
+    ],
+    "temperature_vitrification": [
+        "70"
+    ],
+    "required_nozzle_HRC": [
+        "3"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "75"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "75"
+    ],
+    "textured_plate_temp": [
+        "75"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "75"
+    ],
+    "eng_plate_temp": [
+        "75"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "75"
+    ],
+    "cool_plate_temp": [
+        "60"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "60"
+    ],
+    "renamed_from": "\"COEX PCTG PRIME @BBL A1\";\"COEX PCTG PRIME @BBL A1 0.2 nozzle\";\"COEX PCTG PRIME @BBL A1 0.8 nozzle\";\"COEX PCTG PRIME @BBL A1M 0.2 nozzle\";\"COEX PCTG PRIME @BBL A1M 0.4 nozzle\";\"COEX PCTG PRIME @BBL A1M 0.8 nozzle\";\"COEX PCTG PRIME @BBL X1C\";\"COEX PCTG PRIME @BBL X1C 0.2 nozzle\";\"COEX PCTG PRIME @BBL X1C 0.8 nozzle\";\"COEX PCTG PRIME @System\";\"Generic PCTG @BBL A1\";\"Generic PCTG @BBL A1M\";\"Generic PCTG @BBL A2L\";\"Generic PCTG @BBL H2C\";\"Generic PCTG @BBL H2C 0.4 nozzle\";\"Generic PCTG @BBL H2D\";\"Generic PCTG @BBL H2DP\";\"Generic PCTG @BBL H2S 0.4 nozzle\";\"Generic PCTG @BBL P2S\";\"Generic PCTG @BBL X1C\";\"Generic PCTG @BBL X2D\";\"Generic PCTG @BBL X2D 0.4 nozzle\";\"Generic PCTG @K2 Plus-all\";\"Generic PCTG @System\";\"LHS PCTG\";\"Tiertime Generic PCTG\";\"Tiertime Generic PCTG@300HS\""
+}

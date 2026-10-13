@@ -8,7 +8,7 @@
 	"printer_model": "Qidi X-Plus 5",
 	"printer_variant": "0.6",
 	"default_filament_profile": [
-		"QIDI PLA Rapido @Qidi X-Plus 5 0.6 nozzle"
+		"PLA @System"
 	],
 	"default_print_profile": "0.30mm Standard @X-Plus 5 0.6 nozzle",
 	"max_layer_height": [

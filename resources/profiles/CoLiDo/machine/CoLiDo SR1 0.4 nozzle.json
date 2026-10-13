@@ -7,7 +7,7 @@
 	"instantiation": "true",
 	"printer_model": "CoLiDo SR1",
 	"default_filament_profile": [
-		"CoLiDo PLA @CoLiDo SR1"
+		"PLA @System"
 	],
 	"default_print_profile": "0.20mm Standard @CoLiDo SR1",
 	"printer_settings_id": "CoLiDo SR1 0.4 nozzle",

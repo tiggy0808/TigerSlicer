@@ -7,7 +7,7 @@
 	"instantiation": "true",
 	"printer_model": "Geeetech A10 Pro",
 	"default_filament_profile": [
-		"Generic PLA @System"
+		"PLA @System"
 	],
 	"printer_variant": "0.8",
 	"default_print_profile": "0.40mm Standard @Geeetech common 0.8 nozzle",

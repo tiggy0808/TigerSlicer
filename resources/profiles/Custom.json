@@ -1,6 +1,6 @@
 {
 	"name": "Custom Printer",
-	"version": "02.04.00.03",
+	"version": "02.04.00.04",
 	"force_update": "0",
 	"description": "My configurations",
 	"machine_model_list": [
@@ -183,48 +183,7 @@
 			"sub_path": "process/0.56mm Extra Draft @MyToolChanger.json"
 		}
 	],
-	"filament_list": [
-		{
-			"name": "Generic ABS @MyToolChanger",
-			"sub_path": "filament/Generic ABS @MyToolChanger.json"
-		},
-		{
-			"name": "Generic ASA @MyToolChanger",
-			"sub_path": "filament/Generic ASA @MyToolChanger.json"
-		},
-		{
-			"name": "Generic PA @MyToolChanger",
-			"sub_path": "filament/Generic PA @MyToolChanger.json"
-		},
-		{
-			"name": "Generic PA-CF @MyToolChanger",
-			"sub_path": "filament/Generic PA-CF @MyToolChanger.json"
-		},
-		{
-			"name": "Generic PC @MyToolChanger",
-			"sub_path": "filament/Generic PC @MyToolChanger.json"
-		},
-		{
-			"name": "Generic PETG @MyToolChanger",
-			"sub_path": "filament/Generic PETG @MyToolChanger.json"
-		},
-		{
-			"name": "Generic PLA @MyToolChanger",
-			"sub_path": "filament/Generic PLA @MyToolChanger.json"
-		},
-		{
-			"name": "Generic PLA-CF @MyToolChanger",
-			"sub_path": "filament/Generic PLA-CF @MyToolChanger.json"
-		},
-		{
-			"name": "Generic PVA @MyToolChanger",
-			"sub_path": "filament/Generic PVA @MyToolChanger.json"
-		},
-		{
-			"name": "Generic TPU @MyToolChanger",
-			"sub_path": "filament/Generic TPU @MyToolChanger.json"
-		}
-	],
+	"filament_list": [],
 	"machine_list": [
 		{
 			"name": "fdm_machine_common",

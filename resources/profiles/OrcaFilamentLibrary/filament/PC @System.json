@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "name": "PC @System",
+    "inherits": "fdm_filament_pc",
+    "from": "system",
+    "setting_id": "TS88dba0c4e2af76",
+    "filament_id": "OGFC99",
+    "instantiation": "true",
+    "filament_vendor": [
+        "Generic"
+    ],
+    "filament_type": [
+        "PC"
+    ],
+    "nozzle_temperature": [
+        "270"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "270"
+    ],
+    "nozzle_temperature_range_low": [
+        "260"
+    ],
+    "nozzle_temperature_range_high": [
+        "290"
+    ],
+    "chamber_temperatures": [
+        "50"
+    ],
+    "fan_min_speed": [
+        "0"
+    ],
+    "fan_max_speed": [
+        "30"
+    ],
+    "filament_max_volumetric_speed": [
+        "12"
+    ],
+    "filament_density": [
+        "1.2"
+    ],
+    "filament_flow_ratio": [
+        "0.94"
+    ],
+    "filament_cost": [
+        "30"
+    ],
+    "temperature_vitrification": [
+        "130"
+    ],
+    "required_nozzle_HRC": [
+        "3"
+    ],
+    "compatible_printers": [],
+    "hot_plate_temp": [
+        "110"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "110"
+    ],
+    "textured_plate_temp": [
+        "110"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "110"
+    ],
+    "eng_plate_temp": [
+        "110"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "110"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "renamed_from": "\"Anker Generic PC\";\"Anker Generic PC 0.2 nozzle\";\"Anker Generic PC 0.25 nozzle\";\"Anycubic Generic PC\";\"Anycubic PC @Anycubic Kobra S1 Max 0.4 nozzle\";\"Anycubic PC @Anycubic Kobra S1 Max 0.6 nozzle\";\"Anycubic PC @Anycubic Kobra S1 Max 0.8 nozzle\";\"Arena PC @Arena X1C\";\"Arena PC @Arena X1C 0.2 nozzle\";\"Arena PC @Arena X1C 0.6 nozzle\";\"Arena PC @Arena X1C 0.8 nozzle\";\"Artillery PC @Artillery M1 Pro 0.4 nozzle\";\"Bambu PC @BBL A1\";\"Bambu PC @BBL A1 0.2 nozzle\";\"Bambu PC @BBL H2C\";\"Bambu PC @BBL H2C 0.2 nozzle\";\"Bambu PC @BBL H2C 0.6 nozzle\";\"Bambu PC @BBL H2C 0.8 nozzle\";\"Bambu PC @BBL H2D 0.2 nozzle\";\"Bambu PC @BBL H2D 0.4 nozzle\";\"Bambu PC @BBL H2D 0.6 nozzle\";\"Bambu PC @BBL H2D 0.8 nozzle\";\"Bambu PC @BBL H2DP 0.2 nozzle\";\"Bambu PC @BBL H2DP 0.4 nozzle\";\"Bambu PC @BBL H2DP 0.6 nozzle\";\"Bambu PC @BBL H2DP 0.8 nozzle\";\"Bambu PC @BBL H2S\";\"Bambu PC @BBL H2S 0.2 nozzle\";\"Bambu PC @BBL H2S 0.6 nozzle\";\"Bambu PC @BBL H2S 0.8 nozzle\";\"Bambu PC @BBL P1P\";\"Bambu PC @BBL P1P 0.2 nozzle\";\"Bambu PC @BBL P1S\";\"Bambu PC @BBL P1S 0.2 nozzle\";\"Bambu PC @BBL P1S 0.6 nozzle\";\"Bambu PC @BBL P1S 0.8 nozzle\";\"Bambu PC @BBL P2S 0.4 nozzle\";\"Bambu PC @BBL P2S 0.6 nozzle\";\"Bambu PC @BBL P2S 0.8 nozzle\";\"Bambu PC @BBL X1C\";\"Bambu PC @BBL X1C 0.2 nozzle\";\"Bambu PC @BBL X1C 0.6 nozzle\";\"Bambu PC @BBL X1C 0.8 nozzle\";\"Bambu PC @BBL X1E\";\"Bambu PC @BBL X1E 0.2 nozzle\";\"Bambu PC @BBL X1E 0.6 nozzle\";\"Bambu PC @BBL X1E 0.8 nozzle\";\"Bambu PC @BBL X2D\";\"Bambu PC @BBL X2D 0.4 nozzle\";\"Bambu PC @BBL X2D 0.8 nozzle\";\"Bambu PC @System\";\"Bambu PC FR @BBL A1\";\"Bambu PC FR @BBL A1 0.2 nozzle\";\"Bambu PC FR @BBL H2C\";\"Bambu PC FR @BBL H2C 0.2 nozzle\";\"Bambu PC FR @BBL H2C 0.4 nozzle\";\"Bambu PC FR @BBL H2D 0.2 nozzle\";\"Bambu PC FR @BBL H2D 0.4 nozzle\";\"Bambu PC FR @BBL H2D 0.6 nozzle\";\"Bambu PC FR @BBL H2D 0.8 nozzle\";\"Bambu PC FR @BBL H2DP 0.2 nozzle\";\"Bambu PC FR @BBL H2DP 0.4 nozzle\";\"Bambu PC FR @BBL H2DP 0.6 nozzle\";\"Bambu PC FR @BBL H2DP 0.8 nozzle\";\"Bambu PC FR @BBL H2S\";\"Bambu PC FR @BBL H2S 0.2 nozzle\";\"Bambu PC FR @BBL P1P\";\"Bambu PC FR @BBL P1P 0.2 nozzle\";\"Bambu PC FR @BBL P1S\";\"Bambu PC FR @BBL P1S 0.2 nozzle\";\"Bambu PC FR @BBL P1S 0.6 nozzle\";\"Bambu PC FR @BBL P1S 0.8 nozzle\";\"Bambu PC FR @BBL P2S 0.4 nozzle\";\"Bambu PC FR @BBL P2S 0.6 nozzle\";\"Bambu PC FR @BBL P2S 0.8 nozzle\";\"Bambu PC FR @BBL X1C\";\"Bambu PC FR @BBL X1C 0.2 nozzle\";\"Bambu PC FR @BBL X1C 0.6 nozzle\";\"Bambu PC FR @BBL X1C 0.8 nozzle\";\"Bambu PC FR @BBL X1E\";\"Bambu PC FR @BBL X1E 0.2 nozzle\";\"Bambu PC FR @BBL X1E 0.6 nozzle\";\"Bambu PC FR @BBL X1E 0.8 nozzle\";\"Bambu PC FR @BBL X2D\";\"Bambu PC FR @BBL X2D 0.4 nozzle\";\"Bambu PC FR @BBL X2D 0.8 nozzle\";\"Bambu PC FR @System\";\"Blocks Generic PC\";\"Creality Generic PC @K1-all\";\"Cubicon PC @Cubicon xCeler-I 0.4 nozzle\";\"Cubicon PC @Cubicon xCeler-Mini 0.4 nozzle\";\"Cubicon PC @Cubicon xCeler-Plus 0.4 nozzle\";\"Cubicon PC @base\";\"Elegoo PC @0.2 nozzle\";\"Elegoo PC @EC\";\"Elegoo PC @EC2\";\"Elegoo PC @ECC\";\"Elegoo PC @ECC2\";\"Elegoo PC @System\";\"Elegoo PC-FR @0.2 nozzle\";\"Elegoo PC-FR @EC\";\"Elegoo PC-FR @EC2\";\"Elegoo PC-FR @ECC\";\"Elegoo PC-FR @ECC2\";\"Elegoo PC-FR @System\";\"FLSun Generic PC\";\"FlashForge PC @FF G4 0.6 HF nozzle\";\"FlashForge PC @FF G4 0.6 nozzle\";\"FlashForge PC @FF G4 0.8 HF nozzle\";\"FlashForge PC @FF G4P 0.6 HF nozzle\";\"FlashForge PC @FF G4P 0.6 nozzle\";\"FlashForge PC @FF G4P 0.8 HF nozzle\";\"FlyingBear Generic PC\";\"FlyingBear PC @Ghost7\";\"FlyingBear PC @S1\";\"Generic PC\";\"Generic PC @0.2 nozzle\";\"Generic PC @BBL A1\";\"Generic PC @BBL A1 0.2 nozzle\";\"Generic PC @BBL H2C\";\"Generic PC @BBL H2C 0.2 nozzle\";\"Generic PC @BBL H2C 0.4 nozzle\";\"Generic PC @BBL H2D\";\"Generic PC @BBL H2D 0.2 nozzle\";\"Generic PC @BBL H2DP\";\"Generic PC @BBL H2DP 0.2 nozzle\";\"Generic PC @BBL H2S\";\"Generic PC @BBL H2S 0.2 nozzle\";\"Generic PC @BBL P1P\";\"Generic PC @BBL P1P 0.2 nozzle\";\"Generic PC @BBL P1S\";\"Generic PC @BBL P1S 0.2 nozzle\";\"Generic PC @BBL P2S\";\"Generic PC @BBL P2S 0.2 nozzle\";\"Generic PC @BBL X1E\";\"Generic PC @BBL X1E 0.2 nozzle\";\"Generic PC @BBL X2D\";\"Generic PC @BBL X2D 0.2 nozzle\";\"Generic PC @BBL X2D 0.4 nozzle\";\"Generic PC @Elegoo\";\"Generic PC @K1 Max_CFS-C-all\";\"Generic PC @K1C-all\";\"Generic PC @K1C_CFS-C-all\";\"Generic PC @K1_CFS-C-all\";\"Generic PC @K2 Plus-all\";\"Generic PC @K2 Pro-all\";\"Generic PC @MyToolChanger\";\"Generic PC @Qidi Q2 0.2 nozzle\";\"Generic PC @Qidi Q2 0.4 nozzle\";\"Generic PC @Qidi Q2 0.6 nozzle\";\"Generic PC @Qidi Q2 0.8 nozzle\";\"Generic PC @Qidi Q2C 0.2 nozzle\";\"Generic PC @Qidi Q2C 0.4 nozzle\";\"Generic PC @Qidi Q2C 0.6 nozzle\";\"Generic PC @Qidi Q2C 0.8 nozzle\";\"Generic PC @Qidi X-Max 4 0.2 nozzle\";\"Generic PC @Qidi X-Max 4 0.4 nozzle\";\"Generic PC @Qidi X-Max 4 0.6 nozzle\";\"Generic PC @Qidi X-Max 4 0.8 nozzle\";\"Generic PC @Qidi X-Plus 5 0.2 nozzle\";\"Generic PC @Qidi X-Plus 5 0.4 nozzle\";\"Generic PC @Qidi X-Plus 5 0.6 nozzle\";\"Generic PC @Qidi X-Plus 5 0.8 nozzle\";\"Generic PC @Sovol SV08 MAX\";\"Generic PC @System\";\"Hyper PC @K2 Plus-all\";\"Hyper PC @K2 Pro-all\";\"InfiMech Generic PC\";\"InfiMech PC @EX\";\"InfiMech PC @EX+APS\";\"InfiMech PC @HSN\";\"OrcaArena Generic PC\";\"OrcaArena Generic PC @0.2 nozzle\";\"Other PC\";\"Other PC @HSN\";\"Other PC @S1\";\"Prusa Generic PC\";\"Prusa Generic PC @MINIIS\";\"Prusa Generic PC @MINIIS 0.25\";\"Prusa Generic PC @MINIIS 0.6\";\"Prusa Generic PC @MINIIS 0.8\";\"Prusa Generic PC @MK3.5\";\"Prusa Generic PC @MK3.5 0.25\";\"Prusa Generic PC @MK3.5 0.6\";\"Prusa Generic PC @MK3.5 0.8\";\"Prusa Generic PC HF @MINIIS\";\"Prusa Generic PC HF @MINIIS 0.6\";\"Prusa Generic PC HF @MINIIS 0.8\";\"Prusa Generic PC HF @MK3.5\";\"Prusa Generic PC HF @MK3.5 0.6\";\"Prusa Generic PC HF @MK3.5 0.8\";\"Prusament PC Blend @CORE One\";\"Prusament PC Blend @CORE One 0.6\";\"Prusament PC Blend @CORE One 0.8\";\"Prusament PC Blend @CORE One HF 0.4\";\"Prusament PC Blend @CORE One HF 0.5\";\"Prusament PC Blend @CORE One HF 0.6\";\"Prusament PC Blend @CORE One HF 0.8\";\"Prusament PC Blend @XL\";\"Prusament PC Blend @XL 5T\";\"QIDI PC-ABS-FR @Qidi Q2 0.4 nozzle\";\"QIDI PC-ABS-FR @Qidi Q2 0.6 nozzle\";\"QIDI PC-ABS-FR @Qidi Q2 0.8 nozzle\";\"QIDI PC-ABS-FR @Qidi Q2C 0.4 nozzle\";\"QIDI PC-ABS-FR @Qidi Q2C 0.6 nozzle\";\"QIDI PC-ABS-FR @Qidi Q2C 0.8 nozzle\";\"QIDI PC/ABS-FR @Qidi X-Max 4 0.4 nozzle\";\"QIDI PC/ABS-FR @Qidi X-Max 4 0.6 nozzle\";\"QIDI PC/ABS-FR @Qidi X-Max 4 0.8 nozzle\";\"QIDI PC/ABS-FR @Qidi X-Plus 5 0.4 nozzle\";\"QIDI PC/ABS-FR @Qidi X-Plus 5 0.6 nozzle\";\"QIDI PC/ABS-FR @Qidi X-Plus 5 0.8 nozzle\";\"Qidi Generic PC\";\"Qidi Generic PC @0.2 nozzle\";\"Qidi Generic PC @0.8 nozzle\";\"Qidi Generic PC @Qidi Q1 Pro 0.2 nozzle\";\"Qidi Generic PC @Qidi Q1 Pro 0.4 nozzle\";\"Qidi Generic PC @Qidi Q1 Pro 0.6 nozzle\";\"Qidi Generic PC @Qidi Q1 Pro 0.8 nozzle\";\"Qidi Generic PC @Qidi X-Plus 4 0.2 nozzle\";\"Qidi Generic PC @Qidi X-Plus 4 0.4 nozzle\";\"Qidi Generic PC @Qidi X-Plus 4 0.6 nozzle\";\"Qidi Generic PC @Qidi X-Plus 4 0.8 nozzle\";\"Qidi PC-ABS-FR\";\"Qidi PC-ABS-FR @Qidi Q1 Pro 0.4 nozzle\";\"Qidi PC-ABS-FR @Qidi Q1 Pro 0.6 nozzle\";\"Qidi PC-ABS-FR @Qidi Q1 Pro 0.8 nozzle\";\"Qidi PC-ABS-FR @Qidi X-Plus 4 0.4 nozzle\";\"Qidi PC-ABS-FR @Qidi X-Plus 4 0.6 nozzle\";\"Qidi PC-ABS-FR @Qidi X-Plus 4 0.8 nozzle\";\"RatRig Generic PC\";\"SecKit Generic PC\";\"Sovol Zero PC\";\"Tiertime Generic PC\";\"Tiertime Generic PC@300HS\";\"Tiertime PC\";\"Tiertime PC@300HS\";\"Volumic PC\";\"Volumic PC (Performance)\";\"Vzbot Generic PC\";\"addnorth PC BLend HT LCF\";\"re3D PC\";\"re3D PC @0.4 nozzle\";\"re3D PC @0.8 nozzle\""
+}

@@ -1,6 +1,6 @@
 {
 	"name": "Peopoly",
-	"version": "02.04.00.01",
+	"version": "02.04.00.02",
 	"force_update": "0",
 	"description": "Peopoly configurations",
 	"machine_model_list": [
@@ -87,52 +87,7 @@
 			"sub_path": "process/0.40mm Standard @Magneto X 0.8 nozzle.json"
 		}
 	],
-	"filament_list": [
-		{
-			"name": "fdm_filament_common",
-			"sub_path": "filament/fdm_filament_common.json"
-		},
-		{
-			"name": "fdm_filament_abs",
-			"sub_path": "filament/fdm_filament_abs.json"
-		},
-		{
-			"name": "fdm_filament_petg",
-			"sub_path": "filament/fdm_filament_petg.json"
-		},
-		{
-			"name": "fdm_filament_pla",
-			"sub_path": "filament/fdm_filament_pla.json"
-		},
-		{
-			"name": "Peopoly Generic ABS",
-			"sub_path": "filament/Peopoly Generic ABS.json"
-		},
-		{
-			"name": "Peopoly Lancer ABS-GF",
-			"sub_path": "filament/Peopoly Lancer ABS-GF.json"
-		},
-		{
-			"name": "Peopoly Lancer PET-CF",
-			"sub_path": "filament/Peopoly Lancer PET-CF.json"
-		},
-		{
-			"name": "Peopoly Generic PETG",
-			"sub_path": "filament/Peopoly Generic PETG.json"
-		},
-		{
-			"name": "Peopoly Lancer PETG-C",
-			"sub_path": "filament/Peopoly Lancer PETG-C.json"
-		},
-		{
-			"name": "Peopoly Generic PLA",
-			"sub_path": "filament/Peopoly Generic PLA.json"
-		},
-		{
-			"name": "Peopoly Lancer PLA-C",
-			"sub_path": "filament/Peopoly Lancer PLA-C.json"
-		}
-	],
+	"filament_list": [],
 	"machine_list": [
 		{
 			"name": "fdm_machine_common",

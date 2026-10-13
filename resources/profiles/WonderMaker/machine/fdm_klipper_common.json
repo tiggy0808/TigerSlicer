@@ -22,7 +22,7 @@
 		"0x28"
 	],
 	"default_filament_profile": [
-		"Generic PLA @System"
+		"PLA @System"
 	],
 	"default_print_profile": "0.18mm Standard @WonderMaker ZR",
 	"extruder_colour": [

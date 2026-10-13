@@ -107,7 +107,7 @@
 		"1"
 	],
 	"default_filament_profile": [
-		"Volumic UNIVERSAL Ultra"
+		"PLA @System"
 	],
 	"bed_exclude_area": [
 		"0x0"

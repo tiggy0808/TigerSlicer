@@ -8,7 +8,7 @@
 	"printer_model": "Qidi X-Max 4",
 	"printer_variant": "0.2",
 	"default_filament_profile": [
-		"QIDI PLA Rapido @Qidi X-Max 4 0.2 nozzle"
+		"PLA @System"
 	],
 	"default_print_profile": "0.10mm Standard @X-Max 4 0.2 nozzle",
 	"max_layer_height": [

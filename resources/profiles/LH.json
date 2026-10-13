@@ -1,7 +1,7 @@
 {
 	"name": "LH",
 	"url": "https://github.com/lhndo/LH-Stinger",
-	"version": "02.04.00.02",
+	"version": "02.04.00.03",
 	"force_update": "0",
 	"description": "LH 3D Printer Configuration",
 	"machine_model_list": [
@@ -72,68 +72,7 @@
 			"sub_path": "process/0.25mm Vase Mode @LH Stinger.json"
 		}
 	],
-	"filament_list": [
-		{
-			"name": "fdm_filament_common",
-			"sub_path": "filament/fdm_filament_common.json"
-		},
-		{
-			"name": "fdm_filament_abs",
-			"sub_path": "filament/fdm_filament_abs.json"
-		},
-		{
-			"name": "fdm_filament_asa",
-			"sub_path": "filament/fdm_filament_asa.json"
-		},
-		{
-			"name": "fdm_filament_pc",
-			"sub_path": "filament/fdm_filament_pc.json"
-		},
-		{
-			"name": "fdm_filament_pet",
-			"sub_path": "filament/fdm_filament_pet.json"
-		},
-		{
-			"name": "fdm_filament_pla",
-			"sub_path": "filament/fdm_filament_pla.json"
-		},
-		{
-			"name": "fdm_filament_tpu",
-			"sub_path": "filament/fdm_filament_tpu.json"
-		},
-		{
-			"name": "LHS ABS",
-			"sub_path": "filament/LHS ABS.json"
-		},
-		{
-			"name": "LHS ASA",
-			"sub_path": "filament/LHS ASA.json"
-		},
-		{
-			"name": "LHS PC CF",
-			"sub_path": "filament/LHS PC CF.json"
-		},
-		{
-			"name": "LHS PCTG",
-			"sub_path": "filament/LHS PCTG.json"
-		},
-		{
-			"name": "LHS PETG",
-			"sub_path": "filament/LHS PETG.json"
-		},
-		{
-			"name": "LHS PLA",
-			"sub_path": "filament/LHS PLA.json"
-		},
-		{
-			"name": "LHS TPU",
-			"sub_path": "filament/LHS TPU.json"
-		},
-		{
-			"name": "LHS TPU Foamy 78A",
-			"sub_path": "filament/LHS TPU Foamy 78A.json"
-		}
-	],
+	"filament_list": [],
 	"machine_list": [
 		{
 			"name": "fdm_machine_common",
