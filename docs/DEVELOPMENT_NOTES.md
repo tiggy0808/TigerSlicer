@@ -11,6 +11,15 @@ OrcaSlicer.
 
 Theme: filaments by material. Developed and verified on macOS; nothing here is platform-specific.
 
+Commits, oldest first (all on `main`):
+
+| Commit | Subject |
+|---|---|
+| `469fa3208` | feat(filaments): one filament profile per material, for every printer |
+| `457965b8b` | feat(filaments): offer every material and make new filament profiles work with every printer |
+| `b84fa2fb0` | test(filaments): the material library, old-name mapping and all-printer profiles |
+| `3c0456f22` | chore: release 0.0.5 |
+
 ### The filament library
 - `scripts/tigerslicer_filaments.py` holds the material table (base template, filament_id, nozzle,
   bed and chamber temperatures, fan, max volumetric speed, density, softening temperature, flow ratio,
