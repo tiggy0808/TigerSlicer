@@ -11,6 +11,14 @@ OrcaSlicer.
 
 Theme: the macOS build of the 0.0.3 resin fixes, and no Home tab.
 
+Commits, oldest first (all on `main`):
+
+| Commit | Subject |
+|---|---|
+| `aeed37d44` | fix(resin): two more crashes when switching to a resin printer |
+| `1c9dd684b` | feat(ui): remove the Home tab |
+| `ba0694f5a` | chore: release 0.0.4 |
+
 ### A leftover settings page could still crash on a resin switch
 The first macOS build of 0.0.3 (`6deebe1d6`) crashed once: first-run wizard with Custom → Klipper,
 then "Select/Remove printers (system presets)" → Elegoo Mars 3 → Confirm. SIGSEGV at 0x0 in
