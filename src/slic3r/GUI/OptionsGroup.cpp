@@ -843,6 +843,16 @@ void ConfigOptionsGroup::reload_config()
         // index in the vector option, zero for scalars
         int opt_index                 = kvp.second.second;
         const ConfigOptionDef& option = m_options.at(opt_id).opt;
+        // TigerSlicer: a page left over from the other printer technology (FFF vs resin) reloaded against
+        // this config read an option the config doesn't have and crashed in get_config_value(). Leave
+        // such a field alone. These enums are missing on purpose; get_config_value() fills them in.
+        if (m_config != nullptr && !m_config->has(opt_key) && opt_key != "bed_type" &&
+            opt_key != "first_layer_sequence_choice" && opt_key != "other_layers_sequence_choice" &&
+            opt_key != "curr_bed_type") {
+            BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ": \"" << title.ToUTF8().data() << "\" has option " << opt_key
+                                     << " that this config doesn't have, skipped";
+            continue;
+        }
         this->set_value(opt_id, config_value(opt_key, opt_index, option.gui_flags == "serialized"));
     }
 }

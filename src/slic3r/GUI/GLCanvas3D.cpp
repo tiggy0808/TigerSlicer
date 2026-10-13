@@ -2980,8 +2980,11 @@ void GLCanvas3D::reload_scene(bool refresh_immediately, bool force_full_scene_re
 
             bool tpu_valid          = true;
             bool filament_printable = true;
-            // Filament checks read FFF-only settings that a resin config does not have.
-            if (current_printer_technology() == ptFFF) {
+            // Filament checks read FFF-only settings that a resin config does not have. Ask the preset
+            // bundle, which full_config() is built from: while the printer combo switches from an FFF
+            // printer to a resin one, the object list redraws the scene before the background process
+            // (current_printer_technology()) has switched, and the check crashed on the resin config.
+            if (wxGetApp().preset_bundle->printers.get_edited_preset().printer_technology() == ptFFF) {
                 auto full_config_temp = wxGetApp().preset_bundle->full_config();
                 tpu_valid = cur_plate->check_tpu_printable_status(full_config_temp, wxGetApp().preset_bundle->get_used_tpu_filaments(cur_plate->get_extruders(true)));
                 _set_warning_notification(EWarning::TPUPrintableError, !tpu_valid);
