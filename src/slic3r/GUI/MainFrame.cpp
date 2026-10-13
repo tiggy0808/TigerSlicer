@@ -1294,13 +1294,9 @@ void MainFrame::init_tabpanel() {
     });
 
     if (wxGetApp().is_editor()) {
-        m_webview         = new WebViewPanel(m_tabpanel);
-        Bind(EVT_LOAD_URL, [this](wxCommandEvent &evt) {
-            wxString url = evt.GetString();
-            select_tab(TAB_ID_HOME);
-            m_webview->load_url(url);
-        });
-        m_tabpanel->AddPage(TAB_ID_HOME, m_webview, "", "tab_home_active");
+        // TigerSlicer: no Home tab (New project / Open project / recent projects). The app opens on
+        // Prepare; projects are saved and opened as .3mf from the File menu. m_webview stays null.
+        Bind(EVT_LOAD_URL, [](wxCommandEvent &evt) { wxLaunchDefaultBrowser(evt.GetString()); });
         m_param_panel = new ParamsPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBK_LEFT | wxTAB_TRAVERSAL);
     }
 
@@ -3663,7 +3659,8 @@ void MainFrame::set_max_recent_count(int max)
         }
         wxGetApp().app_config->set_recent_projects(recent_projects);
         wxGetApp().app_config->save();
-        m_webview->SendRecentList(-1);
+        if (m_webview != nullptr)
+            m_webview->SendRecentList(-1);
     }
 }
 
@@ -4182,7 +4179,8 @@ void MainFrame::add_to_recent_projects(const wxString& filename)
             recent_projects.push_back(into_u8(m_recent_projects.GetHistoryFile(i)));
         }
         wxGetApp().app_config->set_recent_projects(recent_projects);
-        m_webview->SendRecentList(0);
+        if (m_webview != nullptr)
+            m_webview->SendRecentList(0);
     }
 }
 
@@ -4287,7 +4285,8 @@ void MainFrame::open_recent_project(size_t file_id, wxString const & filename)
                 recent_projects.push_back(into_u8(m_recent_projects.GetHistoryFile(i)));
             }
             wxGetApp().app_config->set_recent_projects(recent_projects);
-            m_webview->SendRecentList(-1);
+            if (m_webview != nullptr)
+                m_webview->SendRecentList(-1);
         }
     }
 }
@@ -4310,7 +4309,8 @@ void MainFrame::remove_recent_project(size_t file_id, wxString const &filename)
         recent_projects.push_back(into_u8(m_recent_projects.GetHistoryFile(i)));
     }
     wxGetApp().app_config->set_recent_projects(recent_projects);
-    m_webview->SendRecentList(-1);
+    if (m_webview != nullptr)
+        m_webview->SendRecentList(-1);
 }
 
 void MainFrame::load_url(wxString url)

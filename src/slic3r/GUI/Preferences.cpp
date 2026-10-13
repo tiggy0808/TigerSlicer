@@ -1624,9 +1624,7 @@ void PreferencesDialog::create_items()
     auto item_currency         = create_item_combobox(_L("Units"), "", "use_inches", Units);
     g_sizer->Add(item_currency);
 
-    std::vector<wxString> DefaultPage = {_L("Home"), _L("Prepare")};
-    auto item_default_page     = create_item_combobox(_L("Default page"), _L("Set the page opened on startup."), "default_page", DefaultPage);
-    g_sizer->Add(item_default_page);
+    // TigerSlicer: no "Default page" choice; there is no Home tab, so the app always opens on Prepare.
 
 #ifdef _WIN32
     auto item_darkmode         = create_item_darkmode(_L("Enable dark Mode"), "", "dark_color_mode");

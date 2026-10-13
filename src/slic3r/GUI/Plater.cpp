@@ -15751,7 +15751,7 @@ void Plater::reset_with_confirm()
                                             .ShowModal() == wxID_YES) {
         reset();
         // BBS: jump to plater panel
-        wxGetApp().mainframe->select_tab(TAB_ID_HOME);
+        wxGetApp().mainframe->select_tab(TAB_ID_PREPARE);
     }
 }
 

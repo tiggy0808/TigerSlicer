@@ -944,9 +944,8 @@ void GUI_App::post_init()
                 BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ", finished rendering a first frame for test";
             }
         }
+        // TigerSlicer: there is no Home tab; start on Prepare.
         if (is_editor())
-            mainframe->select_tab(TAB_ID_HOME);
-        if (app_config->get("default_page") == "1")
             mainframe->select_tab(TAB_ID_PREPARE);
 #ifndef __linux__
         mainframe->Thaw();
@@ -3461,7 +3460,7 @@ bool GUI_App::on_init_inner()
     mainframe = new MainFrame();
     // hide settings tabs after first Layout
     if (is_editor()) {
-        mainframe->select_tab(TAB_ID_HOME);
+        mainframe->select_tab(TAB_ID_PREPARE);
     }
 
     sidebar().obj_list()->init();
@@ -5029,7 +5028,8 @@ void GUI_App::get_login_info(const std::string& provider/* = ORCA_CLOUD_PROVIDER
             wxString    strJS      = wxString::Format("window.postMessage(%s)", from_u8(logout_cmd));
             GUI::wxGetApp().run_script(strJS);
         }
-        mainframe->m_webview->SetLoginPanelVisibility(true);
+        if (mainframe->m_webview != nullptr)
+            mainframe->m_webview->SetLoginPanelVisibility(true);
     }
 }
 
@@ -7854,7 +7854,8 @@ void GUI_App::stop_http_server()
 
 void GUI_App::switch_staff_pick(bool on)
 {
-    mainframe->m_webview->SendDesignStaffpick(on);
+    if (mainframe->m_webview != nullptr)
+        mainframe->m_webview->SendDesignStaffpick(on);
 }
 
 bool GUI_App::switch_language()
@@ -8339,7 +8340,8 @@ void GUI_App::update_mode()
         mainframe->m_param_dialog->panel()->update_mode();
     if (mainframe->m_printer_view)
         mainframe->m_printer_view->update_mode();
-    mainframe->m_webview->update_mode();
+    if (mainframe->m_webview != nullptr)
+        mainframe->m_webview->update_mode();
 
 #ifdef _MSW_DARK_MODE
     if (!wxGetApp().tabs_as_menu())
@@ -8357,7 +8359,8 @@ void GUI_App::update_mode()
 }
 
 void GUI_App::update_internal_development() {
-    mainframe->m_webview->update_mode();
+    if (mainframe->m_webview != nullptr)
+        mainframe->m_webview->update_mode();
     if (mainframe->m_printer_view)
         mainframe->m_printer_view->update_mode();
 }
