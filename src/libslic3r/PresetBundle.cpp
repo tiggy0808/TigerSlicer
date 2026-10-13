@@ -79,6 +79,17 @@ const char *PresetBundle::ORCA_DEFAULT_FILAMENT = "PLA @System";
 const char *PresetBundle::ORCA_FILAMENT_LIBRARY = "OrcaFilamentLibrary";
 const char *PresetBundle::ORCA_DEFAULT_FILAMENT_PLACEHOLDER = "Default Filament";
 
+const std::vector<std::string>& PresetBundle::filament_library_order()
+{
+    static const std::vector<std::string> order = {
+        "PLA", "PLA-CF", "PLA-GF", "PETG", "PETG-CF", "PETG-GF", "PCTG", "PCTG-CF", "PCTG-GF", "ABS",
+        "ABS-CF", "ABS-GF", "ASA", "ASA-CF", "ASA-GF", "PC", "PC-CF", "PC-GF", "PA6", "PA6-CF", "PA6-GF",
+        "PA12", "PA12-CF", "PA12-GF", "PA612", "PA612-CF", "PA612-GF", "PPA", "PPA-CF", "PPA-GF", "PPS",
+        "PPS-CF", "PPS-GF", "PEI", "PEI-CF", "PEI-GF", "PEKK", "PEKK-CF", "PEKK-GF", "PEEK", "PEEK-CF",
+        "PEEK-GF", "PP", "PP-CF", "PP-GF", "TPU 95A", "TPU 90A", "TPU 85A", "PVA", "BVOH", "HIPS"};
+    return order;
+}
+
 DynamicPrintConfig PresetBundle::construct_full_config(
     Preset& in_printer_preset,
     Preset& in_print_preset,

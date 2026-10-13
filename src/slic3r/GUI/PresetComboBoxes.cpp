@@ -1176,6 +1176,8 @@ void PlaterPresetComboBox::update()
     std::map<wxString, std::string> preset_filament_vendors;
     std::map<wxString, std::string> preset_filament_types;
     std::map<wxString, std::string> preset_aliases; // ORCA
+    // TigerSlicer: the bare alias for sorting; preset_aliases carries the "(modified)" mark of an edited preset.
+    std::map<wxString, std::string> preset_sort_aliases;
     std::map<wxString, std::string> preset_bundle_ids;
     std::map<wxString, std::string> preset_bundle_names;
     //BBS:  move system to the end
@@ -1211,6 +1213,7 @@ void PlaterPresetComboBox::update()
         bool single_bar = false;
         wxString name = from_u8(preset.name);
         preset_aliases[name] = get_preset_name(preset).utf8_string(); // ORCA
+        preset_sort_aliases[name] = preset.alias.empty() ? preset.name : preset.alias;
 
         // Track bundle names for bundled presets
         if (preset.is_from_bundle()) {
@@ -1342,15 +1345,16 @@ void PlaterPresetComboBox::update()
     }
 
     // TigerSlicer: the filament library's materials, in the order of scripts/tigerslicer_filaments.py.
-    std::vector<wxString> filament_orders = {
-        "PLA", "PLA-CF", "PLA-GF", "PETG", "PETG-CF", "PETG-GF", "PCTG", "PCTG-CF", "PCTG-GF", "ABS",
-        "ABS-CF", "ABS-GF", "ASA", "ASA-CF", "ASA-GF", "PC", "PC-CF", "PC-GF", "PA6", "PA6-CF", "PA6-GF",
-        "PA12", "PA12-CF", "PA12-GF", "PA612", "PA612-CF", "PA612-GF", "PPA", "PPA-CF", "PPA-GF", "PPS",
-        "PPS-CF", "PPS-GF", "PEI", "PEI-CF", "PEI-GF", "PEKK", "PEKK-CF", "PEKK-GF", "PEEK", "PEEK-CF",
-        "PEEK-GF", "PP", "PP-CF", "PP-GF", "TPU 95A", "TPU 90A", "TPU 85A", "PVA", "BVOH", "HIPS"};
+    // The lists above are keyed by full preset name ("PLA @System"), the order by alias ("PLA").
+    const std::vector<std::string> &filament_orders = PresetBundle::filament_library_order();
+    auto filament_order = [&filament_orders, &preset_sort_aliases](const wxString &name) {
+        const auto        alias = preset_sort_aliases.find(name);
+        const std::string key   = alias != preset_sort_aliases.end() ? alias->second : name.utf8_string();
+        return std::find(filament_orders.begin(), filament_orders.end(), key);
+    };
     std::vector<std::string> first_vendors     = {"", "Bambu", "Generic"}; // Empty vendor for non-system presets
     std::vector<std::string> first_types     = {"PLA", "PETG", "ABS", "TPU"};
-    auto  add_presets       = [this, &preset_descriptions, &filament_orders, &preset_filament_vendors, &first_vendors, &preset_filament_types, &preset_aliases, &preset_bundle_ids, &preset_bundle_names, &first_types, &selected_in_ams]
+    auto  add_presets       = [this, &preset_descriptions, &filament_order, &preset_filament_vendors, &first_vendors, &preset_filament_types, &preset_aliases, &preset_bundle_ids, &preset_bundle_names, &first_types, &selected_in_ams]
             (std::map<wxString, wxBitmap *> const &presets, wxString const &selected, std::string const &group, wxString const &groupName) {
         if (!presets.empty()) {
             set_label_marker(Append(_L(group), wxNullBitmap, DD_ITEM_STYLE_SPLIT_ITEM));
@@ -1363,10 +1367,10 @@ void PlaterPresetComboBox::update()
                 //    else SetString(GetCount() - 1, "");
                 //}
                 if (m_type == Preset::TYPE_FILAMENT && (group == "System presets" || group == "Unsupported presets"))
-                    std::sort(list.begin(), list.end(), [&filament_orders, &preset_filament_vendors, &first_vendors, &preset_filament_types, &first_types](auto *l, auto *r) {
+                    std::sort(list.begin(), list.end(), [&filament_order, &preset_filament_vendors, &first_vendors, &preset_filament_types, &first_types](auto *l, auto *r) {
                         { // Compare order
-                            auto iter1 = std::find(filament_orders.begin(), filament_orders.end(), l->first);
-                            auto iter2 = std::find(filament_orders.begin(), filament_orders.end(), r->first);
+                            auto iter1 = filament_order(l->first);
+                            auto iter2 = filament_order(r->first);
                             if (iter1 != iter2)
                                 return iter1 < iter2;
                         }

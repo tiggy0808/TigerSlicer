@@ -515,6 +515,9 @@ public:
 	static const char *ORCA_DEFAULT_FILAMENT;
     static const char *ORCA_FILAMENT_LIBRARY;
     static const char *ORCA_DEFAULT_FILAMENT_PLACEHOLDER;
+    // TigerSlicer: the filament library's materials by alias, in the order of scripts/tigerslicer_filaments.py
+    // (the order of OrcaFilamentLibrary.json's filament_list). The filament combo lists them in this order.
+    static const std::vector<std::string>& filament_library_order();
 
 
     static std::array<Preset::Type, 3>  types_list(PrinterTechnology pt) {

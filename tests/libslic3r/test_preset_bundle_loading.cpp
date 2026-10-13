@@ -1,6 +1,10 @@
 #include <catch2/catch_all.hpp>
 
+#include <algorithm>
+#include <fstream>
+
 #include <boost/filesystem.hpp>
+#include <nlohmann/json.hpp>
 
 #include "libslic3r/PresetBundle.hpp"
 #include "libslic3r/AppConfig.hpp"
@@ -636,6 +640,35 @@ TEST_CASE("Every library material is offered without installing it", "[Preset][B
         if (preset.is_system && preset.vendor != nullptr && preset.vendor->name == PresetBundle::ORCA_FILAMENT_LIBRARY && preset.is_visible)
             ++visible;
     CHECK(visible == 51);
+}
+
+TEST_CASE("The filament list order follows the library and names every material by its alias", "[Preset][Bundle][filament_library]")
+{
+    const std::vector<std::string> &order = PresetBundle::filament_library_order();
+
+    // The library's filament_list, minus the base templates, is the table of scripts/tigerslicer_filaments.py.
+    const fs::path library = (fs::path(std::string(TEST_DATA_DIR)) / ".." / ".." / "resources" / "profiles" /
+                              (std::string(PresetBundle::ORCA_FILAMENT_LIBRARY) + ".json")).lexically_normal();
+    std::ifstream file(library.string());
+    REQUIRE(file.good());
+    const nlohmann::json json = nlohmann::json::parse(file);
+    const std::string    suffix = " @System";
+    std::vector<std::string> listed;
+    for (const nlohmann::json &entry : json.at("filament_list")) {
+        const std::string name = entry.at("name").get<std::string>();
+        if (name.size() > suffix.size() && name.compare(name.size() - suffix.size(), suffix.size(), suffix) == 0)
+            listed.push_back(name.substr(0, name.size() - suffix.size()));
+    }
+    CHECK(listed == order);
+
+    // The filament combo looks each system preset up by its alias, so every alias must be in the order once.
+    PresetBundle bundle;
+    load_filament_library(bundle);
+    for (const Preset &preset : bundle.filaments)
+        if (preset.is_system && preset.vendor != nullptr && preset.vendor->name == PresetBundle::ORCA_FILAMENT_LIBRARY) {
+            INFO(preset.name);
+            CHECK(std::count(order.begin(), order.end(), preset.alias) == 1);
+        }
 }
 
 TEST_CASE("Removed brand filament profiles resolve to their material", "[Preset][Bundle][filament_library]")
