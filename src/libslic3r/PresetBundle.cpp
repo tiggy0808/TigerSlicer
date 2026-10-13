@@ -523,24 +523,8 @@ void PresetBundle::setup_directories()
                 throw Slic3r::RuntimeError(std::string("Unable to create directory ") + subdir.string());
         }
     }
-
-
-    // TigerSlicer's first-party MSlicer profile is part of the application,
-    // not an online preset repository. Install the version shipped with this
-    // build into the system-vendor directory on every launch so an upgrade
-    // cannot leave an older or missing bundle behind.
-    const boost::filesystem::path bundled_profiles =
-        boost::filesystem::path(resources_dir()) / "profiles";
-    const boost::filesystem::path vendor_dir = data_dir / "vendor";
-    for (const char *filename : { "TigerSlicerResin.ini", "TigerSlicerResin.idx" }) {
-        std::string error_message;
-        const boost::filesystem::path source = bundled_profiles / filename;
-        const boost::filesystem::path target = vendor_dir / filename;
-        if (copy_file(source.string(), target.string(), error_message, false) != SUCCESS)
-            BOOST_LOG_TRIVIAL(error)
-                << "Failed to install bundled TigerSlicer Resin profile "
-                << filename << ": " << error_message;
-    }
+    // TigerSlicer's resin bundle is read from resources/profiles by load_tigerslicer_resin_bundle(),
+    // so nothing is installed into the data folder for it.
 }
 
 // recursively copy all files and dirs in from_dir to to_dir
