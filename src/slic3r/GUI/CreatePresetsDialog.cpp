@@ -1137,63 +1137,33 @@ wxWindow *CreateFilamentPresetDialog::create_dialog_buttons()
 
         std::string user_filament_id     = get_filament_id(filament_preset_name);
 
-        const wxString &curr_create_type = curr_create_filament_type();
-
-        if (curr_create_type == m_create_type.base_filament) {
-            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ":clone filament  create type  filament ";
-            for (const auto& checkbox_preset : m_filament_preset) {
-                if (checkbox_preset.first->GetValue()) {
-                    std::string compatible_printer_name = checkbox_preset.second.first;
-                    std::vector<std::string> failures;
-                    Preset const *const      checked_preset = checkbox_preset.second.second;
-                    DynamicConfig            dynamic_config;
-                    dynamic_config.set_key_value("filament_vendor", new ConfigOptionStrings({vendor_name}));
-                    dynamic_config.set_key_value("compatible_printers", new ConfigOptionStrings({compatible_printer_name}));
-                    dynamic_config.set_key_value("filament_type", new ConfigOptionStrings({type_name}));
-                    bool res = preset_bundle->filaments.clone_presets_for_filament(checked_preset, failures, filament_preset_name, user_filament_id, dynamic_config,
-                                                                                   compatible_printer_name);
-                    if (!res) {
-                        std::string failure_names;
-                        for (std::string &failure : failures) { failure_names += failure + "\n"; }
-                        MessageDialog dlg(this, _L("Some existing presets have failed to be created, as follows:\n") + from_u8(failure_names) + _L("\nDo you want to rewrite it?"),
-                                          wxString(SLIC3R_APP_FULL_NAME) + " - " + _L("Info"), wxYES_NO | wxYES_DEFAULT | wxCENTRE);
-                        if (dlg.ShowModal() == wxID_YES) {
-                            res = preset_bundle->filaments.clone_presets_for_filament(checked_preset, failures, filament_preset_name, user_filament_id, dynamic_config,
-                                                                                      compatible_printer_name, true);
-                            BOOST_LOG_TRIVIAL(info) << "clone filament  have failures  rewritten  is successful? " << res;
-                        }
-                    }
-                    BOOST_LOG_TRIVIAL(info) << "clone filament  no failures  is successful? " << res;
-                }
+        // TigerSlicer: create one filament profile that works with every printer. The ticked printer only
+        // chooses the profile to start from (the first ticked one).
+        const auto &checkboxes = curr_create_filament_type() == m_create_type.base_filament ? m_filament_preset : m_machint_filament_preset;
+        Preset const *template_preset = nullptr;
+        for (const auto &checkbox_preset : checkboxes)
+            if (checkbox_preset.first->GetValue()) {
+                template_preset = checkbox_preset.second.second;
+                break;
             }
-        } else if (curr_create_type == m_create_type.base_filament_preset) {
-            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ":clone filament presets  create type  filament preset";
-            for (const auto& checkbox_preset : m_machint_filament_preset) {
-                if (checkbox_preset.first->GetValue()) {
-                    std::string compatible_printer_name = checkbox_preset.second.first;
-                    std::vector<std::string> failures;
-                    Preset const *const      checked_preset = checkbox_preset.second.second;
-                    DynamicConfig            dynamic_config;
-                    dynamic_config.set_key_value("filament_vendor", new ConfigOptionStrings({vendor_name}));
-                    dynamic_config.set_key_value("compatible_printers", new ConfigOptionStrings({compatible_printer_name}));
-                    dynamic_config.set_key_value("filament_type", new ConfigOptionStrings({type_name}));
-                    bool res = preset_bundle->filaments.clone_presets_for_filament(checked_preset, failures, filament_preset_name, user_filament_id, dynamic_config,
-                                                                                   compatible_printer_name);
-                    if (!res) {
-                        std::string failure_names;
-                        for (std::string &failure : failures) { failure_names += failure + "\n"; }
-                        MessageDialog dlg(this, _L("Some existing presets have failed to be created, as follows:\n") + from_u8(failure_names) + _L("\nDo you want to rewrite it?"),
-                                          wxString(SLIC3R_APP_FULL_NAME) + " - " + _L("Info"), wxYES_NO | wxYES_DEFAULT | wxCENTRE);
-                        if (wxID_YES == dlg.ShowModal()) {
-                            res = preset_bundle->filaments.clone_presets_for_filament(checked_preset, failures, filament_preset_name, user_filament_id, dynamic_config,
-                                                                                      compatible_printer_name, true);
-                            BOOST_LOG_TRIVIAL(info) << "clone filament presets  have failures  rewritten  is successful? " << res;
-                        }
-                    }
-                    BOOST_LOG_TRIVIAL(info) << "clone filament presets  no failures  is successful? " << res << " old preset is: " << checked_preset->name
-                                            << " compatible_printer_name is: " << compatible_printer_name;
-                }
+        if (template_preset != nullptr) {
+            std::vector<std::string> failures;
+            DynamicConfig            dynamic_config;
+            dynamic_config.set_key_value("filament_vendor", new ConfigOptionStrings({vendor_name}));
+            dynamic_config.set_key_value("filament_type", new ConfigOptionStrings({type_name}));
+            bool res = preset_bundle->filaments.clone_filament_for_all_printers(template_preset, failures, filament_preset_name, user_filament_id,
+                                                                                dynamic_config);
+            if (!res) {
+                std::string failure_names;
+                for (std::string &failure : failures) { failure_names += failure + "\n"; }
+                MessageDialog dlg(this, _L("Some existing presets have failed to be created, as follows:\n") + from_u8(failure_names) + _L("\nDo you want to rewrite it?"),
+                                  wxString(SLIC3R_APP_FULL_NAME) + " - " + _L("Info"), wxYES_NO | wxYES_DEFAULT | wxCENTRE);
+                if (dlg.ShowModal() == wxID_YES)
+                    res = preset_bundle->filaments.clone_filament_for_all_printers(template_preset, failures, filament_preset_name, user_filament_id,
+                                                                                   dynamic_config, true);
             }
+            BOOST_LOG_TRIVIAL(info) << "create filament " << filament_preset_name << " for all printers from " << template_preset->name
+                                    << ", successful? " << res;
         }
         preset_bundle->update_compatible(PresetSelectCompatibleType::Always);
         EndModal(wxID_OK);

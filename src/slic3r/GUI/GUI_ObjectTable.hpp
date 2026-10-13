@@ -583,7 +583,7 @@ public:
     {
         m_filaments_count = 1;
         m_filaments_colors.push_back(*wxGREEN);
-        m_filaments_name.push_back("Generic PLA");
+        m_filaments_name.push_back("PLA");
     }
 
 private:

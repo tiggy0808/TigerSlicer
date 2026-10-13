@@ -1341,8 +1341,13 @@ void PlaterPresetComboBox::update()
         selected_in_ams = add_ams_filaments(into_u8(selected_alias), true);
     }
 
-    std::vector<wxString> filament_orders = {"Bambu PLA Basic", "Bambu PLA Matte", "Bambu PETG HF",    "Bambu ABS",      "Bambu PLA Silk", "Bambu PLA-CF",
-                                                "Bambu PLA Galaxy", "Bambu PLA Metal", "Bambu PLA Marble", "Bambu PETG-CF", "Bambu PETG Translucent", "Bambu ABS-GF"};
+    // TigerSlicer: the filament library's materials, in the order of scripts/tigerslicer_filaments.py.
+    std::vector<wxString> filament_orders = {
+        "PLA", "PLA-CF", "PLA-GF", "PETG", "PETG-CF", "PETG-GF", "PCTG", "PCTG-CF", "PCTG-GF", "ABS",
+        "ABS-CF", "ABS-GF", "ASA", "ASA-CF", "ASA-GF", "PC", "PC-CF", "PC-GF", "PA6", "PA6-CF", "PA6-GF",
+        "PA12", "PA12-CF", "PA12-GF", "PA612", "PA612-CF", "PA612-GF", "PPA", "PPA-CF", "PPA-GF", "PPS",
+        "PPS-CF", "PPS-GF", "PEI", "PEI-CF", "PEI-GF", "PEKK", "PEKK-CF", "PEKK-GF", "PEEK", "PEEK-CF",
+        "PEEK-GF", "PP", "PP-CF", "PP-GF", "TPU 95A", "TPU 90A", "TPU 85A", "PVA", "BVOH", "HIPS"};
     std::vector<std::string> first_vendors     = {"", "Bambu", "Generic"}; // Empty vendor for non-system presets
     std::vector<std::string> first_types     = {"PLA", "PETG", "ABS", "TPU"};
     auto  add_presets       = [this, &preset_descriptions, &filament_orders, &preset_filament_vendors, &first_vendors, &preset_filament_types, &preset_aliases, &preset_bundle_ids, &preset_bundle_names, &first_types, &selected_in_ams]

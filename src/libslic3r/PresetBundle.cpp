@@ -75,7 +75,7 @@ const char *PresetBundle::ORCA_DEFAULT_BUNDLE = "Custom";
 const char *PresetBundle::TIGERSLICER_RESIN_VENDOR = "TigerSlicerResin";
 const char *PresetBundle::ORCA_DEFAULT_PRINTER_MODEL = "MyKlipper 0.4 nozzle";
 const char *PresetBundle::ORCA_DEFAULT_PRINTER_VARIANT = "0.4";
-const char *PresetBundle::ORCA_DEFAULT_FILAMENT = "Generic PLA @System";
+const char *PresetBundle::ORCA_DEFAULT_FILAMENT = "PLA @System";
 const char *PresetBundle::ORCA_FILAMENT_LIBRARY = "OrcaFilamentLibrary";
 const char *PresetBundle::ORCA_DEFAULT_FILAMENT_PLACEHOLDER = "Default Filament";
 
@@ -2768,8 +2768,13 @@ void PresetBundle::load_installed_filaments(AppConfig &config)
         }
     //}
 
-    for (auto &preset : filaments)
+    for (auto &preset : filaments) {
         preset.set_visible_from_appconfig(config);
+        // TigerSlicer: the filament library holds one profile per material for every printer, so all of
+        // them are always offered; there is nothing to install per printer.
+        if (preset.is_system && preset.vendor != nullptr && preset.vendor->name == ORCA_FILAMENT_LIBRARY)
+            preset.is_visible = true;
+    }
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": exit.");
 }
 
@@ -3411,7 +3416,7 @@ unsigned int PresetBundle::sync_ams_list(std::vector<std::pair<DynamicPrintConfi
                         maps.erase(j);
                     }
                 }
-                ams_filament_presets.push_back("Generic PLA");//for unknow matieral
+                ams_filament_presets.push_back("PLA");//for unknow matieral
                 auto default_unknown_color = "#CECECE";
                 ams_filament_colors.push_back(default_unknown_color);
                 ams_filament_color_types.push_back("1");

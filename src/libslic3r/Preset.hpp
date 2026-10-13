@@ -573,6 +573,13 @@ public:
                                     const DynamicConfig &     dynamic_config,
                                     const std::string &       compatible_printers,
                                     bool                      force_rewritten = false);
+    // TigerSlicer: one copy of a filament profile, named filament_name, that works with every printer.
+    bool clone_filament_for_all_printers(Preset const *const &     preset,
+                                         std::vector<std::string> &failures,
+                                         std::string const &       filament_name,
+                                         std::string const &       filament_id,
+                                         const DynamicConfig &     dynamic_config,
+                                         bool                      force_rewritten = false);
 
     std::map<std::string, std::vector<Preset const *>> get_filament_presets() const;
 

@@ -2966,6 +2966,25 @@ bool PresetCollection::clone_presets_for_filament(Preset const *const &     pres
         force_rewritten);
 }
 
+bool PresetCollection::clone_filament_for_all_printers(Preset const *const &     preset,
+                                                       std::vector<std::string> &failures,
+                                                       std::string const &       filament_name,
+                                                       std::string const &       filament_id,
+                                                       const DynamicConfig &     dynamic_config,
+                                                       bool                      force_rewritten)
+{
+    std::vector<Preset const *> const presets = {preset};
+    return clone_presets(presets, failures, [&filament_name, &filament_id, &dynamic_config](Preset &preset, Preset::Type &type) {
+        preset.name = filament_name;
+        if (type == Preset::TYPE_FILAMENT) {
+            preset.config.apply_only(dynamic_config, {"filament_vendor", "filament_type"}, true);
+            preset.config.option<ConfigOptionStrings>("compatible_printers", true)->values.clear();
+            preset.config.option<ConfigOptionString>("compatible_printers_condition", true)->value.clear();
+            preset.filament_id = filament_id;
+        }
+    }, force_rewritten);
+}
+
 std::map<std::string, std::vector<Preset const *>> PresetCollection::get_filament_presets() const
 {
     std::map<std::string, std::vector<Preset const *>> filament_presets;
@@ -3047,6 +3066,11 @@ void PresetCollection::save_current_preset(const std::string &new_name, bool det
             BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << boost::format(": save preset %1% , with detach")%new_name;
         } else if (is_base_preset(preset)) {
             inherits = old_name;
+        }
+        // TigerSlicer: a new filament profile works with every printer, whichever profile it started from.
+        if (m_type == Preset::TYPE_FILAMENT) {
+            preset.config.option<ConfigOptionStrings>("compatible_printers", true)->values.clear();
+            preset.config.option<ConfigOptionString>("compatible_printers_condition", true)->value.clear();
         }
 
         preset.is_default  = false;
@@ -3352,8 +3376,9 @@ Preset* PresetCollection::find_preset2(const std::string& name, bool auto_match/
             //Orca: one more try, find the most likely preset in OrcaFilamentLibrary
             if (name.find("Generic") != std::string::npos) {
                 // The regex pattern matches an optional prefix ending in '_' then "Generic" followed by the material name.
+                // TigerSlicer: the library names its profiles by material alone ("PLA @System").
                 static const std::regex re(R"(^(?:.*?\b(?:\w+_)?)(Generic)\b\s+([^@]+?)\s*(?:@.*)?$)");
-                auto       alter_name = std::regex_replace(name, re, "Generic $2 @System");
+                auto       alter_name = std::regex_replace(name, re, "$2 @System");
                 preset                = find_preset2(alter_name, false);
                 // print preset file name
                 if (preset != nullptr) {
