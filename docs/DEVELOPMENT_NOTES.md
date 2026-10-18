@@ -114,12 +114,15 @@ Theme: Auto slice, automatic hollowing for resin, and the last OrcaSlicer brandi
   and Lulzbot. Their bundles are bumped.
 - The Device tab's "Printer Connection" page shows text instead of a GIF of the old OrcaSlicer UI.
 - Translations that showed Orca where the English does not are corrected or cleared (ru, eu, cs).
+- OrcaSlicer's own "Orca Arena X1 Carbon" test printer is removed: the `OrcaArena` vendor bundle, its
+  Create Printer entries and the wizard's special case. The wizard's "Other" vendor heading reads
+  "Other printers" instead of "Orca colosseum". The unused `OrcaSliced.3mf`, `OrcaBadge.3mf` and
+  `setup_connection.gif` are deleted.
 - Not changed:
   - Internal identifiers (`ORCA_*`, `OrcaFilamentLibrary`, the `orca` Python module).
   - The 3MF `OrcaSlicer` metadata key (the reader identifies files by it).
   - D-Bus and Linux packaging names.
   - The macOS bundle identifier.
-  - The Orca Arena test printer, pending a decision.
 
 ### Verification (Windows)
 - Release build (MSVC 17.14). `libslic3r_tests`: all pass, including 9 new `[AutoSlice]` cases and

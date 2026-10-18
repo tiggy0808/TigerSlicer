@@ -23,7 +23,8 @@ Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOP
   - The bed of the Klipper, Marlin, RRF, Repetier and ToolChanger printers shows the TigerSlicer
     logo.
   - Settings and calibration dialogs no longer link to OrcaSlicer's online wiki.
-  - The OrcaSlicer whale and badge models are no longer in the handy models menu.
+  - The OrcaSlicer whale and badge models are no longer in the handy models menu, and OrcaSlicer's
+    own "Orca Arena X1 Carbon" test printer is no longer in the printer list.
   - Messages and some printers' start G-code no longer mention OrcaSlicer.
 - Exported presets use `.tiger_bundle`, `.tiger_printer` and `.tiger_filament`. Files exported
   earlier (`.orca_*`) still import.
