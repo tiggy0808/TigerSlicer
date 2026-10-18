@@ -3,6 +3,39 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
+## Unreleased
+
+**New**
+- **Auto slice.** A button left of "Slice plate" with a menu of what the print is for.
+  - Filament printers: **Structural**, **Fast** or **Quality**. Each picks the process profile with
+    the matching layer height for your printer and nozzle (Structural uses a Strength profile when
+    the printer has one).
+  - Auto slice then slices once to find objects that would print in mid-air or with a long
+    overhang, turns tree supports on for just those objects, and slices again.
+  - Resin printers: **Low**, **Medium** or **High supports**. Auto slice generates the supports and
+    slices. Turn on "Hollow + drain holes" in the same menu to hollow the models as well.
+- **Hollow + drain holes** for resin, also as a button in the Supports workspace. It hollows every
+  model thick enough for the wall and drills two drain holes at its bottom, nearest the build plate,
+  so resin drains and no suction cup forms. Models that already have drain holes keep theirs.
+
+**Changed**
+- The last OrcaSlicer branding is gone:
+  - The bed of the Klipper, Marlin, RRF, Repetier and ToolChanger printers shows the TigerSlicer
+    logo.
+  - Settings and calibration dialogs no longer link to OrcaSlicer's online wiki.
+  - The OrcaSlicer whale and badge models are no longer in the handy models menu.
+  - Messages and some printers' start G-code no longer mention OrcaSlicer.
+- Exported presets use `.tiger_bundle`, `.tiger_printer` and `.tiger_filament`. Files exported
+  earlier (`.orca_*`) still import.
+- The support presets in the Supports workspace are named Low, Medium and High.
+- The filament list shows the materials in the library's order: PLA, PLA-CF, PLA-GF, PETG and so on.
+
+**Fixed**
+- Arranging the plate with a resin printer selected crashed.
+- Some resin support settings in the Supports workspace (point density, pinhead size, pillar
+  diameter, support base) had no names.
+- Every launch logged an error about installing the resin profile.
+
 ## 0.0.6 (2026-10-13)
 
 **Changed**

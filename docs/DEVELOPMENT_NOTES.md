@@ -7,6 +7,137 @@ OrcaSlicer.
 
 ---
 
+## Unreleased
+
+Theme: Auto slice, automatic hollowing for resin, and the last OrcaSlicer branding.
+
+### Auto slice
+- `libslic3r/AutoSlice.{hpp,cpp}` holds the choices, so they are tested without the GUI
+  (`tests/libslic3r/test_auto_slice.cpp`, `[AutoSlice]`):
+  - `process_candidates()`: the visible process presets compatible with the selected printer. Only
+    system presets when the printer has any.
+  - `pick_process()`: the preset whose layer height is nearest 0.3 (Quality), 0.5 (Structural) or
+    0.7 (Fast) × the nozzle diameter. Structural keeps to presets named "Strength" when the printer
+    has them. For the Custom printers with a 0.4 mm nozzle this gives 0.12 mm Fine, 0.20 mm Standard
+    and 0.28 mm Extra Draft. Only the preset changes; walls and infill are the profile's own.
+  - `resin_support_settings()` / `apply_resin_support_settings()`: Low / Medium / High. These are
+    the Supports workspace's former Light / Medium / Heavy values, which now come from here: pillar,
+    head front diameter, head width, point density and contact penetration.
+  - `can_hollow()`: whether `sla::generate_interior()` leaves an interior with the hollowing
+    settings.
+  - `place_drain_holes()`: up to two holes in mesh coordinates, inward normals, starting
+    `sla::HoleStickOutLength` outside the surface.
+    - Candidates are downward-facing triangles (world normal z < -0.7) within max(1 mm, radius) of
+      the object's lowest point.
+    - Candidates closer than radius + 0.5 mm to that band's outline are dropped, unless that drops
+      them all.
+    - The first hole is the candidate nearest the band's area-weighted centre; the next is the one
+      farthest from the first, at least 2 × radius + 2 mm away.
+    - Mirrored instances flip the winding.
+- GUI:
+  - `MainFrame::create_side_tools()` adds `m_auto_slice_btn` left of Slice. Its `SidePopup` offers
+    Structural / Fast / Quality (filament), or Low / Medium / High supports plus a
+    "Hollow + drain holes: On/Off" toggle stored in the app config key `auto_slice_hollow` (resin).
+  - The Slice button's handler is now `MainFrame::start_slicing(bool all_plates)`, shared with
+    Auto slice; the manual Slice button first calls `Plater::cancel_auto_slice()`.
+  - `fit_tab_labels()` measures against the Auto slice button, now the leftmost side tool.
+- Filament (`Plater::auto_slice_fff`):
+  - Select the picked preset through the print tab. A kept unsaved change stops here.
+  - Set `enable_support = false` and erase `support_type` on every object of the current plate,
+    then slice. With supports off, `PrintObject::generate_support_material()` runs
+    `is_support_necessary()` and adds a `SlicingNeedSupportOn` warning to objects with floating
+    regions or cantilevers over 6 mm.
+  - `Plater::priv::on_process_completed` hands over to `on_auto_slice_finished()` by `CallAfter`.
+    That function turns tree(auto) supports on, per object, for the flagged objects and slices
+    again (only the support step and later re-run).
+  - A plate whose result already matched the settings does not slice again. A `CallAfter` queued on
+    the plater behind the slice request catches that case: no slice running and a valid result.
+  - The per-object support settings replace whatever the objects had.
+- Resin (`Plater::auto_slice_resin`):
+  - Write the level into the edited SLA print preset, as the workspace presets do.
+  - Optionally run `auto_hollow_and_drain()`.
+  - `prepare_msla_supports(quiet, &failed)`: quiet means no dialog when nothing needs a support;
+    a failed generation stops Auto slice.
+  - Slice.
+- `Plater::auto_hollow_and_drain()` (also the Supports workspace's "Hollow + drain holes" button):
+  - Objects whose mesh is closed and can be hollowed get a per-object `hollowing_enable = true`.
+    Those without drain holes get two, 4 mm wide (or the workspace's size) and deeper than the wall
+    plus 2 mm.
+  - Open or too-thin objects get `hollowing_enable = false` when it would otherwise be on, because
+    hollowing them fails the slice.
+  - Holes follow the first instance's orientation; they are stored per object.
+
+### Fixed
+- Arranging with a resin printer crashed. `get_instance_arrange_poly()` (`ModelArrange.cpp`) and
+  `ArrangeJob` read the FDM-only `enable_support`, `support_type` and `enable_wrapping_detection`
+  without null checks, and a resin configuration has none of them. Upstream never arranges with an
+  SLA configuration. Regression test in `test_arrange.cpp`.
+- The SLA support options shown in the Supports workspace had no labels (Orca commented them out):
+  `support_points_density_relative`, `support_head_front_diameter`, `support_head_width`,
+  `support_pillar_diameter`, `support_base_height` and `support_base_safety_distance`. Labels and
+  tooltips follow PrusaSlicer.
+
+### Branding
+- The Custom printers' bed texture is `Custom/tigerslicer_bed_texture.svg`, made by
+  `generate_tigerslicer_branding.py` (`bed_texture_svg()`) with the same canvas, corner marks and
+  logo position as Orca's whale. The Custom bundle is bumped to 02.04.00.05 so installed copies
+  pick it up.
+- Online help removed (the settings documented on orcaslicer.com):
+  - `OptionsGroup::get_url()` returns nothing, and setting labels are never links.
+  - Preferences labels are plain.
+  - The "Wiki Guide" links are gone from the calibration dialogs, the OBJ and STEP import dialogs,
+    Troubleshoot, Unsaved changes and the AMS dialog.
+  - The Calibration Guide menu items are gone.
+  - The Bambu device dialogs' wiki links are hidden.
+  - The five links are gone from `hints.ini`.
+- Handy models:
+  - The files are renamed (CalibrationCube, CalibrationPlug, ToleranceTest, StringHell), because
+    object names come from them.
+  - Orca's whale combo and badge are no longer in the menu. The files are still in the package.
+- Strings:
+  - The 3MF "old OrcaSlicer version" message is the generic "older version" one.
+  - The 2.3.1-alpha warning no longer names OrcaSlicer, and its translations are cleared so they
+    show in English.
+  - "OrcaCloud plugins" is now "Cloud plugins".
+  - The command-line config_compatibility help says TigerSlicer.
+  - The plugin sign-in errors are neutral.
+  - The Python plugin docstrings say TigerSlicer.
+  - The About dialog drops OrcaSlicer's promotional paragraph and keeps the credit.
+- Moonraker sees the user agent "TigerSlicer". Obico, SimplyPrint and 3DPrinterOS identifiers are
+  unchanged, since those services check them.
+- Preset export:
+  - Exports use `.tiger_bundle`, `.tiger_printer` and `.tiger_filament`.
+  - Import accepts these and the old `.orca_*` (`PresetBundle` import check, `MainFrame` import
+    filter).
+  - The 23 translations follow.
+- Vendor G-code written into output files no longer mentions Orca: SeeMeCNC, Snapmaker U1, M3D, RH3D
+  and Lulzbot. Their bundles are bumped.
+- The Device tab's "Printer Connection" page shows text instead of a GIF of the old OrcaSlicer UI.
+- Translations that showed Orca where the English does not are corrected or cleared (ru, eu, cs).
+- Not changed:
+  - Internal identifiers (`ORCA_*`, `OrcaFilamentLibrary`, the `orca` Python module).
+  - The 3MF `OrcaSlicer` metadata key (the reader identifies files by it).
+  - D-Bus and Linux packaging names.
+  - The macOS bundle identifier.
+  - The Orca Arena test printer, pending a decision.
+
+### Verification (Windows)
+- Release build (MSVC 17.14). `libslic3r_tests`: all pass, including 9 new `[AutoSlice]` cases and
+  the resin arrange regression case.
+- In the app with a fresh `--datadir`:
+  - The Klipper bed shows the TigerSlicer logo.
+  - Auto slice is greyed out on an empty plate.
+  - A T-shaped part (10 mm post, 30 mm slab on top) with Quality: 0.12 mm Fine, first slice flags a
+    floating cantilever, the second slice has support and support-interface lines.
+  - A 20 mm cube with Fast: 0.28 mm Extra Draft, "No supports needed".
+  - Elegoo Mars 3: arrange works.
+  - Hollow + drain holes on, then Medium supports: the cube is hollowed (5.86 ml instead of
+    8.02 ml, the layer image is a ring) and has 2 drain holes. Supports are generated
+    (10,236 triangles), 484 layers.
+  - Normal quit, no crash logs.
+- Seen, not changed: the Supports workspace's settings column can be wider than the space beside the
+  canvas. Its full-width buttons (Auto-orient, Hollow + drain holes) then show no visible label.
+
 ## 0.0.6 (2026-10-13)
 
 Theme: the filament library needs no installing, so its UI goes.
