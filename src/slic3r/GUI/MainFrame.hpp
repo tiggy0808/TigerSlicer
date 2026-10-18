@@ -418,11 +418,20 @@ public:
 
     SidePopup*  m_slice_option_pop_up{ nullptr };
 
+    // TigerSlicer: Auto slice, left of Slice. Its menu offers the purposes (filament) or support
+    // levels (resin) and runs Plater::auto_slice_fff / auto_slice_resin.
+    SideButton* m_auto_slice_btn{ nullptr };
+    SidePopup*  m_auto_slice_pop_up{ nullptr };
+    void        show_auto_slice_menu();
+
     FilamentGroupPopup* m_filament_group_popup{ nullptr };
     mutable bool          m_slice_enable{ true };
     mutable bool          m_print_enable{ true };
     bool get_enable_slice_status();
     bool get_enable_print_status();
+    // What the Slice button does for the current selection (plate or all): leave any gizmo, run
+    // the pre-slice checks, slice and show the preview. False when the checks stopped it.
+    bool start_slicing(bool all_plates);
     //BBS
     void update_side_button_style();
     void update_slice_print_status(SlicePrintEventType event, bool can_slice = true, bool can_print = true);

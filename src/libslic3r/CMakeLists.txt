@@ -32,6 +32,8 @@ set(lisbslic3r_sources    # --- TigerSlicer ------------------------------------
     AutoPlanApplication.hpp
     AutoPlanOptimizer.cpp
     AutoPlanOptimizer.hpp
+    AutoSlice.cpp
+    AutoSlice.hpp
     BatchPreview.cpp
     BatchPreview.hpp
     BatchSemantics.cpp

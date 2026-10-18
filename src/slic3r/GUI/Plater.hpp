@@ -55,6 +55,11 @@ enum SLAPrintObjectStep : unsigned int;
 enum class ConversionType : int;
 class DevAms;
 
+namespace auto_slice {
+enum class Purpose;
+enum class SupportLevel;
+} // namespace auto_slice
+
 using ModelInstancePtrs = std::vector<ModelInstance*>;
 
 
@@ -547,10 +552,26 @@ public:
 
     // TigerSlicer: MSLA prepared supports
     bool lift_models_for_msla_supports(const DynamicPrintConfig &config);
-    bool prepare_msla_supports();
+    // quiet: no message when nothing needs a support (Auto slice just slices on). failed, when
+    // given, is set when generation failed (its error already shown) rather than found nothing.
+    bool prepare_msla_supports(bool quiet = false, bool *failed = nullptr);
     void remove_prepared_msla_supports();
     bool auto_orient_for_msla_supports();
     void msla_support_option_changed(const std::string &opt_key);
+
+    // TigerSlicer: Auto slice (libslic3r/AutoSlice.hpp). The current plate has something to slice.
+    bool can_auto_slice();
+    // Filament: selects the process profile for the purpose, slices with supports off, and when
+    // slicing finds floating regions or long cantilevers turns tree supports on for those objects
+    // and slices again.
+    void auto_slice_fff(auto_slice::Purpose purpose);
+    // Forget an Auto slice still waiting for its slice, e.g. when the user slices by hand.
+    void cancel_auto_slice();
+    // Resin: applies the support level, optionally hollows and drains, generates supports, slices.
+    void auto_slice_resin(auto_slice::SupportLevel level, bool hollow);
+    // Hollows every resin object thick enough for the wall and gives each one without drain holes
+    // two at its bottom. Returns how many objects it hollowed.
+    int  auto_hollow_and_drain(float hole_radius, float hole_depth);
     // TigerSlicer: Full Spectrum virtual extruders (color mixing) editor.
     void open_full_spectrum_dialog();
     // The Supports workspace registers itself so option edits made elsewhere

@@ -23,6 +23,7 @@
 #include "libslic3r/Polygon.hpp"
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/SLAPrint.hpp"
+#include "libslic3r/AutoSlice.hpp"
 #include "libslic3r/PresetBundle.hpp"
 
 #include "Tab.hpp"
@@ -1220,6 +1221,7 @@ void MainFrame::show_option(bool show)
 {
     if (!show) {
         if (m_slice_btn->IsShown()) {
+            m_auto_slice_btn->Hide();
             m_slice_btn->Hide();
             m_print_btn->Hide();
             m_slice_option_btn->Hide();
@@ -1228,6 +1230,7 @@ void MainFrame::show_option(bool show)
         }
     } else {
         if (!m_slice_btn->IsShown()) {
+            m_auto_slice_btn->Show();
             m_slice_btn->Show();
             m_print_btn->Show();
             m_slice_option_btn->Show();
@@ -1553,7 +1556,8 @@ void MainFrame::fit_tab_labels()
 
     // Compact (last to first)
     for (size_t i = count - 1; i >= 1; --i) {
-        int right = ScreenToClient(m_slice_option_btn->ClientToScreen({})).x;
+        SideButton* leftmost = m_auto_slice_btn && m_auto_slice_btn->IsShown() ? m_auto_slice_btn : m_slice_option_btn;
+        int right = ScreenToClient(leftmost->ClientToScreen({})).x;
         int left  = sizer->GetSize().GetWidth();
         if (right - left - FromDIP(15) > 0) return;
         ctrl->SetCompact(i, true);
@@ -1924,10 +1928,21 @@ wxBoxSizer* MainFrame::create_side_tools()
     m_slice_select = eSlicePlate;
     m_print_select = ePrintPlate;
 
+    auto auto_panel  = new wxPanel(this,wxID_ANY,wxDefaultPosition,wxDefaultSize);
     auto slice_panel = new wxPanel(this,wxID_ANY,wxDefaultPosition,wxDefaultSize);
     auto print_panel = new wxPanel(this,wxID_ANY,wxDefaultPosition,wxDefaultSize);
+    auto_panel->SetBackgroundColour(StateColor::darkModeColorFor(wxColour("#3B4446")));
     slice_panel->SetBackgroundColour(StateColor::darkModeColorFor(wxColour("#3B4446")));
     print_panel->SetBackgroundColour(StateColor::darkModeColorFor(wxColour("#3B4446")));
+
+    // TigerSlicer: Auto slice picks the settings from what the print is for, then slices the plate.
+    m_auto_slice_btn = new SideButton(auto_panel, _L("Auto slice"), "");
+    m_auto_slice_btn->SetToolTip(_L("Choose what the print is for; TigerSlicer picks the settings, adds supports "
+                                    "where they are needed and slices the plate."));
+    auto auto_sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto_sizer->Add(m_auto_slice_btn, 0, wxALIGN_CENTER_VERTICAL);
+    auto_panel->SetSizer(auto_sizer);
+    m_auto_slice_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent &) { show_auto_slice_menu(); });
 
     m_slice_btn = new SideButton(slice_panel, _L("Slice plate"), "");
     m_slice_option_btn = new SideButton(slice_panel, "", "sidebutton_dropdown", 0, 14);
@@ -1948,6 +1963,8 @@ wxBoxSizer* MainFrame::create_side_tools()
     m_slice_option_btn->Enable();
     m_print_option_btn->Enable();
     //sizer->Add(FromDIP(15), 0, 0, 0, 0);
+    sizer->Add(auto_panel);
+    sizer->Add(FromDIP(15), 0, 0, 0, 0);
     sizer->Add(slice_panel);
     sizer->Add(FromDIP(15), 0, 0, 0, 0);
     sizer->Add(print_panel);
@@ -1993,32 +2010,10 @@ wxBoxSizer* MainFrame::create_side_tools()
         });
 #endif
 
-    m_slice_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event)
-        {
-
-            //this->m_plater->select_view_3D("Preview");
-            m_plater->exit_gizmo();
-            m_plater->update(true, true);
-
-            bool slice = true;
-
-            auto curr_plate = m_plater->get_partplate_list().get_curr_plate();
-            #ifdef __linux__
-                PresetBundle* preset = wxGetApp().preset_bundle;
-                bool force_show_fila_group_dlg        = (preset && preset->is_bbl_vendor() && preset->get_printer_extruder_count() == 2);
-                slice = try_pop_up_before_slice(m_slice_select == eSliceAll, m_plater, curr_plate, force_show_fila_group_dlg);
-            #else
-                slice = try_pop_up_before_slice(m_slice_select == eSliceAll, m_plater, curr_plate, false);
-            #endif
-
-            if (slice) {
-                if (m_slice_select == eSliceAll)
-                    wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_SLICE_ALL));
-                else
-                    wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_SLICE_PLATE));
-                this->m_tabpanel->SelectPageByName(TAB_ID_PREVIEW);
-            }
-        });
+    m_slice_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event) {
+        m_plater->cancel_auto_slice();
+        start_slicing(m_slice_select == eSliceAll);
+    });
 
     m_print_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event)
         {
@@ -2465,6 +2460,11 @@ void MainFrame::update_side_button_style()
     m_slice_btn->SetExtraSize(wxSize(FromDIP(38), FromDIP(10)));
     m_slice_btn->SetMinSize(wxSize(-1, FromDIP(24)));
 
+    m_auto_slice_btn->SetTextLayout(SideButton::EHorizontalOrientation::HO_Left, FromDIP(15));
+    m_auto_slice_btn->SetCornerRadius(FromDIP(12));
+    m_auto_slice_btn->SetExtraSize(wxSize(FromDIP(38), FromDIP(10)));
+    m_auto_slice_btn->SetMinSize(wxSize(-1, FromDIP(24)));
+
     m_slice_option_btn->SetTextLayout(SideButton::EHorizontalOrientation::HO_Center);
     m_slice_option_btn->SetCornerRadius(FromDIP(12));
     m_slice_option_btn->SetExtraSize(wxSize(FromDIP(10), FromDIP(10)));
@@ -2485,7 +2485,79 @@ void MainFrame::update_side_button_style()
     // Keep panel backgrounds in sync with SideButton's darkModeColorFor(#3B4446) bottom strip
     auto bg = StateColor::darkModeColorFor(wxColour("#3B4446"));
     m_slice_btn->GetParent()->SetBackgroundColour(bg);
+    m_auto_slice_btn->GetParent()->SetBackgroundColour(bg);
     m_print_btn->GetParent()->SetBackgroundColour(bg);
+}
+
+bool MainFrame::start_slicing(bool all_plates)
+{
+    m_plater->exit_gizmo();
+    m_plater->update(true, true);
+
+    auto curr_plate = m_plater->get_partplate_list().get_curr_plate();
+#ifdef __linux__
+    PresetBundle* preset = wxGetApp().preset_bundle;
+    const bool force_show_fila_group_dlg = (preset && preset->is_bbl_vendor() && preset->get_printer_extruder_count() == 2);
+#else
+    const bool force_show_fila_group_dlg = false;
+#endif
+    if (!try_pop_up_before_slice(all_plates, m_plater, curr_plate, force_show_fila_group_dlg))
+        return false;
+
+    wxPostEvent(m_plater, SimpleEvent(all_plates ? EVT_GLTOOLBAR_SLICE_ALL : EVT_GLTOOLBAR_SLICE_PLATE));
+    this->m_tabpanel->SelectPageByName(TAB_ID_PREVIEW);
+    return true;
+}
+
+void MainFrame::show_auto_slice_menu()
+{
+    if (m_auto_slice_pop_up)
+        delete m_auto_slice_pop_up;
+    m_auto_slice_pop_up = new SidePopup(this);
+
+    auto add_choice = [this](const wxString &label, const wxString &tooltip, std::function<void()> run) {
+        SideButton *button = new SideButton(m_auto_slice_pop_up, label, "");
+        button->SetCornerRadius(0);
+        button->SetToolTip(tooltip);
+        button->Bind(wxEVT_BUTTON, [this, run](wxCommandEvent &) {
+            if (m_auto_slice_pop_up)
+                m_auto_slice_pop_up->Dismiss();
+            run();
+        });
+        m_auto_slice_pop_up->append_button(button);
+    };
+
+    if (m_plater->printer_technology() == ptSLA) {
+        auto hollow = []() { return wxGetApp().app_config->get("auto_slice_hollow") == "1"; };
+        add_choice(_L("Low supports"), _L("Thin columns and fewer contacts: easiest to remove, for small or light models."),
+                   [this, hollow]() { m_plater->auto_slice_resin(auto_slice::SupportLevel::Low, hollow()); });
+        add_choice(_L("Medium supports"), _L("The balanced choice for most models."),
+                   [this, hollow]() { m_plater->auto_slice_resin(auto_slice::SupportLevel::Medium, hollow()); });
+        add_choice(_L("High supports"), _L("Thick columns and more contacts: for heavy models and large flat overhangs."),
+                   [this, hollow]() { m_plater->auto_slice_resin(auto_slice::SupportLevel::High, hollow()); });
+
+        // A setting rather than a choice: clicking it flips it and leaves the menu open.
+        auto hollow_label = [](bool on) { return on ? _L("Hollow + drain holes: On") : _L("Hollow + drain holes: Off"); };
+        SideButton *hollow_btn = new SideButton(m_auto_slice_pop_up, hollow_label(hollow()), "");
+        hollow_btn->SetCornerRadius(0);
+        hollow_btn->SetToolTip(_L("Also hollow every model thick enough and drill two drain holes at its bottom, "
+                                  "nearest the build plate."));
+        hollow_btn->Bind(wxEVT_BUTTON, [hollow_btn, hollow, hollow_label](wxCommandEvent &) {
+            const bool on = !hollow();
+            wxGetApp().app_config->set("auto_slice_hollow", on ? "1" : "0");
+            hollow_btn->SetLabel(hollow_label(on));
+            hollow_btn->Refresh();
+        });
+        m_auto_slice_pop_up->append_button(hollow_btn);
+    } else {
+        add_choice(_L("Structural"), _L("Standard layers, or the printer's Strength profile: for parts that carry load."),
+                   [this]() { m_plater->auto_slice_fff(auto_slice::Purpose::Structural); });
+        add_choice(_L("Fast"), _L("Thick layers: the quickest print."),
+                   [this]() { m_plater->auto_slice_fff(auto_slice::Purpose::Fast); });
+        add_choice(_L("Quality"), _L("Fine layers: the smoothest surfaces and most detail."),
+                   [this]() { m_plater->auto_slice_fff(auto_slice::Purpose::Quality); });
+    }
+    m_auto_slice_pop_up->Popup(m_auto_slice_btn);
 }
 
 void MainFrame::update_slice_print_status(SlicePrintEventType event, bool can_slice, bool can_print)
@@ -2518,6 +2590,7 @@ void MainFrame::update_slice_print_status(SlicePrintEventType event, bool can_sl
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" m_slice_select %1%: can_slice= %2%, can_print %3%, enable_slice %4%, enable_print %5% ")%m_slice_select % can_slice %can_print %enable_slice %enable_print;
     m_print_btn->Enable(enable_print);
     m_slice_btn->Enable(enable_slice);
+    m_auto_slice_btn->Enable(m_plater != nullptr && m_plater->can_auto_slice());
     m_slice_enable = enable_slice;
     m_print_enable = enable_print;
 
@@ -2549,6 +2622,7 @@ void MainFrame::on_dpi_changed(const wxRect& suggested_rect)
 
     update_side_button_style();
 
+    m_auto_slice_btn->Rescale();
     m_slice_btn->Rescale();
     m_print_btn->Rescale();
     m_slice_option_btn->Rescale();

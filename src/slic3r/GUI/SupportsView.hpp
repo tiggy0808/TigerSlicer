@@ -102,6 +102,7 @@ private:
     wxButton         *m_clear_points { nullptr };
     wxToggleButton   *m_place_holes { nullptr };
     wxButton         *m_clear_holes { nullptr };
+    wxButton         *m_auto_hollow { nullptr };
     wxSpinCtrlDouble *m_hole_diameter { nullptr };
     wxSpinCtrlDouble *m_hole_depth { nullptr };
     wxButton         *m_auto_orient { nullptr };

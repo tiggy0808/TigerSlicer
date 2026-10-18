@@ -74,6 +74,7 @@
 #include "libslic3r/SLA/ReprojectPointsOnMesh.hpp"
 #include "libslic3r/Polygon.hpp"
 #include "libslic3r/Print.hpp"
+#include "libslic3r/AutoSlice.hpp"
 #include "libslic3r/MSlicerResinJob.hpp"
 #include "FullSpectrumDialog.hpp"
 #include "libslic3r/TriangleSelector.hpp"
@@ -5317,6 +5318,13 @@ struct Plater::priv
     bool m_ignore_event{false};
     bool m_slice_all{false};
     bool m_is_slicing {false};
+    // TigerSlicer Auto slice (filament): which slice of the current plate it is waiting for. The
+    // first runs with supports off so slicing can say which objects need them; the second runs
+    // with supports on for those.
+    enum class AutoSliceStage { None, CheckSupports, WithSupports };
+    AutoSliceStage auto_slice_stage { AutoSliceStage::None };
+    std::string    auto_slice_choice;  // "Quality, 0.12mm Fine @MyKlipper": what it chose, for the summary
+    void           on_auto_slice_finished(bool success);
     // Missing-plugin set signatures (sorted full refs joined by '\n'), one per notification. They
     // gate plugin-load re-validation and avoid needlessly recreating the notification when the set
     // is unchanged. Whether missing plugins block slicing is derived directly from PluginResolver
@@ -11172,6 +11180,13 @@ void Plater::priv::on_process_completed(SlicingProcessCompletedEvent &evt)
     if (auto_reslice_after_cancel) {
         auto_reslice_after_cancel = false;
         schedule_auto_reslice_if_needed();
+    }
+
+    // TigerSlicer: Auto slice continues once this slice is in; after the event, since it may
+    // start the next slice.
+    if (is_finished && auto_slice_stage != AutoSliceStage::None) {
+        const bool success = evt.success() && !has_error;
+        wxGetApp().CallAfter([this, success]() { on_auto_slice_finished(success); });
     }
 
     BOOST_LOG_TRIVIAL(debug) << __FUNCTION__ << boost::format(", exit.");
@@ -20259,8 +20274,10 @@ bool Plater::lift_models_for_msla_supports(const DynamicPrintConfig &config)
     return true;
 }
 
-bool Plater::prepare_msla_supports()
+bool Plater::prepare_msla_supports(bool quiet, bool *failed)
 {
+    if (failed != nullptr)
+        *failed = false;
     if (printer_technology() != ptSLA)
         return false;
     // No enable switch to consult: asking for supports is what generates them.
@@ -20283,6 +20300,8 @@ bool Plater::prepare_msla_supports()
             // An empty prepared object must never exist; nothing overhangs,
             // so nothing was prepared.
             remove_prepared_msla_supports();
+            if (quiet)
+                return false;
             show_info(this,
                 _L("No support geometry was generated: nothing on the plate needs a support "
                    "at the current settings.\n\n"
@@ -20314,6 +20333,8 @@ bool Plater::prepare_msla_supports()
         return true;
     } catch (const std::exception &error) {
         show_error(this, error.what());
+        if (failed != nullptr)
+            *failed = true;
         return false;
     }
 }
@@ -20409,6 +20430,240 @@ void Plater::msla_support_option_changed(const std::string &opt_key)
     // from the previous values, so it is dropped rather than sliced as if it
     // still described the current settings.
     remove_prepared_msla_supports();
+}
+
+// ------------------------------------------------------------------ TigerSlicer: Auto slice ---
+
+namespace {
+
+wxString auto_slice_purpose_name(auto_slice::Purpose purpose)
+{
+    switch (purpose) {
+    case auto_slice::Purpose::Structural: return _L("Structural");
+    case auto_slice::Purpose::Fast: return _L("Fast");
+    case auto_slice::Purpose::Quality: return _L("Quality");
+    }
+    return wxString();
+}
+
+wxString auto_slice_level_name(auto_slice::SupportLevel level)
+{
+    switch (level) {
+    case auto_slice::SupportLevel::Low: return _L("Low supports");
+    case auto_slice::SupportLevel::Medium: return _L("Medium supports");
+    case auto_slice::SupportLevel::High: return _L("High supports");
+    }
+    return wxString();
+}
+
+// Shows an object's changed per-object settings in the object list.
+void refresh_object_settings(Model &model, ModelObject *object)
+{
+    ObjectList *list = wxGetApp().obj_list();
+    const auto  it   = std::find(model.objects.begin(), model.objects.end(), object);
+    if (list == nullptr || it == model.objects.end())
+        return;
+    list->add_settings_item(list->GetModel()->GetItemById(int(it - model.objects.begin())), &object->config.get());
+}
+
+} // namespace
+
+bool Plater::can_auto_slice()
+{
+    if (only_gcode_mode() || using_exported_file())
+        return false;
+    PartPlate *plate = p->partplate_list.get_curr_plate();
+    return plate != nullptr && plate->has_printable_instances();
+}
+
+void Plater::auto_slice_fff(auto_slice::Purpose purpose)
+{
+    if (printer_technology() != ptFFF || !can_auto_slice())
+        return;
+    if (p->background_process.running()) {
+        p->notification_manager->push_notification(_u8L("Auto slice waits until the current slice is finished."));
+        return;
+    }
+    PresetBundle &bundle = *wxGetApp().preset_bundle;
+
+    // The process profile for the purpose, among this printer's.
+    const std::vector<auto_slice::ProcessCandidate> candidates = auto_slice::process_candidates(bundle.prints);
+    const auto  *nozzles = bundle.printers.get_edited_preset().config.option<ConfigOptionFloats>("nozzle_diameter");
+    const double nozzle  = nozzles != nullptr && !nozzles->values.empty() ? nozzles->values.front() : 0.;
+    const int    pick    = auto_slice::pick_process(candidates, nozzle, purpose);
+    if (pick < 0) {
+        show_error(this, _L("Auto slice found no process profile for this printer."));
+        return;
+    }
+    const std::string &profile = candidates[size_t(pick)].name;
+    if (bundle.prints.get_selected_preset_name() != profile) {
+        Tab *tab = wxGetApp().get_tab(Preset::TYPE_PRINT);
+        if (tab != nullptr)
+            tab->select_preset(profile);
+        // Still on the old profile: the user kept its unsaved changes.
+        if (bundle.prints.get_selected_preset_name() != profile)
+            return;
+    }
+
+    // Supports off for the first slice, so slicing reports which objects need them.
+    take_snapshot(std::string("Auto Slice"));
+    for (ModelObject *object : p->partplate_list.get_curr_plate()->get_objects_on_this_plate()) {
+        object->config.set_key_value("enable_support", new ConfigOptionBool(false));
+        object->config.erase("support_type");
+        refresh_object_settings(p->model, object);
+    }
+
+    p->auto_slice_choice = into_u8(auto_slice_purpose_name(purpose) + ", " + from_u8(profile));
+
+    p->auto_slice_stage = priv::AutoSliceStage::CheckSupports;
+    if (!wxGetApp().mainframe->start_slicing(false)) {
+        p->auto_slice_stage = priv::AutoSliceStage::None;
+        return;
+    }
+    // Queued on this window behind the slice request, so it runs once that has been handled. A
+    // plate whose result already matched the settings is not sliced again: no completion event
+    // follows, so carry on with the current result. A slice that did start (running, or already
+    // finished with its result not yet marked valid) reports through on_process_completed.
+    CallAfter([this]() {
+        if (p->auto_slice_stage == priv::AutoSliceStage::CheckSupports && !p->background_process.running() &&
+            p->partplate_list.get_curr_plate()->is_slice_result_valid())
+            p->on_auto_slice_finished(true);
+    });
+}
+
+void Plater::cancel_auto_slice() { p->auto_slice_stage = priv::AutoSliceStage::None; }
+
+void Plater::priv::on_auto_slice_finished(bool success)
+{
+    const AutoSliceStage stage = auto_slice_stage;
+    auto_slice_stage = AutoSliceStage::None;
+    if (!success || stage == AutoSliceStage::None || printer_technology != ptFFF)
+        return;
+
+    const wxString choice = from_u8(auto_slice_choice);
+    if (stage == AutoSliceStage::WithSupports) {
+        notification_manager->push_notification(
+            into_u8(wxString::Format(_L("Auto slice: %s. Tree supports added where needed."), choice)));
+        return;
+    }
+
+    // The objects the support check flagged: floating regions or long cantilevers.
+    std::vector<ModelObject *> need_support;
+    if (const Print *print = background_process.m_fff_print; print != nullptr) {
+        for (const PrintObject *print_object : print->objects()) {
+            const PrintStateBase::StateWithWarnings state = print_object->step_state_with_warnings(posSupportMaterial);
+            const bool flagged = std::any_of(state.warnings.begin(), state.warnings.end(), [](const PrintStateBase::Warning &w) {
+                return w.message_id == PrintStateBase::SlicingNeedSupportOn;
+            });
+            if (!flagged)
+                continue;
+            const ObjectID id = print_object->model_object()->id();
+            for (ModelObject *object : model.objects)
+                if (object->id() == id && std::find(need_support.begin(), need_support.end(), object) == need_support.end())
+                    need_support.push_back(object);
+        }
+    }
+
+    if (need_support.empty()) {
+        notification_manager->push_notification(
+            into_u8(wxString::Format(_L("Auto slice: %s. No supports needed."), choice)));
+        return;
+    }
+
+    for (ModelObject *object : need_support) {
+        object->config.set_key_value("enable_support", new ConfigOptionBool(true));
+        object->config.set_key_value("support_type", new ConfigOptionEnum<SupportType>(stTreeAuto));
+        refresh_object_settings(model, object);
+    }
+    auto_slice_stage = AutoSliceStage::WithSupports;
+    if (!main_frame->start_slicing(false))
+        auto_slice_stage = AutoSliceStage::None;
+}
+
+int Plater::auto_hollow_and_drain(float hole_radius, float hole_depth)
+{
+    if (printer_technology() != ptSLA)
+        return 0;
+    const DynamicPrintConfig config = wxGetApp().preset_bundle->full_config();
+    int hollowed = 0, too_thin = 0, not_closed = 0;
+    try {
+        wxBusyCursor busy;
+        TakeSnapshot snapshot(this, std::string("Hollow and Add Drain Holes"));
+        for (ModelObject *object : p->model.objects) {
+            if (!object->printable || object->instances.empty() || MSlicerResinJob::is_prepared_support_object(*object))
+                continue;
+            DynamicPrintConfig merged = config;
+            merged.apply(object->config.get(), true);
+            const indexed_triangle_set mesh = object->raw_indexed_triangle_set();
+            // Drilling needs a closed mesh, and hollowing one that is too thin finds no interior;
+            // either would fail the slice, so such an object prints solid.
+            const bool closed = its_num_open_edges(mesh) == 0;
+            if (!closed || !auto_slice::can_hollow(mesh, merged)) {
+                ++(closed ? too_thin : not_closed);
+                if (merged.has("hollowing_enable") && merged.opt_bool("hollowing_enable")) {
+                    object->config.set_key_value("hollowing_enable", new ConfigOptionBool(false));
+                    refresh_object_settings(p->model, object);
+                }
+                continue;
+            }
+            object->config.set_key_value("hollowing_enable", new ConfigOptionBool(true));
+            // Holes the user placed stay as they are.
+            if (object->sla_drain_holes.empty()) {
+                // Deeper than the wall, so each hole reaches the cavity.
+                const float depth = std::max(hole_depth, float(merged.opt_float("hollowing_min_thickness")) + 2.f);
+                object->sla_drain_holes =
+                    auto_slice::place_drain_holes(mesh, object->instances.front()->get_matrix(), hole_radius, depth, 2);
+            }
+            refresh_object_settings(p->model, object);
+            ++hollowed;
+        }
+    } catch (const std::exception &error) {
+        show_error(this, error.what());
+        return hollowed;
+    }
+
+    p->update(static_cast<unsigned int>(priv::UpdateParams::FORCE_BACKGROUND_PROCESSING_UPDATE) |
+              static_cast<unsigned int>(priv::UpdateParams::FORCE_FULL_SCREEN_REFRESH));
+    wxString message = wxString::Format(_L("Hollowed %d object(s) and added drain holes at their bottom."), hollowed);
+    if (too_thin > 0)
+        message += " " + wxString::Format(_L("%d object(s) are too thin for the wall and stay solid."), too_thin);
+    if (not_closed > 0)
+        message += " " + wxString::Format(_L("%d object(s) are not closed meshes and stay solid; repair them to hollow them."), not_closed);
+    p->notification_manager->push_notification(into_u8(message));
+    return hollowed;
+}
+
+void Plater::auto_slice_resin(auto_slice::SupportLevel level, bool hollow)
+{
+    if (printer_technology() != ptSLA || !can_auto_slice())
+        return;
+    if (p->background_process.running()) {
+        p->notification_manager->push_notification(_u8L("Auto slice waits until the current slice is finished."));
+        return;
+    }
+
+    // The support level goes into the print profile, where the Supports workspace shows it.
+    if (Tab *tab = wxGetApp().get_tab(Preset::TYPE_SLA_PRINT); tab != nullptr) {
+        DynamicPrintConfig new_conf = wxGetApp().preset_bundle->sla_prints.get_edited_preset().config;
+        auto_slice::apply_resin_support_settings(new_conf, level);
+        tab->load_config(new_conf);
+        tab->update_dirty();
+        msla_support_option_changed("support_pillar_diameter");
+    }
+
+    if (hollow)
+        auto_hollow_and_drain(2.f, 6.f);
+
+    // Nothing to hold up is fine: the plate then slices without supports.
+    bool       failed    = false;
+    const bool supported = prepare_msla_supports(true, &failed);
+    if (failed)
+        return;
+    if (!wxGetApp().mainframe->start_slicing(false))
+        return;
+    p->notification_manager->push_notification(into_u8(
+        supported ? wxString::Format(_L("Auto slice: %s."), auto_slice_level_name(level))
+                  : wxString::Format(_L("Auto slice: %s; nothing on the plate needs a support."), auto_slice_level_name(level))));
 }
 
 wxMenu* Plater::plate_menu()            { return p->menus.plate_menu();             }

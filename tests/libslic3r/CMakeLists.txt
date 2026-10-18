@@ -6,6 +6,7 @@ add_executable(${_TEST_NAME}_tests
 	test_auto_outcome_feedback.cpp
 	test_auto_plan_application.cpp
 	test_auto_plan_optimizer.cpp
+	test_auto_slice.cpp
 	test_batch_acceptance.cpp
 	test_batch_preview.cpp
 	test_batch_semantics.cpp

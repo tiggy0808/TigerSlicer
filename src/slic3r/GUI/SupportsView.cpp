@@ -5,6 +5,7 @@
 #include "SupportsView.hpp"
 
 #include "libslic3r/libslic3r.h"
+#include "libslic3r/AutoSlice.hpp"
 #include "libslic3r/MSlicerResinJob.hpp"
 #include "libslic3r/Model.hpp"
 #include "libslic3r/Preset.hpp"
@@ -49,27 +50,23 @@ const wxColour kDimmed(176, 168, 173);
 
 // One named starting point. A preset only writes these values into the preset;
 // every one of them stays visible and editable afterwards, so choosing a
-// preset never hides what it did.
+// preset never hides what it did. The values are Auto slice's support levels.
 struct SupportPreset
 {
-    const char *name;
-    const char *description;
-    double pillar_diameter;
-    double head_front_diameter;
-    double head_width;
-    int    density;
-    double penetration;
+    const char              *name;
+    const char              *description;
+    auto_slice::SupportLevel level;
 };
 
 const SupportPreset kPresets[] = {
-    { "Light",  "Thin columns and fewer contacts. Easiest to remove and leaves the least "
+    { "Low",    "Thin columns and fewer contacts. Easiest to remove and leaves the least "
                 "marking; least able to hold a heavy or wide overhang.",
-      0.8, 0.30, 2.0,  70, 0.10 },
+      auto_slice::SupportLevel::Low },
     { "Medium", "The balanced starting point: what these settings default to.",
-      1.0, 0.40, 3.0, 100, 0.20 },
-    { "Heavy",  "Thick columns and more contacts, biting deeper. Holds large flat "
+      auto_slice::SupportLevel::Medium },
+    { "High",   "Thick columns and more contacts, biting deeper. Holds large flat "
                 "overhangs; takes more force to remove and marks the surface more.",
-      1.4, 0.60, 3.5, 150, 0.30 },
+      auto_slice::SupportLevel::High },
 };
 
 } // namespace
@@ -435,7 +432,23 @@ void SupportsView::build_settings_panel(wxWindow *parent)
     wxGetApp().UpdateDarkUI(m_clear_holes);
     holes_row->Add(m_place_holes, 1, wxRIGHT, int(0.3 * em));
     holes_row->Add(m_clear_holes, 1);
-    column->Add(holes_row, 0, wxEXPAND | wxALL, em);
+    column->Add(holes_row, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, em);
+
+    m_auto_hollow = new wxButton(m_settings_panel, wxID_ANY, _L("Hollow + drain holes"));
+    m_auto_hollow->SetToolTip(_L("Hollow every object thick enough for the wall thickness above and drill two "
+                                 "drain holes, of the size set above, at its bottom: the side nearest the build "
+                                 "plate, so resin drains out and no suction cup forms. Objects that already have "
+                                 "drain holes keep them."));
+    m_auto_hollow->Bind(wxEVT_BUTTON, [this](wxCommandEvent &) {
+        const float radius = float(m_hole_diameter != nullptr ? m_hole_diameter->GetValue() : 4.) * 0.5f;
+        const float depth  = float(m_hole_depth != nullptr ? m_hole_depth->GetValue() : 6.);
+        wxGetApp().plater()->auto_hollow_and_drain(radius, depth);
+        reload_settings();
+        reload_scene(true);
+        update_status();
+    });
+    wxGetApp().UpdateDarkUI(m_auto_hollow);
+    column->Add(m_auto_hollow, 0, wxEXPAND | wxALL, em);
 
     // The remaining print-level details, relocated here from the retired
     // MSLA Print Settings tab.
@@ -728,13 +741,7 @@ void SupportsView::apply_preset(const char *name)
         return;
 
     DynamicPrintConfig new_conf = wxGetApp().preset_bundle->sla_prints.get_edited_preset().config;
-    new_conf.set_key_value("support_pillar_diameter", new ConfigOptionFloat(preset->pillar_diameter));
-    new_conf.set_key_value("support_head_front_diameter",
-                           new ConfigOptionFloat(preset->head_front_diameter));
-    new_conf.set_key_value("support_head_width", new ConfigOptionFloat(preset->head_width));
-    new_conf.set_key_value("support_points_density_relative", new ConfigOptionInt(preset->density));
-    new_conf.set_key_value("msla_support_contact_penetration",
-                           new ConfigOptionFloat(preset->penetration));
+    auto_slice::apply_resin_support_settings(new_conf, preset->level);
     tab->load_config(new_conf);
     tab->update_dirty();
 
