@@ -6304,8 +6304,7 @@ void SelectMachineDialog::UpdateStatusCheckWarning_ExtensionTool(MachineObject* 
                 if (filament_info && (filament_info->temperature_vitrification <= 50))
                 {
                     show_status(PrintDialogStatus::PrintStatusToolHeadCoolingFanWarning,
-                                { _L("Install toolhead enhanced cooling fan to prevent filament softening.")},
-                                "https://www.orcaslicer.com/wiki/"); // Orca: neutral wiki link (vendor URL removed)
+                                { _L("Install toolhead enhanced cooling fan to prevent filament softening.")});
                     return;
                 }
             }
@@ -6969,6 +6968,7 @@ void PrinterInfoBox::Create()
     m_button_question->SetToolTip(_L("Click here if you can't connect to the printer"));
     m_button_question->SetMinSize(wxSize(FromDIP(18), FromDIP(18)));
     m_button_question->SetMaxSize(wxSize(FromDIP(18), FromDIP(18)));
+    m_button_question->Hide(); // TigerSlicer: no online help page to open
 
     auto m_split_line = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_split_line->SetBackgroundColour(0xeeeeee);
@@ -7051,7 +7051,6 @@ void PrinterInfoBox::Create()
 
 void PrinterInfoBox::OnBtnQuestionClicked(wxCommandEvent& event)
 {
-    wxLaunchDefaultBrowser(wxT("https://www.orcaslicer.com/wiki/")); // Orca: neutral wiki link (vendor URL removed)
 }
 
 

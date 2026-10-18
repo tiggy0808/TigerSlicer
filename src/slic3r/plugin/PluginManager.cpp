@@ -1541,7 +1541,7 @@ bool PluginManager::subscribe_and_install_cloud_plugin(const std::string& plugin
         return false;
     }
     if (!m_cloud_service.can_fetch_cloud_plugins()) {
-        error = "Sign in to OrcaCloud to install this plugin.";
+        error = "Sign in to the cloud service to install this plugin.";
         return false;
     }
 
@@ -1559,7 +1559,7 @@ bool PluginManager::subscribe_and_install_cloud_plugin(const std::string& plugin
         fetch_plugins_from_cloud();
         found = try_get_plugin_descriptor(plugin_key, descriptor) && descriptor.is_cloud_plugin();
         if (!found) {
-            error = "Subscribed cloud plugin was not returned by OrcaCloud.";
+            error = "Subscribed cloud plugin was not returned by the cloud service.";
             return false;
         }
     }

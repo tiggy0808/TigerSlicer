@@ -318,7 +318,7 @@ void PythonPluginBridge::clear_pending_captures()
 
 void bind_python_api(pybind11::module_& m)
 {
-    m.doc() = "OrcaSlicer plugin API";
+    m.doc() = "TigerSlicer plugin API";
 
     py::enum_<PluginCapabilityType>(m, "PluginType", "Available plugin capability groups")
         .value("PrinterConnection", PluginCapabilityType::PrinterConnection)
@@ -448,7 +448,7 @@ void bind_python_api(pybind11::module_& m)
             g_pending_capabilities[g_active_plugin_key].push_back(std::move(plugin_cls));
             BOOST_LOG_TRIVIAL(debug) << "Registered Python plugin capability class for key " << g_active_plugin_key;
         },
-        R"pbdoc(Register a PluginCapability subclass while OrcaSlicer loads your module.)pbdoc");
+        R"pbdoc(Register a PluginCapability subclass while TigerSlicer loads your module.)pbdoc");
 
     m.def("plugin", [](py::object cls) {
         if (g_active_plugin_key.empty())

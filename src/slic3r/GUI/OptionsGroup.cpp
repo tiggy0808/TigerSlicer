@@ -1351,22 +1351,15 @@ void ExtruderOptionsGroup::on_change_OG(const t_config_option_key& opt_id, const
     OptionsGroup::on_change_OG(opt_id, value);
 }
 
-wxString OptionsGroup::get_url(const std::string& path_end)
-{
-    // BBS
-    wxString str = from_u8(path_end);
-    auto pos     = str.find(L'#');
-    if (pos != size_t(-1)) {
-        pos++;
-        wxString anchor = str.Mid(pos).Lower();
-        anchor.Replace(L" ", "-");
-        str = str.Left(pos) + anchor;
-    }
-    // Orca: point to sf wiki for seam parameters
-    return wxString::Format(L"https://www.orcaslicer.com/wiki/%s", from_u8(path_end));
-}
+// TigerSlicer: settings have no online documentation (OrcaSlicer's wiki was removed), so there is
+// no help link to show or open.
+wxString OptionsGroup::get_url(const std::string& /*path_end*/) { return wxString(); }
 
-bool OptionsGroup::launch_browser(const std::string& path_end) { return wxLaunchDefaultBrowser(OptionsGroup::get_url(path_end)); }
+bool OptionsGroup::launch_browser(const std::string& path_end)
+{
+    const wxString url = OptionsGroup::get_url(path_end);
+    return !url.empty() && wxLaunchDefaultBrowser(url);
+}
 
 //-------------------------------------------------------------------------------------------
 // ogStaticText

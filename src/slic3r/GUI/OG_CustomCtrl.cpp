@@ -355,7 +355,8 @@ void OG_CustomCtrl::OnMotion(wxMouseEvent& event)
     CtrlLine* focusedLine = nullptr;
     // BBS
 
-    bool suppress_hyperlinks = false;
+    // TigerSlicer: no online documentation, so setting labels are never links.
+    const bool suppress_hyperlinks = true;
 
     for (CtrlLine& line : ctrl_lines) {
         if (!line.is_visible) continue;
@@ -770,7 +771,8 @@ void OG_CustomCtrl::CtrlLine::render(wxDC& dc, wxCoord h_pos, wxCoord v_pos)
 
     Field* field = ctrl->opt_group->get_field(og_line.get_options().front().opt_id);
 
-    bool suppress_hyperlinks = false;
+    // TigerSlicer: no online documentation, so setting labels are never links.
+    const bool suppress_hyperlinks = true;
     if (draw_just_act_buttons) {
         //BBS: GUI refactor
         if (field && field->undo_bitmap()) {
@@ -1037,6 +1039,8 @@ wxCoord OG_CustomCtrl::CtrlLine::draw_edit_bmp(wxDC &dc, wxPoint pos, const wxBi
 
 bool OG_CustomCtrl::CtrlLine::launch_browser() const
 {
+    // OptionsGroup::launch_browser() opens nothing without documentation; returning false also lets
+    // the click reach the undo icons.
     if (!is_focused || og_line.label_path.empty())
         return false;
 

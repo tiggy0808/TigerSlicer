@@ -274,8 +274,8 @@ SideTools::SideTools(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
     wxBoxSizer* connection_sizer_V = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* connection_sizer_H = new wxBoxSizer(wxHORIZONTAL);
 
-    // ORCA standardized HyperLink; Orca: neutral wiki link (vendor URL removed)
-    m_hyperlink = new HyperLink(m_connection_info, _L("Failed to connect to the server"), wxT("https://www.orcaslicer.com/wiki/"));
+    // ORCA standardized HyperLink; TigerSlicer: no online help page, so the message links nowhere.
+    m_hyperlink = new HyperLink(m_connection_info, _L("Failed to connect to the server"));
 
     m_more_err_open = ScalableBitmap(this, "monitir_err_open", 16);
     m_more_err_close = ScalableBitmap(this, "monitir_err_close", 16);

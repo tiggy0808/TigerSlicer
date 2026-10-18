@@ -297,9 +297,9 @@ void AMSMaterialsSetting::create_panel_kn(wxWindow* parent)
     m_ratio_text->SetForegroundColour(wxColour(50, 58, 61));
     m_ratio_text->SetFont(Label::Head_14);
 
-    // Orca: link to the Orca Slicer pressure-advance wiki (region-agnostic).
-    wxString link_url = "https://www.orcaslicer.com/wiki/pressure_advance_calib";
-    m_wiki_ctrl = new HyperLink(parent, _L("Wiki Guide"), link_url);
+    // TigerSlicer: no online documentation, so the wiki link is never shown.
+    m_wiki_ctrl = new HyperLink(parent, _L("Wiki Guide"));
+    m_wiki_ctrl->Hide();
     cali_title_sizer->Add(m_ratio_text, 0, wxALIGN_CENTER_VERTICAL);
     cali_title_sizer->Add(m_wiki_ctrl, 0, wxALIGN_CENTER_VERTICAL);
 
@@ -900,7 +900,6 @@ bool AMSMaterialsSetting::Show(bool show)
         //m_clr_picker->set_color(m_clr_picker->GetParent()->GetBackgroundColour());
 
         m_ratio_text->Show();
-        m_wiki_ctrl->Show();
         m_k_param->Show();
         m_input_k_val->Show();
         Layout();

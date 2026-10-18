@@ -255,16 +255,13 @@ wxBoxSizer *PreferencesDialog::create_item_title(wxString title)
     return m_sizer_title;
 }
 
-wxBoxSizer *PreferencesDialog::create_item_label(wxString label, wxString tooltip, wxString wiki_url)
+wxBoxSizer *PreferencesDialog::create_item_label(wxString label, wxString tooltip, wxString /*wiki_url*/)
 {
     wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
     sizer->AddSpacer(FromDIP(DESIGN_LEFT_MARGIN));
 
-    wxString url;
-    if(!wiki_url.IsEmpty())
-        url = "https://www.orcaslicer.com/wiki/" + wiki_url;
-
-    auto label_ctrl = new WikiLabel(m_parent, label, url, wxDefaultPosition, DESIGN_TITLE_SIZE);
+    // TigerSlicer: no online documentation, so preference labels are plain text, not wiki links.
+    auto label_ctrl = new WikiLabel(m_parent, label, wxString(), wxDefaultPosition, DESIGN_TITLE_SIZE);
 
     label_ctrl->SetToolTip(tooltip);
 

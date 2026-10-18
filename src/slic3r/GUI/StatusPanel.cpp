@@ -4734,10 +4734,7 @@ void StatusPanel::on_ams_selected(wxCommandEvent &event)
 
 void StatusPanel::on_ams_guide(wxCommandEvent& event)
 {
-    // Orca: neutral wiki link (vendor URLs removed)
-    wxString ams_wiki_url = "https://www.orcaslicer.com/wiki/";
-
-    wxLaunchDefaultBrowser(ams_wiki_url);
+    // TigerSlicer: no online AMS guide to open.
 }
 
 void StatusPanel::on_ams_retry(wxCommandEvent& event)

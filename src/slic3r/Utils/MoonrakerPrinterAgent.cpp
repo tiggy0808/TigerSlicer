@@ -1519,7 +1519,7 @@ void MoonrakerPrinterAgent::run_status_stream(std::string dev_id, std::string ba
 
             websocket::stream<beast::tcp_stream> ws{std::move(stream)};
             ws.set_option(websocket::stream_base::decorator([&](websocket::request_type& req) {
-                req.set(http::field::user_agent, "OrcaSlicer");
+                req.set(http::field::user_agent, "TigerSlicer");
                 if (!api_key.empty()) {
                     req.set("X-Api-Key", api_key);
                 }

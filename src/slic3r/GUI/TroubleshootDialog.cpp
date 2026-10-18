@@ -186,8 +186,6 @@ TroubleshootDialog::TroubleshootDialog()
         Fit();
     });
 
-    auto link_wiki = new HyperLink(this, _L("Wiki Guide"), "https://www.orcaslicer.com/wiki/troubleshoot_center");
-
     // RIGHT SIZER //////////////////////
 
     auto create_title = [this](wxString title) {
@@ -324,7 +322,6 @@ TroubleshootDialog::TroubleshootDialog()
     left_sizer->Add(sys_panel         , 0, wxEXPAND       | wxTOP, FromDIP(15));
     left_sizer->AddStretchSpacer();
     left_sizer->Add(sys_btn_sizer     , 0, wxEXPAND       | wxTOP, FromDIP(15));
-    left_sizer->Add(link_wiki         , 0, wxALIGN_CENTER | wxTOP, FromDIP(15));
     left_sizer->AddSpacer(FromDIP(5));
     
     wxBoxSizer *right_sizer  = new wxBoxSizer(wxVERTICAL);

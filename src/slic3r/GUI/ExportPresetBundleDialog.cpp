@@ -50,8 +50,8 @@ void ExportPresetBundleDialog::on_script_message(const nlohmann::json& j)
         InitExportData();
         OnRequestPresets();
     } else if (strCmd == "export_local") {
-        wxFileDialog dlg(this, _L("Save preset bundle"), "", "export.orca_bundle",
-                         "TigerSlicer Preset Bundle (*.orca_bundle)|*.orca_bundle", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        wxFileDialog dlg(this, _L("Save preset bundle"), "", "export.tiger_bundle",
+                         "TigerSlicer Preset Bundle (*.tiger_bundle)|*.tiger_bundle", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         wxString path;
         wxString name;
         if (dlg.ShowModal() == wxID_OK) {
@@ -59,7 +59,7 @@ void ExportPresetBundleDialog::on_script_message(const nlohmann::json& j)
             wxFileName file_name(path);
             name = file_name.GetName();
             if (file_name.GetExt().empty()) {
-                file_name.SetExt("orca_bundle");
+                file_name.SetExt("tiger_bundle");
                 path = file_name.GetFullPath();
             }
         }
@@ -318,7 +318,7 @@ void ExportPresetBundleDialog::OnExportData(const wxString& path, const wxString
 
     boost::filesystem::path export_file_path = boost::filesystem::path(export_path).make_preferred();
     if (export_file_path.extension().empty())
-        export_file_path += ".orca_bundle";
+        export_file_path += ".tiger_bundle";
 
     const boost::filesystem::path export_dir = export_file_path.parent_path();
     if (!export_dir.empty() && !boost::filesystem::exists(export_dir)) {

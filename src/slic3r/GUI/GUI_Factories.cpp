@@ -594,18 +594,16 @@ wxMenu* MenuFactory::append_submenu_add_handy_model(wxMenu* menu, ModelVolumeTyp
         bool                     is_stringhell        = false;
     };
     static const std::vector<HandyModel> handy_models = {
-        // These models come from OrcaSlicer and carry its branding, so their labels are
-        // neutral rather than Orca- or Tiger-named. The file names stay as shipped.
-        {L("Calibration Cube"),    {"OrcaCube_v2.drc", "OrcaPlug_v2.drc"},                    true},
-        {L("Whale Combo"),         {"OrcaSliced.3mf", "OrcaCube_v2.drc", "OrcaPlug_v2.drc"},  true},
-        {L("Badge"),               {"OrcaBadge.3mf"}},
-        {L("Tolerance Test"),      {"OrcaToleranceTest.drc"}},
+        // TigerSlicer: the file names become the object names, so they are neutral too. OrcaSlicer's
+        // whale combo (OrcaSliced.3mf) and logo badge (OrcaBadge.3mf) are its branding and not offered.
+        {L("Calibration Cube"),    {"CalibrationCube.drc", "CalibrationPlug.drc"},            true},
+        {L("Tolerance Test"),      {"ToleranceTest.drc"}},
         {L("3DBenchy"),            {"3DBenchy.drc"}},
         {L("Cali Cat"),            {"calicat.drc"}},
         {L("Autodesk FDM Test"),   {"ksr_fdmtest_v4.drc"}},
         {L("Voron Cube"),          {"Voron_Design_Cube_v7.drc"}},
         {L("Stanford Bunny"),      {"Stanford_Bunny.drc"}},
-        {L("String Hell"),         {"Orca_stringhell.drc"},                                   false, true},
+        {L("String Hell"),         {"StringHell.drc"},                                        false, true},
     };
 
     for (const auto& model : handy_models) {

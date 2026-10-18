@@ -132,7 +132,7 @@ CameraPopup::CameraPopup(wxWindow *parent)
     top_sizer->Add(m_custom_camera_input_confirm, 1, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT | wxALL, FromDIP(5));
     main_sizer->Add(top_sizer, 0, wxALL, FromDIP(10));
 
-    auto url = wxString(L"https://www.orcaslicer.com/wiki/"); // Orca: neutral wiki link (vendor URL removed)
+    // TigerSlicer: there is no "Live Video" guide page, so this link is created hidden and never shown.
     auto text = _L("Show \"Live Video\" guide page.");
 
     wxBoxSizer* link_sizer = new wxBoxSizer(wxVERTICAL);
@@ -140,7 +140,6 @@ CameraPopup::CameraPopup(wxWindow *parent)
     vcamera_guide_link->Wrap(-1);
     vcamera_guide_link->SetForegroundColour(wxColour(0x1F, 0x8E, 0xEA));
     auto text_size = vcamera_guide_link->GetTextExtent(text);
-    vcamera_guide_link->Bind(wxEVT_LEFT_DOWN, [this, url](wxMouseEvent& e) {wxLaunchDefaultBrowser(url); });
 
     link_underline = new wxPanel(m_panel, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
     link_underline->SetBackgroundColour(wxColour(0x1F, 0x8E, 0xEA));
@@ -325,8 +324,6 @@ void CameraPopup::sync_vcamera_state(bool show_vcamera)
     is_vcamera_show = show_vcamera;
     if (is_vcamera_show) {
         m_switch_vcamera->SetValue(true);
-        vcamera_guide_link->Show();
-        link_underline->Show();
     }
     else {
         m_switch_vcamera->SetValue(false);
@@ -354,10 +351,6 @@ void CameraPopup::check_func_supported(MachineObject *obj2)
     if (m_obj->virtual_camera && m_obj->has_ipcam) {
         m_text_vcamera->Show();
         m_switch_vcamera->Show();
-        if (is_vcamera_show) {
-            vcamera_guide_link->Show();
-            link_underline->Show();
-        }
     } else {
         m_text_vcamera->Hide();
         m_switch_vcamera->Hide();
@@ -475,12 +468,6 @@ void CameraPopup::OnLeftUp(wxMouseEvent &event)
                 resolution_txt->GetEventHandler()->ProcessEvent(resolution_evt);
                 return;
             }
-        }
-        //hyper link
-        auto h_rect = vcamera_guide_link->ClientToScreen(wxPoint(0, 0));
-        if (mouse_pos.x > h_rect.x && mouse_pos.y > h_rect.y && mouse_pos.x < (h_rect.x + vcamera_guide_link->GetSize().x) && mouse_pos.y < (h_rect.y + vcamera_guide_link->GetSize().y)) {
-            auto url = wxString(L"https://www.orcaslicer.com/wiki/"); // Orca: neutral wiki link (vendor URL removed)
-            wxLaunchDefaultBrowser(url);
         }
     }
 }
