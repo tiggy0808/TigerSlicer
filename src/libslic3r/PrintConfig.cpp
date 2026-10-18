@@ -8765,10 +8765,10 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionBool(true));
 
     def = this->add("support_head_front_diameter", coFloat);
-    //def->label = L("");
-    //def->category = L("");
-    //def->tooltip = L("");
-    //def->sidetext = "";
+    def->label = L("Pinhead front diameter");
+    def->category = L("Supports");
+    def->tooltip = L("Diameter of the pointing side of the head.");
+    def->sidetext = L("mm");
     def->min = 0;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(0.4));
@@ -8783,20 +8783,20 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(0.2));
 
     def = this->add("support_head_width", coFloat);
-    //def->label = L("");
-    //def->category = L("");
-    //def->tooltip = L("");
-    //def->sidetext = "";
+    def->label = L("Pinhead width");
+    def->category = L("Supports");
+    def->tooltip = L("Width from the back sphere center to the front sphere center.");
+    def->sidetext = L("mm");
     def->min = 0;
     def->max = 20;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(1.0));
 
     def = this->add("support_pillar_diameter", coFloat);
-    //def->label = L("");
-    //def->category = L("");
-    //def->tooltip = L("");
-    //def->sidetext = "";
+    def->label = L("Pillar diameter");
+    def->category = L("Supports");
+    def->tooltip = L("Diameter in mm of the support pillars.");
+    def->sidetext = L("mm");
     def->min = 0;
     def->max = 15;
     def->mode = comSimple;
@@ -8860,19 +8860,19 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(4.0));
 
     def = this->add("support_base_height", coFloat);
-    //def->label = L("");
-    //def->category = L("");
-    //def->tooltip = L("");
-    //def->sidetext = "";
+    def->label = L("Support base height");
+    def->category = L("Supports");
+    def->tooltip = L("The height of the pillar base cone.");
+    def->sidetext = L("mm");
     def->min = 0;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(1.0));
 
     def = this->add("support_base_safety_distance", coFloat);
-    //def->label = L("");
-    //def->category = L("");
-    //def->tooltip = L("");
-    //def->sidetext = "";
+    def->label = L("Support base safety distance");
+    def->category = L("Supports");
+    def->tooltip = L("The minimum distance of the pillar base from the model in mm. Makes sense in zero elevation mode where a gap according to this parameter is inserted between the model and the pad.");
+    def->sidetext = L("mm");
     def->min = 0;
     def->max = 10;
     def->mode = comAdvanced;
@@ -8936,10 +8936,10 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionBool(false));
 
     def = this->add("support_points_density_relative", coInt);
-    //def->label = L("");
-    //def->category = L("");
-    //def->tooltip = L("");
-    //def->sidetext = "";
+    def->label = L("Support points density");
+    def->category = L("Supports");
+    def->tooltip = L("This is a relative measure of support points density.");
+    def->sidetext = L("%");
     def->min = 0;
     def->set_default_value(new ConfigOptionInt(100));
 
