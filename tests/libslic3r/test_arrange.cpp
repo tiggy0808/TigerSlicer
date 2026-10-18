@@ -4,6 +4,10 @@
 #include "libslic3r/BoundingBox.hpp"
 #include "libslic3r/ClipperUtils.hpp"
 #include "libslic3r/ExPolygon.hpp"
+#include "libslic3r/Model.hpp"
+#include "libslic3r/ModelArrange.hpp"
+#include "libslic3r/PrintConfig.hpp"
+#include "libslic3r/TriangleMesh.hpp"
 
 using namespace Slic3r;
 using namespace Slic3r::arrangement;
@@ -221,4 +225,27 @@ TEST_CASE("Arrange aligns the pile to a custom center", "[Arrange]")
     for (const ArrangePolygon &ap : items)
         REQUIRE(ap.bed_idx == 0);
     require_no_overlap(items);
+}
+
+TEST_CASE("Instances on a resin printer can be arranged", "[Arrange][resin][Regression]")
+{
+    // A resin configuration has none of the FDM support settings the arrange polygon reads.
+    DynamicPrintConfig config;
+    config.apply(SLAFullPrintConfig::defaults());
+    REQUIRE_FALSE(config.has("enable_support"));
+    REQUIRE_FALSE(config.has("support_type"));
+
+    Model        model;
+    ModelObject *object = model.add_object("cube", "", TriangleMesh(its_make_cube(20., 20., 20.)));
+    object->add_instance();
+
+    // No support settings anywhere: no support margin.
+    const ArrangePolygon plain = get_instance_arrange_poly(object->instances.front(), config);
+    CHECK_FALSE(plain.has_tree_support);
+    CHECK_THAT(plain.brim_width, WithinRel(1.0));
+
+    // An object that kept only enable_support from a filament printer.
+    object->config.set_key_value("enable_support", new ConfigOptionBool(true));
+    const ArrangePolygon flagged = get_instance_arrange_poly(object->instances.front(), config);
+    CHECK(flagged.brim_width >= 1.0);
 }

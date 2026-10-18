@@ -167,11 +167,12 @@ ArrangePolygon get_instance_arrange_poly(ModelInstance* instance, const Slic3r::
     // For by-layer printing, need to shrink bed a little, so the support won't go outside bed.
     // We set it to 5mm because that's how much a normal support will grow by default.
     // normal support 5mm, other support 22mm, no support 0mm
+    // TigerSlicer: a resin configuration has neither option (and an object may carry only one), so a
+    // missing option means no support margin rather than a null dereference.
     auto supp_type_ptr = obj->get_config_value<ConfigOptionBool>(config, "enable_support");
     auto support_type_ptr = obj->get_config_value<ConfigOptionEnum<SupportType>>(config, "support_type");
-    auto support_type = support_type_ptr->value;
-    auto enable_support = supp_type_ptr->getBool();
-    int support_int = support_type_ptr->getInt();
+    const bool        enable_support = supp_type_ptr != nullptr && supp_type_ptr->getBool();
+    const SupportType support_type   = support_type_ptr != nullptr ? support_type_ptr->value : stNormalAuto;
 
     if (enable_support && (support_type == stNormalAuto || support_type == stNormal))
         ap.brim_width = 6.0;

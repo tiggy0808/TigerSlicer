@@ -19,6 +19,14 @@
 #define SAVE_ARRANGE_POLY 0
 
 namespace Slic3r { namespace GUI {
+
+// TigerSlicer: a resin printer's configuration has no wrapping detection.
+static bool wrapping_detection_enabled(const DynamicPrintConfig &config)
+{
+    const auto *opt = config.option<ConfigOptionBool>("enable_wrapping_detection");
+    return opt != nullptr && opt->value;
+}
+
     using ArrangePolygon = arrangement::ArrangePolygon;
 
 // Cache the wti info
@@ -248,7 +256,7 @@ void ArrangeJob::prepare_all() {
     prepare_wipe_tower();
 
     const DynamicPrintConfig& current_config = wxGetApp().preset_bundle->prints.get_edited_preset().config;
-    bool   enable_wrapping = current_config.option<ConfigOptionBool>("enable_wrapping_detection")->value;
+    bool   enable_wrapping = wrapping_detection_enabled(current_config);
 
     // add the virtual object into unselect list if has
     plate_list.preprocess_exclude_areas(m_unselected, enable_wrapping, MAX_NUM_PLATES);
@@ -425,7 +433,7 @@ void ArrangeJob::prepare_partplate() {
     }
 
     const DynamicPrintConfig &current_config  = wxGetApp().preset_bundle->prints.get_edited_preset().config;
-    bool   enable_wrapping = current_config.option<ConfigOptionBool>("enable_wrapping_detection")->value;
+    bool   enable_wrapping = wrapping_detection_enabled(current_config);
 
     // add the virtual object into unselect list if has
     plate_list.preprocess_exclude_areas(m_unselected, enable_wrapping, current_plate_index + 1);
@@ -540,7 +548,7 @@ void ArrangeJob::process(Ctl &ctl)
 
     Points      bedpts = get_shrink_bedpts(m_plater->config(),params);
 
-    bool   enable_wrapping = global_config.option<ConfigOptionBool>("enable_wrapping_detection")->value;
+    bool   enable_wrapping = wrapping_detection_enabled(global_config);
     partplate_list.preprocess_exclude_areas(params.excluded_regions, enable_wrapping, 1, scale_(1));
 
     BOOST_LOG_TRIVIAL(debug) << "arrange bedpts:" << bedpts[0].transpose() << ", " << bedpts[1].transpose() << ", " << bedpts[2].transpose() << ", " << bedpts[3].transpose();
