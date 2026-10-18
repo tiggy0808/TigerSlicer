@@ -243,7 +243,7 @@ function VendorDisplayName(vendorName)
 	if( vendorName == "Custom")
 		return "Custom Printer";
 	if( vendorName == "Other")
-		return "Orca colosseum";
+		return "Other printers";
 	if( vendorName == ResinVendor)
 		return "Resin printers (MSLA)";
 	return vendorName;
@@ -281,8 +281,6 @@ function CreatePrinterBlock(OneModel)
 	// these not matches. have to fix in profiles to reduce conditions in here;
 	else if (vendor == "MagicMaker" && modelName.startsWith("MM"))
 		modelName = modelName.slice(("MM").length);
-	else if (vendor == "OrcaArena")
-		modelName = modelName.slice(("Orca Arena").length);
 	else if (vendor == "RolohaunDesign" && modelName.startsWith("Rolohaun"))
 		modelName = modelName.slice(("Rolohaun").length);
 
