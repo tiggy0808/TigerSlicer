@@ -581,6 +581,29 @@ TEST_CASE("Bundled resin printers carry their bed and select real resin profiles
     set_resources_dir(old_resources);
 }
 
+TEST_CASE("Every bundled resin printer has a maker and a printer-list picture", "[Preset][Bundle][resin]")
+{
+    const fs::path resources = (fs::path(std::string(TEST_DATA_DIR)) / ".." / ".." / "resources").lexically_normal();
+    const std::string old_resources = resources_dir();
+    set_resources_dir(resources.string());
+
+    PresetBundle bundle;
+    bundle.load_tigerslicer_resin_bundle(ForwardCompatibilitySubstitutionRule::Disable);
+    const VendorProfile &vendor = bundle.vendors.at(PresetBundle::TIGERSLICER_RESIN_VENDOR);
+    REQUIRE_FALSE(vendor.models.empty());
+
+    for (const VendorProfile::PrinterModel &model : vendor.models) {
+        INFO(model.id);
+        // The printer page lists the resin models with a variant, under their maker.
+        CHECK(model.technology == ptSLA);
+        CHECK_FALSE(model.variants.empty());
+        CHECK_FALSE(model.family.empty());
+        CHECK(fs::is_regular_file(resources / "profiles" / PresetBundle::TIGERSLICER_RESIN_VENDOR / (model.id + "_thumbnail.png")));
+    }
+
+    set_resources_dir(old_resources);
+}
+
 namespace {
 // Builds a collection's "renamed_from" lookup, which PresetBundle::load_presets() does after loading.
 struct RenameMapAccess : PresetCollection

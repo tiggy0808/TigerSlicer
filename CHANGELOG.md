@@ -34,6 +34,15 @@ Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOP
   earlier (`.orca_*`) still import.
 - The support presets in the Supports workspace are named Low, Medium and High.
 - The filament list shows the materials in the library's order: PLA, PLA-CF, PLA-GF, PETG and so on.
+- Printer selection has two tabs, **Filament printers** and **Resin printers**, each with its own
+  list of makers. Resin printers are listed by maker (Elegoo, Phrozen) like filament printers.
+  Printers you tick stay ticked when you switch tabs.
+- The resin printers in the printer list show photos of the real printers, from the makers' own
+  websites, instead of drawings. The pictures are no longer squashed. The generic resin printers
+  have their own symbol, like the generic filament printers' firmware logos.
+- The resin printer list keeps Elegoo, Phrozen and the generic printers. The EPAX, Peopoly,
+  Voxelab, Uniformation, Wanhao and Creality LD printers are removed. If you used one, pick the
+  generic printer with the same screen size.
 
 **Fixed**
 - Arranging the plate with a resin printer selected crashed.

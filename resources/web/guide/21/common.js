@@ -1,6 +1,7 @@
 var	pModel              = {};
 const ResinVendor       = "TigerSlicerResin";
 var	ModelNozzleSelected = {};
+var	TechTab             = "FFF"; // the tab shown: filament (FFF) or resin (SLA) printers
 let SearchBox;
 let $content;
 
@@ -48,35 +49,32 @@ function HandleModelList( pVal )
 	pModel=pVal['model'];
 
 	// ORCA ensure list correctly ordered
-	pModel = pModel.sort((a, b)=>(a["vendor"].localeCompare(b["vendor"])))
-	pModel = [ // move custom printers to top, then resin printers
-		...pModel.filter(i=>i.vendor === "Custom"),
-		...pModel.filter(i=>i.vendor === ResinVendor),
-		...pModel.filter(i=>i.vendor !== "Custom" && i.vendor !== ResinVendor)
+	pModel = pModel.sort((a, b)=>(BlockKey(a).localeCompare(BlockKey(b))))
+	pModel = [ // move the generic printers to the top of their tab
+		...pModel.filter(IsGenericModel),
+		...pModel.filter(i=>!IsGenericModel(i))
 	];
-	
+
 	let nTotal=pModel.length;
 	let ModelHtml={};
 	for(let n=0;n<nTotal;n++)
 	{
 		let OneModel=pModel[n];
-		
-		let strVendor=OneModel['vendor'];
-		
+
+		let strBlock=BlockKey(OneModel);
+
 		//Add Vendor Html Node
-		if($(".OneVendorBlock[vendor='"+strVendor+"']").length==0)
+		if($(".OneVendorBlock[vendor='"+strBlock+"']").length==0)
 		{
-			let HtmlNewVendor = CreateVendorBlock(strVendor);
+			let HtmlNewVendor = CreateVendorBlock(strBlock, ModelTech(OneModel));
 			$('#Content').append(HtmlNewVendor);
 		}
-		
-		let ModelName=OneModel['model'];
-		
+
 		//Collect Html Node Nozzel Html
-		if( !ModelHtml.hasOwnProperty(strVendor))
-			ModelHtml[strVendor]='';
-			
-		ModelHtml[strVendor] += CreatePrinterBlock(OneModel); // ORCA
+		if( !ModelHtml.hasOwnProperty(strBlock))
+			ModelHtml[strBlock]='';
+
+		ModelHtml[strBlock] += CreatePrinterBlock(OneModel); // ORCA
 	}
 	
 	//Update Nozzel Html Append
@@ -95,6 +93,11 @@ function HandleModelList( pVal )
 			ChooseModel(OneModel['vendor'], OneModel['model']);
 		}
 	}
+
+	// Open on the resin tab when only resin printers are chosen.
+	const chosenTechs = new Set($('.ModelCheckBoxSelected').closest('.OneVendorBlock').map((i, el)=>el.getAttribute('tech')).get());
+	if (chosenTechs.size && !chosenTechs.has(TechTab))
+		TechMode([...chosenTechs][0]);
 
 	UpdateSidebarVendors();
 
@@ -122,7 +125,10 @@ function SetModelSelect(vendor, model, checked) {
 		oVendor[model] = checked;
 	}
 
-	UpdateVendorCheckbox(vendor)
+	// The block the printer is listed in: its vendor, or for resin printers its maker.
+	const block = $(".ModelCheckBox[vendor='" + vendor + "'][model='" + model + "']").closest('.OneVendorBlock').attr('vendor');
+	if (block)
+		UpdateVendorCheckbox(block);
 }
 
 function GetModelSelect(vendor, model) {
@@ -177,22 +183,23 @@ function FilterModelList(keyword) {
 		let OneModel = pModel[n];
 
 		let strVendor = OneModel['vendor'];
-		let search = (OneModel['name'] + '\0' + strVendor).toLowerCase();
+		let strBlock  = BlockKey(OneModel);
+		let search = (OneModel['name'] + '\0' + strVendor + '\0' + VendorDisplayName(strBlock)).toLowerCase();
 
 		if (!kwSplit.every(s => search.includes(s)))
 			continue;
 
 		//Add Vendor Html Node
-		if ($(".OneVendorBlock[vendor='" + strVendor + "']").length == 0) {
-			let HtmlNewVendor = CreateVendorBlock(strVendor);
+		if ($(".OneVendorBlock[vendor='" + strBlock + "']").length == 0) {
+			let HtmlNewVendor = CreateVendorBlock(strBlock, ModelTech(OneModel));
 			$('#Content').append(HtmlNewVendor);
 		}
 
 		//Collect Html Node Nozzel Html
-		if (!ModelHtml.hasOwnProperty(strVendor))
-			ModelHtml[strVendor] = '';
-			
-		ModelHtml[strVendor] += CreatePrinterBlock(OneModel); // ORCA
+		if (!ModelHtml.hasOwnProperty(strBlock))
+			ModelHtml[strBlock] = '';
+
+		ModelHtml[strBlock] += CreatePrinterBlock(OneModel); // ORCA
 	}
 
 	//Update Nozzel Html Append
@@ -220,6 +227,14 @@ function FilterModelList(keyword) {
 
 	UpdateSidebarVendors();
 
+	// Show the search's matches when they are all on the other tab.
+	if (kwSplit.length) {
+		const shown = tech => $(`.OneVendorBlock[tech='${tech}'] .PrinterBlock`).length;
+		const other = TechTab === "FFF" ? "SLA" : "FFF";
+		if (!shown(TechTab) && shown(other))
+			TechMode(other);
+	}
+
 	$content.css("padding-right",  $content[0].scrollHeight > $content[0].clientHeight ? "10px" : "20px");
 
 	// let AlreadySelect=$(".ModelCheckBoxSelected");
@@ -236,6 +251,29 @@ function textInput(obj) {
 	FilterModelList(obj.value);
 }
 
+// Every resin printer comes from the one TigerSlicerResin bundle. They are listed by maker, like
+// the filament printers' vendors, in blocks named "TigerSlicerResin/<family>". The printers keep
+// their real vendor, which is what gets saved.
+function ResinFamily(OneModel)
+{
+	return OneModel['family'] || OneModel['name'].split(" ")[0];
+}
+
+function BlockKey(OneModel)
+{
+	return OneModel['vendor'] === ResinVendor ? ResinVendor + "/" + ResinFamily(OneModel) : OneModel['vendor'];
+}
+
+function ModelTech(OneModel)
+{
+	return OneModel['technology'] === "SLA" ? "SLA" : "FFF";
+}
+
+function IsGenericModel(OneModel)
+{
+	return OneModel['vendor'] === "Custom" || (OneModel['vendor'] === ResinVendor && ResinFamily(OneModel) === "Generic");
+}
+
 function VendorDisplayName(vendorName)
 {
 	if( vendorName == "BBL" )
@@ -244,16 +282,18 @@ function VendorDisplayName(vendorName)
 		return "Custom Printer";
 	if( vendorName == "Other")
 		return "Other printers";
-	if( vendorName == ResinVendor)
-		return "Resin printers (MSLA)";
+	if( vendorName == ResinVendor + "/Generic")
+		return "Generic Resin Printer";
+	if( vendorName.startsWith(ResinVendor + "/"))
+		return vendorName.slice(ResinVendor.length + 1);
 	return vendorName;
 }
 
-function CreateVendorBlock(vendorName)
+function CreateVendorBlock(vendorName, tech)
 {
 	let alt = VendorDisplayName(vendorName);
 
-	return 	'<div class="OneVendorBlock" Vendor="' + vendorName + '">' +
+	return 	'<div class="OneVendorBlock" Vendor="' + vendorName + '" tech="' + tech + '">' +
 			'	<div class="BlockBanner">' +
 			'		<a>' + alt + '</a>' +
 			'		<div class="BannerBtns" onClick="ChooseVendor('+"\'"+vendorName+"\'"+')">'+
@@ -273,8 +313,11 @@ function CreatePrinterBlock(OneModel)
 	let modelName  = OneModel['name'];
 
 	// Most of it unneeded. this can be applied in profiles
-	if( vendor=="Custom")					
+	if( vendor=="Custom")
 		modelName = modelName.split(" ")[1];
+	// resin printers are listed under their maker, so drop it from the name
+	else if (vendor == ResinVendor && modelName.startsWith(ResinFamily(OneModel) + " "))
+		modelName = modelName.slice(ResinFamily(OneModel).length + 1);
 	// these uses different case in name; seckit, ratrig, blocks
 	else if (modelName.toLowerCase().startsWith(vendorName.toLowerCase()))  
 		modelName = modelName.slice(vendorName.length);
@@ -314,13 +357,35 @@ function scrollToVendor(vendor) {
 function UpdateSidebarVendors()
 {
 	let SidebarHTML = "";
+	let counts = {FFF: 0, SLA: 0};
 	$(`.OneVendorBlock`).each((i, el)=>{
 		UpdateVendorCheckbox(el.getAttribute("vendor"));
 		const vendor = el.getAttribute('vendor');
-		SidebarHTML +=`<div class="SidebarItem" onclick="scrollToVendor('${vendor}')">${VendorDisplayName(vendor)}</div>`;
+		const tech   = el.getAttribute('tech');
+		counts[tech] += $(el).find('.PrinterBlock').length;
+		if (tech === TechTab)
+			SidebarHTML +=`<div class="SidebarItem" onclick="scrollToVendor('${vendor}')">${VendorDisplayName(vendor)}</div>`;
 	});
 	$('#SidebarVendors').html(SidebarHTML)
+	$('.OneVendorBlock').removeClass('LastShown');
+	$(`.OneVendorBlock[tech='${TechTab}']`).last().addClass('LastShown');
+	const listed = $('.OneVendorBlock').length > 0; // no counts before the printers arrive
+	for (const tech in counts)
+		$(`.TechSelector .TabButton[tech='${tech}'] .TechCount`).text(listed ? counts[tech] : '');
 }
+
+// Filament and resin printers are on separate tabs. Both stay in the page, so the printers
+// chosen on the hidden tab are still saved.
+function TechMode(tech)
+{
+	TechTab = tech;
+	$content[0].setAttribute("tech", tech);
+	$('.TechSelector .TabButton').each((i, el)=>{ el.classList.toggle('selected', el.getAttribute('tech') === tech); });
+	UpdateSidebarVendors();
+	$content[0].scrollTop = 0;
+}
+
+document.addEventListener('DOMContentLoaded', () => TechMode(TechTab));
 
 function ChooseVendor(sVendor) { // automatically selects / unselects all
 	const $cbs = $(`.OneVendorBlock[vendor='${sVendor}'] .ModelCheckBox`);
@@ -329,7 +394,7 @@ function ChooseVendor(sVendor) { // automatically selects / unselects all
 	sel ? $cbs.addClass('ModelCheckBoxSelected')
 		: $cbs.removeClass('ModelCheckBoxSelected');
 
-	$cbs.each((i, el)=>{SetModelSelect(sVendor, el.getAttribute('model'), sel)});
+	$cbs.each((i, el)=>{SetModelSelect(el.getAttribute('vendor'), el.getAttribute('model'), sel)});
 }
 
 function UpdateVendorCheckbox(sVendor) {
@@ -451,13 +516,13 @@ function findSnap(cur, dir) {
 	let bcTop = el=>(el.getBoundingClientRect().top);
 
 	const contentTop = bcTop($content[0]);
-	const bannerH    = ($content.find('.BlockBanner')[0] || {}).offsetHeight || 0;
+	const bannerH    = ($content.find('.BlockBanner:visible')[0] || {}).offsetHeight || 0;
 
-	const firstCard  = $content.find('.PrinterBlock')[0];
-	const firstArea  = $content.find('.PrinterArea')[0];
+	const firstCard  = $content.find('.PrinterBlock:visible')[0];
+	const firstArea  = $content.find('.PrinterArea:visible')[0];
 	const cardGap    = (firstCard && firstArea) ? (bcTop(firstCard) - bcTop(firstArea)) : 0;
 
-	const candidates = $content.find('.BlockBanner, .PrinterBlock').get();
+	const candidates = $content.find('.BlockBanner:visible, .PrinterBlock:visible').get();
 	if (dir === 'up') candidates.reverse();
 
 	let result = lastSeen = null;
@@ -594,7 +659,7 @@ function LayoutMode(value) {
 
 	// find current visible vendor and scroll to it after layout change
 	let target = null;
-	for (const el of $content.find('.OneVendorBlock')) {
+	for (const el of $content.find('.OneVendorBlock:visible')) {
 		if (el.getBoundingClientRect().bottom - $content[0].getBoundingClientRect().top >= -1) {
 			target = el.getAttribute("vendor");
 			break;

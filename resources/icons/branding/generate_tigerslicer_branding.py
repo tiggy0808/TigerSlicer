@@ -23,7 +23,7 @@ import math
 import os
 import sys
 
-from PIL import Image, ImageDraw, ImageFilter, ImageOps
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -203,6 +203,60 @@ def bed_texture_svg():
 
 def write_bed_texture():
     write(os.path.join(RES, "profiles", "Custom", "tigerslicer_bed_texture.svg"), bed_texture_svg())
+
+
+# Printer-list pictures of the generic resin printers. Like the generic FDM printers' firmware
+# logos (resources/profiles/Custom/*_cover.png): a rounded tile with a symbol and a name. The
+# symbol is an MSLA printer: Z rail, build plate with a print hanging from it, resin vat, LCD.
+GENERIC_RESIN_TILES = {
+    "Generic 2K MSLA 1620x2560 (82.6 x 130.6 mm)": "2K",
+    "Generic 3840x2400 MSLA": "4K",
+    "Generic 6K MSLA 5760x3600 (198.1 x 123.8 mm)": "6K",
+    "Generic 8K MSLA 7680x4320 (218.9 x 123.1 mm)": "8K",
+    "Generic 10K MSLA 10240x5120 (228.4 x 114.2 mm)": "10K",
+}
+TILE_PX = 240
+TILE_RADIUS = 24
+TILE_INK = (14, 14, 16, 255)
+TILE_RESIN = (196, 112, 150, 255)
+TILE_FONT = os.path.join(RES, "fonts", "HarmonyOS_Sans_SC_Bold.ttf")
+
+
+def generic_resin_tile(label):
+    """240x240 tile in TIGER pink: the MSLA symbol over "<label> MSLA", in 240-px units."""
+    k = SUPERSAMPLE
+    img = Image.new("RGBA", (TILE_PX * k, TILE_PX * k), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+
+    def box(x0, y0, x1, y1, fill, r=0):
+        d.rounded_rectangle([x0 * k, y0 * k, x1 * k - 1, y1 * k - 1], radius=r * k, fill=fill)
+
+    box(0, 0, TILE_PX, TILE_PX, PINK, TILE_RADIUS)
+    box(176, 20, 190, 156, TILE_INK, 3)                 # Z rail, beside the vat
+    box(110, 46, 182, 58, TILE_INK, 3)                  # arm from the rail to the plate
+    box(110, 46, 122, 70, TILE_INK)                     # plate stem
+    box(46, 100, 166, 148, TILE_INK, 6)                 # vat
+    box(54, 100, 158, 140, PINK)                        # vat inside, open at the top
+    box(54, 118, 158, 140, TILE_RESIN)                  # resin
+    box(58, 68, 154, 80, TILE_INK, 4)                   # build plate
+    box(80, 78, 132, 128, TILE_INK, 8)                  # print, hanging from the plate into the resin
+    box(36, 152, 204, 164, TILE_INK, 3)                 # LCD
+
+    text = f"{label} MSLA"
+    size = 44
+    font = ImageFont.truetype(TILE_FONT, size * k)
+    while d.textlength(text, font=font) > 200 * k:
+        size -= 2
+        font = ImageFont.truetype(TILE_FONT, size * k)
+    d.text((TILE_PX * k / 2, 198 * k), text, font=font, fill=TILE_INK, anchor="mm")
+    return img.resize((TILE_PX, TILE_PX), Image.LANCZOS)
+
+
+def write_generic_resin_tiles():
+    print("resources/profiles/TigerSlicerResin ->")
+    for model, label in GENERIC_RESIN_TILES.items():
+        save_png(generic_resin_tile(label),
+                 os.path.join(RES, "profiles", "TigerSlicerResin", f"{model}_thumbnail.png"))
 
 # ------------------------------------------------------------- raster ----
 
@@ -412,6 +466,7 @@ def main():
     mac = macos_app_icon()
     generate_branding_dir(master, mac)
     generate_app_images(master, mac)
+    write_generic_resin_tiles()
 
 
 if __name__ == "__main__":

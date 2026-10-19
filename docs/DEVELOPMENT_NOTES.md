@@ -125,6 +125,40 @@ branding.
   - D-Bus and Linux packaging names.
   - The macOS bundle identifier.
 
+### Resin printers and the printer page
+- The resin bundle (`TigerSlicerResin.ini`, 1.4.0) keeps 38 printers: 23 Elegoo, 10 Phrozen and 5
+  generic. The EPAX, Peopoly, Voxelab, Uniformation, Wanhao and Creality LD machines are removed,
+  with their pictures. A user preset that inherited from one of them loses its parent.
+- `TigerSlicerResin/<model>_thumbnail.png` are 240x240 PNGs with a transparent background, framed
+  like Orca's `<model>_cover.png`. The guide draws every cover in a 120x120 box, so the old 192x256
+  drawings were squashed.
+- The Elegoo and Phrozen printers show the maker's own product photo, the way Orca's and
+  PrusaSlicer's printer pictures are sourced, from the maker's own store. The original Phrozen Sonic
+  uses the Wayback Machine's copy of Phrozen's page. Each photo is cut out from its backdrop and
+  scaled to fill the square.
+- Figurines beside the printer are cropped out (Jupiter, Mars 3 Pro, Mars 4, Saturn 3, Saturn 3
+  Ultra, Saturn 8K). The Saturn 2 and Saturn S keep theirs: every Elegoo photo of them has the
+  figurine in front of the printer.
+- The generic resin printers get a tile like the generic FDM printers' firmware logos: an MSLA
+  symbol (Z rail, plate, print in the vat, LCD) over "2K/4K/6K/8K/10K MSLA" on TigerSlicer pink.
+  `generate_tigerslicer_branding.py` draws them (`write_generic_resin_tiles()`).
+- Printer selection (`guide/21/common.js`, used by the setup wizard and the printer dialog):
+  - Two tabs, Filament printers and Resin printers, replace the page title. Each vendor block has
+    `tech="FFF"` or `tech="SLA"` and the hidden tab's blocks get `display: none`, so its ticks are
+    still saved. The tabs show how many printers each lists, which follows the search. A search
+    whose matches are all on the other tab switches to it, and the open search box stops left of
+    the tabs so they stay clickable. "Last block" spacing uses a `LastShown` class, since the last
+    block in the page may be on the hidden tab.
+  - Resin printers are listed by maker in blocks keyed `TigerSlicerResin/<family>`. The checkboxes
+    keep the real vendor, so selection and saving are unchanged. `WebGuideDialog` sends each resin
+    model's `family`.
+  - The page opens on the resin tab when only resin printers are chosen.
+  - Scroll snapping and the layout switch only consider visible blocks.
+- Checked in a browser at the dialog's 820x660 with the real bundle (both tabs, light and dark,
+  search across tabs, select-all per maker, ticks kept across tabs and searches, 24 picks saved).
+  The app builds; `libslic3r_tests` pass, including a new `[resin]` case that every bundled resin
+  model is an SLA model with a variant, a maker and a picture.
+
 ### Brick layers
 - New region option `brick_layers` (bool, default off; Process → Strength → Walls). Every other inner
   wall (inset 1, 3, 5, ... counted from the outer wall) is printed half a layer higher than the walls

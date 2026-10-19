@@ -41,6 +41,12 @@
 	<input type="text" class="searchTerm" placeholder=" " oninput="textInput(this)">
 	<span class="search-placeholder trans">Search...</span>
 </div>
+<div class="TechSelector">
+	<div class="TabGroup">
+		<div class="TabButton selected" tech="FFF" onclick="TechMode('FFF')">Filament printers<span class="TechCount"></span></div>
+		<div class="TabButton" tech="SLA" onclick="TechMode('SLA')">Resin printers<span class="TechCount"></span></div>
+	</div>
+</div>
 <div class="LayoutSelector">
 	<div class="TabGroup">
 		<div class="TabButton" onclick="LayoutMode('compact-list')" ><div class="icon16"></div></div>

@@ -10,7 +10,7 @@
 	margin-bottom: 7px;
 }
 
-.OneVendorBlock:last-of-type {
+.OneVendorBlock.LastShown {
 	margin-bottom: 36px;
 }
 
@@ -206,6 +206,54 @@ img.ModelThumbnail {
 .LayoutSelector .TabButton:nth-of-type(2) .icon16 {--icon-url: var(--icon-layout-compact)}
 .LayoutSelector .TabButton:nth-of-type(3) .icon16 {--icon-url: var(--icon-layout-cover)}
 
+/* FILAMENT / RESIN TABS */
+/* The tabs are the page heading, in the title's place. */
+#Title > div {
+	visibility: hidden;
+}
+
+.TechSelector {
+	position: absolute;
+	left: 50%;
+	top: 14px;
+	transform: translateX(-50%);
+	z-index: 100; /* above the search box, should a narrow window make them meet */
+}
+
+.TechSelector .TabGroup {
+	display: flex;
+	padding: 2px;
+	gap: 2px;
+	border-radius: 6px;
+	background-color: var(--bg-color-alt);
+}
+
+.TechSelector .TabButton {
+	padding: 7px 16px;
+	border-radius: 4px;
+	font-size: 15px;
+	line-height: 16px;
+	font-weight: 600;
+	white-space: nowrap;
+	cursor: pointer;
+	color: var(--fg-color-text);
+}
+
+.TechSelector .TabButton:hover            {background: var(--button-bg-hover)}
+.TechSelector .TabButton.selected         {background: var(--main-color); color: #FFF}
+.TechSelector .TabButton.selected:hover   {background: var(--main-color-hover)}
+
+.TechSelector .TechCount {
+	margin-left: 8px;
+	font-weight: 400;
+	opacity: .7;
+}
+
+#Content[tech="FFF"] .OneVendorBlock[tech="SLA"],
+#Content[tech="SLA"] .OneVendorBlock[tech="FFF"] {
+	display: none;
+}
+
 /* LAYOUT */
 #Content[layout="compact-list"] .PrinterArea {
 	grid-template-columns: repeat(4, 1fr);
@@ -245,7 +293,7 @@ img.ModelThumbnail {
 	top:10%
 }
 
-#Content[layout|="compact"] .OneVendorBlock:last-of-type {
+#Content[layout|="compact"] .OneVendorBlock.LastShown {
 	margin-bottom: 0px;
 }
 
@@ -262,7 +310,8 @@ img.ModelThumbnail {
 
 .search:focus-within,
 .search[hasvalue="1"] {
-	width: calc(100% - 194px);
+	width: calc(50% - 240px); /* ends left of the centred filament / resin tabs */
+	min-width: 120px;
 }
 
 .searchTerm {

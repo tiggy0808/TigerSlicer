@@ -1341,6 +1341,7 @@ void GuideFrame::LoadResinProfileFamily()
         one["model"]           = model.id;
         one["name"]            = model.name;
         one["vendor"]          = PresetBundle::TIGERSLICER_RESIN_VENDOR;
+        one["family"]          = model.family; // the maker, which the printer page lists them under
         one["technology"]      = "SLA";
         one["nozzle_diameter"] = variants;
         one["materials"]       = "";
