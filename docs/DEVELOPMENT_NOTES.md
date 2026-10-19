@@ -9,7 +9,8 @@ OrcaSlicer.
 
 ## Unreleased
 
-Theme: Auto slice, automatic hollowing for resin, and the last OrcaSlicer branding.
+Theme: Auto slice, automatic hollowing for resin, brick layers for filament, and the last OrcaSlicer
+branding.
 
 ### Auto slice
 - `libslic3r/AutoSlice.{hpp,cpp}` holds the choices, so they are tested without the GUI
@@ -124,6 +125,96 @@ Theme: Auto slice, automatic hollowing for resin, and the last OrcaSlicer brandi
   - D-Bus and Linux packaging names.
   - The macOS bundle identifier.
 
+### Brick layers
+- New region option `brick_layers` (bool, default off; Process → Strength → Walls). Every other inner
+  wall (inset 1, 3, 5, ... counted from the outer wall) is printed half a layer higher than the walls
+  next to it, so the walls interlock along Z. The outer wall (inset 0) never moves.
+- Prior art:
+  - The Z and flow rules follow the Brick Layers post-processing scripts by Roman Tenger (TenTech) and
+    Everson Siqueira (GeekDetour), both GPL-3.0.
+  - Upstream has one in-slicer attempt, OrcaSlicer PR #8181 ("Staggered perimeters", still an open
+    alpha). It stores a Z multiplier and an extrusion multiplier on each path. It prints infill after
+    the raised walls, and it only checks the object's last layer and layer 1.
+  - Nothing was ported from it.
+- `libslic3r/BrickLayers.{hpp,cpp}`, `apply_brick_layers()`, runs at the end of
+  `PrintObject::make_perimeters()` (after `combine_perimeters_for_independent_tools()`):
+  - Pass 1 (parallel): for each layer from 1 up, the centrelines of the odd inner walls (`erPerimeter`
+    paths of loops and multipaths with odd `inset_idx`) of the regions that use the option, in an
+    `AABBTreeLines::LinesDistancer`. Layer 0 has none, so it is never lifted.
+  - Pass 2 (parallel): each wall on layer L is sampled every 0.25 mm. Consecutive liftable paths of
+    one wall are measured as one line, because Arachne splits a wall into short paths wherever its
+    width changes.
+    - A sample has a wall below (or above) when layer L−1 (or L+1) has a candidate within
+      0.25 × the wall spacing.
+    - Runs shorter than 2 mm take the class of their longer neighbour. A boundary that would leave
+      a sliver of less than 0.1 mm on a path joins the neighbouring piece.
+    - The paths are cut into pieces. With h the layer height and h' the next layer's:
+
+      | Wall below | Wall above | `z_offset` | Height    | Flow | Where                                   |
+      |------------|------------|------------|-----------|------|-----------------------------------------|
+      | yes        | yes        | h'/2       | h         | 1×   | middle of a stack                       |
+      | no         | yes        | h'/2       | h + h'/2  | 1.5× | start: layer 1, above a top surface     |
+      | yes        | no         | 0          | h/2       | 0.5× | end: flush with a top or a ledge        |
+      | no         | no         | 0          | unchanged | 1×   | not lifted                              |
+
+    - `mm3_per_mm` is scaled by new height / old height. `height` becomes the new height, which feeds
+      `;HEIGHT:` and the preview.
+  - Skipped for spiral vase, for `independent_tool_layer_heights` (walls merged across layers), and for
+    regions with `zaa_enabled`: Z contouring sets wall Z and flow itself. Overhang pieces
+    (`erOverhangPerimeter`) are never lifted.
+  - Also skipped for a region whose walls and infill use different filaments (the six
+    `*_filament_id` keys, already resolved per region). Lifted walls go last in their extruder's pass
+    over an island, and a later pass of another filament would print next to them at layer height.
+  - On a slope the walls drift sideways each layer. Past the tolerance (walls flatter than about 63°
+    with 0.2 mm layers and 0.45 mm walls), a lifted wall ends at 0.5× and the next one starts at 1.5×,
+    which adds up to a normal wall. On a 50 mm sphere 38% of the inner wall length is lifted; on a
+    cube, 67%.
+- `ExtrusionPath::z_offset` (mm above print Z) is copied by every constructor and assignment and by
+  `ExtrusionLoop::split_at()`.
+- Wall index (`inset_idx`):
+  - `ExtrusionMultiPath` copies now keep `inset_idx` (the base class was not copied).
+  - Arachne's `traverse_extrusions()` now sets it on loops and multipaths; before, only classic loops
+    had it.
+- G-code (`GCode.cpp`):
+  - `_extrude()` uses `m_nominal_z + z_offset` for the travel target, the Z reset and the scarf slope.
+  - `extrude_perimeters()` skips entities with a lifted piece when the region uses the option.
+    `extrude_lifted_perimeters()` prints them after ironing, island by island. A lifted bead sticks up
+    h/2, and the nozzle face would drag over it while printing anything next to it. Regions without
+    the option are not touched (no `m_config.apply()`).
+  - `m_brick_lift_z` is the highest lifted Z printed on the layer, reset in `change_layer()`.
+    `travel_to()` (also through avoid-crossing-walls hops and on the way to the wipe tower) travels at
+    least that high and lowers Z only at the destination. With nothing lifted on the layer it emits
+    exactly what it did before.
+- Config:
+  - `Layer::is_perimeter_compatible()` compares `brick_layers`.
+  - `PrintObject::invalidate_state_by_config_options()` re-runs perimeters when it changes.
+  - The spiral vase normalisation turns it off.
+- Preview: libvgcode took a layer's Z from its last extrusion, which is now a lifted wall. That moved
+  the slider label and the color-change Z by h/2. `Layers::update()` now ignores inner-wall
+  extrusions once anything else has been extruded on the layer, so the slider shows the print Z.
+- GUI:
+  - `Tab.cpp` adds the option to Strength → Walls.
+  - `ConfigManipulation.cpp` greys it out with spiral vase, with Z contouring, or with fewer than 2
+    walls (unless alternate extra wall is on).
+- Tests: `tests/fff_print/test_brick_layers.cpp`, `[BrickLayers]`, 6 cases, run with both the classic
+  and the Arachne wall generator where it matters:
+  - off by default;
+  - stays off when the walls and the infill use different filaments;
+  - on a 20 mm cube, walls 1 and 3 of 3 inner walls are at layer Z + 0.1 and the outer wall is at
+    layer Z;
+  - flow is 1.5× on layer 2, 1× in the middle and 0.5× at the top;
+  - lifted walls are the last extrusions of each layer;
+  - on `TestMesh::step` (×3), walls end flush under the 5 mm ledge and restart at 1.5× above it.
+- Known limits:
+  - Slopes fall back to normal walls, as above.
+  - Islands closer than the nozzle face may still touch a neighbour's lifted walls, because islands
+    are printed one after another.
+  - Each layer decides "wall above" and the next layer decides "wall below" on its own samples. Where
+    a wall ends or a notch is under 2 mm, the two can disagree over a few millimetres: a small blob or
+    gap.
+  - `{layer_z}` in tool-change or custom G-code within a layer comes from the writer's Z, so after a
+    lifted wall it reads print Z + h/2. Z-hop already has the same issue.
+
 ### Verification (Windows)
 - Release build (MSVC 17.14). `libslic3r_tests`: all pass, including 9 new `[AutoSlice]` cases and
   the resin arrange regression case.
@@ -140,6 +231,23 @@ Theme: Auto slice, automatic hollowing for resin, and the last OrcaSlicer brandi
   - Normal quit, no crash logs.
 - Seen, not changed: the Supports workspace's settings column can be wider than the space beside the
   canvas. Its full-width buttons (Auto-orient, Hollow + drain holes) then show no visible label.
+- Brick layers (2026-10-19), Release build (MSVC 17.14):
+  - `fff_print_tests`: all 134 cases pass in random order, including the 6 `[BrickLayers]` cases.
+    `libslic3r_tests`: all 1039 pass.
+  - G-code read by hand:
+    - 20 mm cube, Arachne, Z-hop 0.4: inner wall 2 and the outer wall at Z10, then infill, then
+      inner walls 3 and 1 at Z10.1. The travel lifts for Z-hop and drops straight down to Z10.1.
+      Layer 2 has lifted walls at Z0.5 with `;HEIGHT:0.3`; the top layer has them at Z20 with
+      `;HEIGHT:0.1` and half the E.
+    - Stepped part (`TestMesh::step` ×3, avoid crossing walls on): flush at the 5 mm ledge, a new
+      stack at 1.5× above it.
+    - 50 mm sphere: 127 height changes inside walls over 500 layers, all plain vertical Z moves.
+  - In the app with a fresh `--datadir` (Generic Klipper printer, 0.20 mm Standard):
+    - Brick layers shows under Strength → Walls in advanced mode, unticked, with its tooltip.
+    - A 25 mm cube with it on slices to 125 layers.
+    - The preview slider reads 11.80 mm on layer 59, while the G-code viewer shows that layer's
+      inner walls at Z11.9.
+    - No crash log.
 
 ## 0.0.6 (2026-10-13)
 

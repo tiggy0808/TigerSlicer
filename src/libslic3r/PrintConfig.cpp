@@ -5548,6 +5548,21 @@ void PrintConfigDef::init_fff_params()
                      "Using lightning infill together with this option is not recommended as there is limited infill to anchor the extra perimeters to.");
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(false));
+
+    def = this->add("brick_layers", coBool);
+    def->label = L("Brick layers");
+    def->category = L("Strength");
+    def->tooltip = L("Prints every other inner wall half a layer higher than the walls next to it, the way bricks are laid. "
+                     "The walls then overlap in height instead of all ending on the same layer line, which makes parts stronger across layers. "
+                     "The outer wall is not moved, so the surface looks the same.\n\n"
+                     "Where a stack of raised walls starts, the first one gets 1.5x flow to reach down to the layer below. "
+                     "Where it ends, the last one gets 0.5x flow so it finishes flush with the top. "
+                     "Raised walls are printed after everything else on their layer.\n\n"
+                     "Needs at least 2 walls; 3 or more works best. Works on vertical and steep walls; on gently sloped walls it falls back to normal walls. "
+                     "It has no effect in spiral vase mode, with Z contouring, with independent tool layer heights, "
+                     "or when the walls and the infill of a part use different filaments.");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(false));
     
     def = this->add("post_process", coStrings);
     def->label = L("Post-processing Scripts");
@@ -10020,6 +10035,7 @@ void DynamicPrintConfig::normalize_fdm(int used_filaments)
         {
             this->opt<ConfigOptionInt>("wall_loops", true)->value       = 1;
             this->opt<ConfigOptionBool>("alternate_extra_wall", true)->value = false;
+            this->opt<ConfigOptionBool>("brick_layers", true)->value = false;
             this->opt<ConfigOptionInt>("top_shell_layers", true)->value = 0;
             this->opt<ConfigOptionPercent>("sparse_infill_density", true)->value = 0;
         }
@@ -10117,6 +10133,7 @@ void DynamicPrintConfig::normalize_fdm_1()
         {
             this->opt<ConfigOptionInt>("wall_loops", true)->value       = 1;
             this->opt<ConfigOptionBool>("alternate_extra_wall", true)->value = false;
+            this->opt<ConfigOptionBool>("brick_layers", true)->value = false;
             this->opt<ConfigOptionInt>("top_shell_layers", true)->value = 0;
             this->opt<ConfigOptionPercent>("sparse_infill_density", true)->value = 0;
         }

@@ -6528,6 +6528,9 @@ LayerResult GCode::process_layer(
                     }
                     // ironing
                     gcode += this->extrude_infill(print,by_region_specific, true);
+                    // Brick layers: lifted walls stick up above the layer, so the nozzle
+                    // would drag across them while printing anything else on this island.
+                    gcode += this->extrude_lifted_perimeters(print, by_region_specific);
                 }
 
                 if (this->config().gcode_label_objects) {
@@ -6818,6 +6821,7 @@ std::string GCode::change_layer(coordf_t print_z)
     m_need_change_layer_lift_z = true;
 
     m_nominal_z = z;
+    m_brick_lift_z = 0.;
     m_writer.get_position().z() = z;
 
     // forget last wiping path as wiping after raising Z is pointless
@@ -7237,6 +7241,22 @@ std::string GCode::extrude_path(const ExtrusionPath& path, const std::string& de
     return gcode;
 }
 
+// Brick layers: whether any piece of the entity is printed above the layer's print Z.
+static bool has_lifted_path(const ExtrusionEntity &entity)
+{
+    const auto lifted = [](const ExtrusionPath &path) { return path.z_offset > 0.; };
+    if (const auto *path = dynamic_cast<const ExtrusionPath*>(&entity))
+        return lifted(*path);
+    if (const auto *loop = dynamic_cast<const ExtrusionLoop*>(&entity))
+        return std::any_of(loop->paths.begin(), loop->paths.end(), lifted);
+    if (const auto *multipath = dynamic_cast<const ExtrusionMultiPath*>(&entity))
+        return std::any_of(multipath->paths.begin(), multipath->paths.end(), lifted);
+    if (const auto *collection = dynamic_cast<const ExtrusionEntityCollection*>(&entity))
+        return std::any_of(collection->entities.begin(), collection->entities.end(),
+                           [](const ExtrusionEntity *child) { return has_lifted_path(*child); });
+    return false;
+}
+
 // Extrude perimeters: Decide where to put seams (hide or align seams).
 std::string GCode::extrude_perimeters(const Print &print, const std::vector<ObjectByExtruder::Island::Region> &by_region, bool is_first_layer, bool is_infill_first)
 {
@@ -7250,9 +7270,26 @@ std::string GCode::extrude_perimeters(const Print &print, const std::vector<Obje
                 : (m_config.is_infill_first == is_infill_first);
             if (!should_print) continue;
 
+            const bool defer_lifted = m_config.brick_layers.value;
             for (const ExtrusionEntity* ee : region.perimeters)
-                gcode += this->extrude_entity(*ee, "perimeter", -1., region.perimeters);
+                if (! defer_lifted || ! has_lifted_path(*ee))
+                    gcode += this->extrude_entity(*ee, "perimeter", -1., region.perimeters);
         }
+    return gcode;
+}
+
+std::string GCode::extrude_lifted_perimeters(const Print &print, const std::vector<ObjectByExtruder::Island::Region> &by_region)
+{
+    std::string gcode;
+    for (const ObjectByExtruder::Island::Region &region : by_region) {
+        const PrintRegion &print_region = print.get_print_region(&region - &by_region.front());
+        if (! region.perimeters.empty() && print_region.config().brick_layers.value) {
+            m_config.apply(print_region.config());
+            for (const ExtrusionEntity* ee : region.perimeters)
+                if (has_lifted_path(*ee))
+                    gcode += this->extrude_entity(*ee, "perimeter", -1., region.perimeters);
+        }
+    }
     return gcode;
 }
 
@@ -7478,9 +7515,14 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
 
     const ExtrusionPathSloped* sloped = dynamic_cast<const ExtrusionPathSloped*>(&path);
 
-    const auto get_sloped_z = [&sloped, this](double z_ratio) {
+    // Brick layers: lifted walls are printed above the layer's print Z.
+    const double path_z = m_nominal_z + path.z_offset;
+    if (path.z_offset > 0.)
+        m_brick_lift_z = std::max(m_brick_lift_z, path_z);
+
+    const auto get_sloped_z = [&sloped, path_z](double z_ratio) {
         const auto height = sloped->height;
-        return lerp(m_nominal_z - height, m_nominal_z, z_ratio);
+        return lerp(path_z - height, path_z, z_ratio);
     };
 
     bool slope_need_z_travel = false;
@@ -7500,6 +7542,8 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
             z =  get_sloped_z(sloped->slope_begin.z_ratio);
         } else if (path.z_contoured && !path.polyline.lines().empty()) {
             z = unscale_(path.polyline.lines().begin()->a.z()) + m_nominal_z;
+        } else if (path.z_offset > 0.) {
+            z = path_z;
         }
 
         gcode += this->travel_to(first_point, path.role(), "move to first " + description + " point", z);
@@ -7508,7 +7552,7 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
         if (!slope_need_z_travel && (_last_pos_undefined || m_need_change_layer_lift_z)) {
             const std::string z_sync_comment = _last_pos_undefined ?
                 "ensure Z matches planned layer height" : ""; // no comment for normal layer-Z lift
-            gcode += this->writer().travel_to_z(m_nominal_z, z_sync_comment, true);
+            gcode += this->writer().travel_to_z(path_z, z_sync_comment, true);
         }
         m_need_change_layer_lift_z = false;
     }
@@ -7522,8 +7566,8 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
     }
     if (!path.z_contoured && sloped == nullptr) {
         double current_z = m_writer.get_position().z();
-        if (GCodeFormatter::quantize_xyzf(current_z) != GCodeFormatter::quantize_xyzf(m_nominal_z)) {
-            gcode += this->writer().travel_to_z(m_nominal_z, "reset Z after contouring", true);
+        if (GCodeFormatter::quantize_xyzf(current_z) != GCodeFormatter::quantize_xyzf(path_z)) {
+            gcode += this->writer().travel_to_z(path_z, path.z_offset > 0. ? "lift Z for brick layers" : "reset Z after contouring", true);
         }
     }
 
@@ -8632,6 +8676,10 @@ std::string GCode::travel_to(const Point& point, ExtrusionRole role, std::string
 
     // use G1 because we rely on paths being straight (G0 may make round paths)
     if (travel.size() >= 2) {
+        // Brick layers: once lifted walls are printed on this layer, travel at their height
+        // and only go down at the destination, so the nozzle does not drag across them.
+        const double target_z = z == DBL_MAX ? m_nominal_z : z;
+        const double travel_z = m_brick_lift_z > 0. ? std::max(target_z, m_brick_lift_z) : target_z;
         // Orca: use `travel_to_xyz` to ensure we start at the correct z, in case we moved z in custom/filament change gcode
         if (false/*m_spiral_vase*/) {
             // No lazy z lift for spiral vase mode
@@ -8642,7 +8690,7 @@ std::string GCode::travel_to(const Point& point, ExtrusionRole role, std::string
             if (travel.size() == 2) {
                 // No extra movements emitted by avoid_crossing_perimeters, simply move to the end point with z change
                 const auto& dest2d = this->point_to_gcode(travel.points.back());
-                Vec3d dest3d(dest2d(0), dest2d(1), z == DBL_MAX ? m_nominal_z : z);
+                Vec3d dest3d(dest2d(0), dest2d(1), travel_z);
                 gcode += m_writer.travel_to_xyz(dest3d, comment, m_need_change_layer_lift_z);
                 m_need_change_layer_lift_z = false;
             } else {
@@ -8652,13 +8700,13 @@ std::string GCode::travel_to(const Point& point, ExtrusionRole role, std::string
                     if (i == 1) {
                         // Lift to normal z at beginning
                         Vec2d dest2d = this->point_to_gcode(travel.points[i]);
-                        Vec3d dest3d(dest2d(0), dest2d(1), m_nominal_z);
+                        Vec3d dest3d(dest2d(0), dest2d(1), std::max(m_nominal_z, m_brick_lift_z));
                         gcode += m_writer.travel_to_xyz(dest3d, comment, m_need_change_layer_lift_z);
                         m_need_change_layer_lift_z = false;
-                    } else if (z != DBL_MAX && i == travel.size() - 1) {
+                    } else if ((z != DBL_MAX || m_brick_lift_z > 0.) && i == travel.size() - 1) {
                         // Apply z_ratio for the very last point
                         Vec2d dest2d = this->point_to_gcode(travel.points[i]);
-                        Vec3d dest3d(dest2d(0), dest2d(1), z);
+                        Vec3d dest3d(dest2d(0), dest2d(1), travel_z);
                         gcode += m_writer.travel_to_xyz(dest3d, comment);
                     } else {
                         // For all points in between, no z change
@@ -8667,6 +8715,8 @@ std::string GCode::travel_to(const Point& point, ExtrusionRole role, std::string
                 }
             }
         }
+        if (travel_z > target_z)
+            gcode += m_writer.travel_to_z(target_z, "lower Z after travelling above lifted walls");
         this->set_last_pos(travel.points.back());
     }
 

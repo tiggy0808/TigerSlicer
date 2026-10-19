@@ -46,6 +46,9 @@ private:
     struct Item
     {
         float z{ 0.0f };
+        // TigerSlicer: z so far comes only from inner walls. Brick layers print some
+        // inner walls above the layer, so any other extrusion sets the layer's z.
+        bool z_from_inner_wall{ true };
         Range range;
         std::array<float, TIME_MODES_COUNT> times{ 0.0f, 0.0f };
         bool contains_colorprint_options{ false };

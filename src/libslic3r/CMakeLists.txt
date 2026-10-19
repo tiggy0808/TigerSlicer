@@ -213,6 +213,8 @@ set(lisbslic3r_sources    # --- TigerSlicer ------------------------------------
     BlacklistedLibraryCheck.hpp
     BoundingBox.cpp
     BoundingBox.hpp
+    BrickLayers.cpp
+    BrickLayers.hpp
     BridgeDetector.cpp
     BridgeDetector.hpp
     Brim.cpp

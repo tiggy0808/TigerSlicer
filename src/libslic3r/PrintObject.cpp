@@ -25,6 +25,7 @@
 #include "Format/STL.hpp"
 #include "format.hpp"
 #include "AABBTreeLines.hpp"
+#include "BrickLayers.hpp"
 
 #include <cstddef>
 #include <float.h>
@@ -560,6 +561,11 @@ void PrintObject::make_perimeters()
     // TigerSlicer: once perimeters exist, merge compatible walls for tools
     // running their own layer heights.
     this->combine_perimeters_for_independent_tools();
+    m_print->throw_if_canceled();
+
+    // TigerSlicer: lift every other inner wall by half a layer. This needs the
+    // walls of the layers above and below, so it runs once all walls exist.
+    apply_brick_layers(*this);
     m_print->throw_if_canceled();
 
     this->set_done(posPerimeters);
@@ -1357,6 +1363,7 @@ bool PrintObject::invalidate_state_by_config_options(
         } else if (
                opt_key == "wall_loops"
             || opt_key == "alternate_extra_wall"
+            || opt_key == "brick_layers"
             || opt_key == "top_one_wall_type"
             || opt_key == "min_width_top_surface"
             || opt_key == "only_one_wall_first_layer"

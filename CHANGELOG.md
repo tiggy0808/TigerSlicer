@@ -17,6 +17,10 @@ Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOP
 - **Hollow + drain holes** for resin, also as a button in the Supports workspace. It hollows every
   model thick enough for the wall and drills two drain holes at its bottom, nearest the build plate,
   so resin drains and no suction cup forms. Models that already have drain holes keep theirs.
+- **Brick layers** for filament prints, in the process settings under Strength → Walls (off by
+  default). Every other inner wall is printed half a layer higher, like bricks in a wall, so the
+  walls lock into each other and parts are stronger between layers. The outer wall stays where it
+  is, so the surface looks the same. Works best with 3 or more walls.
 
 **Changed**
 - The last OrcaSlicer branding is gone:

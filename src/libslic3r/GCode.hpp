@@ -520,6 +520,8 @@ private:
 		const size_t                     				 single_object_instance_idx);
 
     std::string     extrude_perimeters(const Print& print, const std::vector<ObjectByExtruder::Island::Region>& by_region, bool is_first_layer, bool is_infill_first);
+    // Brick layers: the walls lifted above the layer, printed after everything else on their island.
+    std::string     extrude_lifted_perimeters(const Print& print, const std::vector<ObjectByExtruder::Island::Region>& by_region);
     std::string     extrude_infill(const Print& print, const std::vector<ObjectByExtruder::Island::Region>& by_region, bool ironing);
     std::string     extrude_support(const ExtrusionEntityCollection& support_fills, const ExtrusionRole support_extrusion_role);
 
@@ -747,6 +749,9 @@ private:
     Print* m_curr_print = nullptr;
     unsigned int m_toolchange_count;
     coordf_t m_nominal_z;
+    // Brick layers: highest Z of a lifted wall printed on the current layer, 0 if none.
+    // Travel moves on the layer stay at least this high so they do not drag across it.
+    coordf_t m_brick_lift_z = 0.;
     bool m_need_change_layer_lift_z = false;
     int m_start_gcode_filament = -1;
     std::string m_filament_instances_code;

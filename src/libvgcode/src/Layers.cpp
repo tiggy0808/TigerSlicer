@@ -17,22 +17,34 @@ static bool is_colorprint_option(const PathVertex& v)
     return v.type == EMoveType::PausePrint || v.type == EMoveType::CustomGCode;
 }
 
+// TigerSlicer: the layer's z is the z of its last extrusion, but inner walls only
+// count until something else is extruded. Brick layers print every other inner
+// wall half a layer higher, last on the layer, and must not move the layer's z.
+static void update_layer_z(float& z, bool& z_from_inner_wall, const PathVertex& vertex)
+{
+    if (vertex.type != EMoveType::Extrude || vertex.role == EGCodeExtrusionRole::Custom)
+        return;
+    const bool is_inner_wall = vertex.role == EGCodeExtrusionRole::Perimeter;
+    if (is_inner_wall && !z_from_inner_wall)
+        return;
+    z = vertex.position[2];
+    z_from_inner_wall = is_inner_wall;
+}
+
 void Layers::update(const PathVertex& vertex, uint32_t vertex_id)
 {
     if (m_items.empty() || vertex.layer_id == m_items.size()) {
         // this code assumes that gcode paths are sent sequentially, one layer after the other
         assert(vertex.layer_id == static_cast<uint32_t>(m_items.size()));
         Item& item = m_items.emplace_back(Item());
-        if (vertex.type == EMoveType::Extrude && vertex.role != EGCodeExtrusionRole::Custom)
-            item.z = vertex.position[2];
+        update_layer_z(item.z, item.z_from_inner_wall, vertex);
         item.range.set(vertex_id, vertex_id);
         item.times = vertex.times;
         item.contains_colorprint_options |= is_colorprint_option(vertex);
     }
     else {
         Item& item = m_items.back();
-        if (vertex.type == EMoveType::Extrude && vertex.role != EGCodeExtrusionRole::Custom && item.z != vertex.position[2])
-            item.z = vertex.position[2];
+        update_layer_z(item.z, item.z_from_inner_wall, vertex);
         item.range.set_max(vertex_id);
         for (size_t i = 0; i < TIME_MODES_COUNT; ++i) {
             item.times[i] += vertex.times[i];

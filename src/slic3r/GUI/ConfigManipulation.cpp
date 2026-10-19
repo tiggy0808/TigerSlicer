@@ -960,6 +960,11 @@ void ConfigManipulation::toggle_print_fff_options(DynamicPrintConfig *config, in
     for (auto el : {"zaa_minimize_perimeter_height", "zaa_min_z", "zaa_dont_alternate_fill_direction", "ironing_expansion"})
         toggle_line(el, has_zaa);
 
+    // Brick layers lift every other inner wall, so they need an inner wall to lift
+    // and cannot be combined with a vase or with Z contouring.
+    toggle_field("brick_layers", !config->opt_bool("spiral_mode") && !has_zaa &&
+                                 (config->opt_int("wall_loops") >= 2 || config->opt_bool("alternate_extra_wall")));
+
     bool have_sequential_printing = (config->opt_enum<PrintSequence>("print_sequence") == PrintSequence::ByObject);
     // for (auto el : { "extruder_clearance_radius", "extruder_clearance_height_to_rod", "extruder_clearance_height_to_lid" })
     //     toggle_field(el, have_sequential_printing);
