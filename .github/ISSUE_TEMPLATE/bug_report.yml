@@ -7,7 +7,7 @@ body:
     attributes:
       label: TigerSlicer version
       description: Shown in Help → About TigerSlicer.
-      placeholder: e.g. 0.0.1
+      placeholder: e.g. 0.0.7
     validations:
       required: true
   - type: dropdown
@@ -17,7 +17,16 @@ body:
       options:
         - Windows
         - macOS
-        - Linux
+        - Linux (built from source)
+    validations:
+      required: true
+  - type: dropdown
+    id: printer-type
+    attributes:
+      label: Printer type
+      options:
+        - Filament (FDM)
+        - Resin (MSLA)
     validations:
       required: true
   - type: input

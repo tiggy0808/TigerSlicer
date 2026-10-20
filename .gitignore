@@ -49,3 +49,5 @@ internal_docs/
 # Python bytecode
 __pycache__/
 *.pyc
+# Local AI assistant settings and worktrees
+.claude/

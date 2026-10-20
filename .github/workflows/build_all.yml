@@ -1,8 +1,8 @@
 name: Build all
 
 on:
-  # Manual only: TigerSlicer releases are built locally, and scheduled builds
-  # of every platform use up the private repository's Actions minutes.
+  # Manual only: TigerSlicer releases are built locally. Run this by hand to check
+  # that every platform still builds.
   workflow_dispatch: # allows for manual dispatch
     inputs:
       build-deps-only:
@@ -255,7 +255,8 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: OrcaSlicer-Linux-flatpak_${{ env.ver }}_${{ matrix.variant.arch }}.flatpak
-        path: '/__w/OrcaSlicer/OrcaSlicer/OrcaSlicer-Linux-flatpak_${{ env.ver }}_${{ matrix.variant.arch }}.flatpak'
+        # Relative to the workspace, which inside the container is /__w/<repo>/<repo>.
+        path: 'OrcaSlicer-Linux-flatpak_${{ env.ver }}_${{ matrix.variant.arch }}.flatpak'
     - name: Deploy Flatpak to nightly release
       if: github.repository == 'OrcaSlicer/OrcaSlicer' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/belt-printer')
       uses: WebFreak001/deploy-nightly@v3.2.0

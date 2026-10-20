@@ -1,1 +1,8 @@
 blank_issues_enabled: true
+contact_links:
+  - name: Download the latest version
+    url: https://github.com/tiggy0808/TigerSlicer/releases/latest
+    about: Check that the problem still happens in the newest release.
+  - name: What's new
+    url: https://github.com/tiggy0808/TigerSlicer/blob/main/CHANGELOG.md
+    about: Changes and known issues in every version.

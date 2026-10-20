@@ -8,6 +8,9 @@ on:
        - 'localization/**'
        - ".github/workflows/check_locale.yml"
 
+permissions:
+  contents: read
+
 jobs:
   check_translation:
     name: Check translation
