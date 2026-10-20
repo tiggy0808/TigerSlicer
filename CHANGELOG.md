@@ -3,7 +3,7 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
-## Unreleased
+## 0.0.7 (2026-10-20)
 
 **New**
 - **Auto slice.** A button left of "Slice plate" with a menu of what the print is for.

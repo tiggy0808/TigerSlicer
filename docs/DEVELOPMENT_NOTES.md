@@ -7,10 +7,28 @@ OrcaSlicer.
 
 ---
 
-## Unreleased
+## 0.0.7 (2026-10-20)
 
 Theme: Auto slice, automatic hollowing for resin, brick layers and fin supports for filament, and the
 last OrcaSlicer branding.
+
+Commits, oldest first (all on `main`; the release commit follows them):
+
+| Commit | Subject |
+|---|---|
+| `f84322c33` | fix(filaments): list the filament library in table order |
+| `b072ff5fd` | fix(resin): stop copying the resin bundle into the data folder |
+| `d426fe99c` | docs: development notes for the filament order and resin log fixes |
+| `d121c7555` | feat(branding): remove the remaining OrcaSlicer branding |
+| `19dd9ccd0` | fix(resin): arranging with a resin printer crashed |
+| `49d31da93` | fix(resin): name the support options in the Supports workspace |
+| `f9beec286` | feat: Auto slice, and automatic hollowing and drain holes for resin |
+| `a25cea376` | docs: changelog and development notes for Auto slice, hollowing and the branding cleanup |
+| `6d29d6472` | feat(branding): remove OrcaSlicer's Orca Arena test printer and unused Orca assets |
+| `f9a0f9592` | docs: note the Orca Arena removal |
+| `ad085f617` | feat: brick layers for filament prints |
+| `ae504d6a9` | feat(resin): real printer photos, a shorter list, and filament/resin tabs |
+| `3cb2bf668` | feat: fin supports, with optional fin holes |
 
 ### Auto slice
 - `libslic3r/AutoSlice.{hpp,cpp}` holds the choices, so they are tested without the GUI
@@ -335,6 +353,15 @@ last OrcaSlicer branding.
     - The preview slider reads 11.80 mm on layer 59, while the G-code viewer shows that layer's
       inner walls at Z11.9.
     - No crash log.
+
+### Verification (macOS)
+- Release build on macOS 15 (Apple Silicon) from `3cb2bf668`, no errors. `libslic3r_tests`: 1,040
+  cases pass. `fff_print_tests`: 153 cases pass in random order, including the 25 `[Fins]` and
+  `[BrickLayers]` cases.
+- Background launches with throwaway data folders: a Generic Klipper printer (selects PLA), an
+  Elegoo Mars 3, and a copy of a real 0.0.6 data folder (its printer and user filament load). No
+  new errors, no crash reports. The new UI (Auto slice, fin and brick settings, the printer tabs) was
+  not clicked through on macOS; the Windows checks above cover the same shared code.
 
 ## 0.0.6 (2026-10-13)
 
