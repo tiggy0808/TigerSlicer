@@ -353,6 +353,23 @@ Commits, oldest first (all on `main`; the release commit follows them):
     - The preview slider reads 11.80 mm on layer 59, while the G-code viewer shows that layer's
       inner walls at Z11.9.
     - No crash log.
+- 0.0.7 release (2026-10-20):
+  - Clean release build of `9a90183e0` (MSVC 17.14, `build_release_vs2022.bat slicer`, old
+    `build\OrcaSlicer` deleted first) with no errors. The app logs "Version 0.0.7 build 9a90183e0a".
+  - Packaged as `TigerSlicer-0.0.7-win64-Setup.exe` (230,547,456 bytes) and
+    `TigerSlicer-0.0.7-win64.zip` (236,981,052 bytes).
+  - The Setup.exe test install matches the build: 9,326 files, identical `TigerSlicer.dll`.
+- Smoke test of that install with an empty `--datadir`:
+  - Wizard with only Klipper: the printer page has the Filament printers (386) and Resin printers
+    (38) tabs. Finish opens the Klipper printer with the TigerSlicer bed logo.
+  - 20 mm cube, Auto slice → Fast: 0.28 mm Extra Draft @MyKlipper, "No supports needed", 72 layers,
+    7 m 25 s.
+  - Select/Remove printers → Resin printers, search "mars 3" → Elegoo Mars 3. Arrange puts the cube
+    on its bed without a crash.
+  - Hollow + drain holes on, then Auto slice → Medium supports: "Hollowed 1 object(s) and added drain
+    holes at their bottom". 484 layers, 5.93 ml (the layer image is a ring), 1 h 28 min.
+  - Quit without saving: normal exit, no crash log. The only log errors are PartPlate's "Unable to
+    create exclude triangles" and a settings-page selection message after switching printers.
 
 ### Verification (macOS)
 - Release build on macOS 15 (Apple Silicon) from `3cb2bf668`, no errors. `libslic3r_tests`: 1,040
