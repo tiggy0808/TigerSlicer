@@ -9,8 +9,8 @@ OrcaSlicer.
 
 ## Unreleased
 
-Theme: Auto slice, automatic hollowing for resin, brick layers for filament, and the last OrcaSlicer
-branding.
+Theme: Auto slice, automatic hollowing for resin, brick layers and fin supports for filament, and the
+last OrcaSlicer branding.
 
 ### Auto slice
 - `libslic3r/AutoSlice.{hpp,cpp}` holds the choices, so they are tested without the GUI
@@ -248,6 +248,59 @@ branding.
     gap.
   - `{layer_z}` in tool-change or custom G-code within a layer comes from the writer's Z, so after a
     lifted wall it reads print Z + h/2. Z-hop already has the same issue.
+
+### Fin supports
+- Ported from the open upstream pull request OrcaSlicer/OrcaSlicer#15839 by abehrman ("Add fin
+  supports with interface material and automatic fallback", head `93e897eb2`). Its design follows
+  Slant3D's designed-in support fins and Matthew Trahan's Support Fins (MIT,
+  github.com/gittrahan/support-fins). Upstream had not built or run that port; TigerSlicer builds it
+  and runs its tests.
+- `support_type` gains `fins` (`stFins`, appended after `tree(manual)`).
+  `Support/SupportFins.{hpp,cpp}` (`generate_fin_support()`) builds the fins from the object's shape,
+  not from overhang detection:
+  - The fin region is the area under the object that is clear of it down to the bed.
+  - It is cut into parallel strips (fins), fixed in XY so each fin is one wall, running across the
+    region's long axis. There is a 1 mm foot, tines every `support_fin_tine_spacing` (packed near the
+    bed), optional cross fins and an optional interface deck.
+  - The fins go through the common support toolpath generator as base layers, filled concentric at
+    full density.
+- Supplemental supports (`support_fin_fallback`, default tree): `_generate_support_material()` runs
+  the tree or normal generator with the fin columns reserved as blockers, then merges both sets of
+  layers.
+- Conflicts with the TigerSlicer tree were only context (upstream has belt-printer code and a newer
+  test file): CMakeLists, ModelArrange (`stFins` gets the normal support's 6 mm arrange margin),
+  `Print.hpp` (reserved columns), the preset key list, two hunks in `PrintObject.cpp` and
+  `SupportCommon.cpp`. The upstream tests are appended to `test_support_material.cpp`, with a local
+  `size_flush_to_nozzles()` (upstream adds it to `test_helpers`) and without the `SupportMaterial:`
+  prefix in names.
+- Fixed on top of the upstream code, after review:
+  - Merging fin and supplemental layers at the same height appended one layer's collection into the
+    other as a single nested entity of mixed role, which the G-code's support and interface passes
+    skip. With a separate interface filament, the fins (or the tree branches) of every shared height
+    were not printed. The paths themselves are now moved.
+  - The merge deletes nothing until it has finished, and hands every layer back on an exception.
+    A stable sort keeps the supplemental layer at a shared height.
+  - The reserved fin columns are cleared when fin generation throws (cancel).
+  - Fins with the tree fallback run organic tree support, so the two organic-only checks in
+    `Print::validate` (independent tool layer heights, variable layer height) now cover them.
+  - A fin pitch is never shorter than the fin (a negative spacing in a loaded preset looped forever).
+  - `keep_lean_side()` returns when there are no columns. The shaping loop checks for cancel.
+- TigerSlicer addition, `support_fin_holes` (bool, default off, advanced): a diamond lattice cut
+  through the main fins (not cross fins or tines).
+  - The lattice lives in each fin's own plane: struts along u + z = k·8 mm and u − z = k·8 mm (u
+    along the fin), 1.6 mm wide, so the holes line up from layer to layer.
+  - `hole_intervals()` gives the open stretches of one 8 mm period at a height. `fin_hole_bands()`
+    turns them into bands across the fins.
+  - A 2.5 mm frame stays solid: the foot and 2.5 mm above it, both ends of every fin (the fin region
+    eroded by 2.5 mm), and the top edge (no holes within 2.5 mm plus the top gap and any deck under
+    the object).
+  - Cross fins stay whole where they cross a hole. Holes narrower than two lines are not cut (no
+    hairline slots near a diamond's tip or the frame). A fin cut off by `support_fin_height` keeps a
+    solid top too.
+  - Why off by default: a solid fin layer is one long loop. With holes it becomes several short
+    pieces with a travel (and often a retraction) over each hole, so the head rarely reaches speed.
+    Estimated for a 20 mm fin layer, half open: about 3× slower on a 500 mm/s² printer and 2× on a
+    10,000 mm/s² one, for half the plastic.
 
 ### Verification (Windows)
 - Release build (MSVC 17.14). `libslic3r_tests`: all pass, including 9 new `[AutoSlice]` cases and

@@ -559,6 +559,8 @@ set(lisbslic3r_sources    # --- TigerSlicer ------------------------------------
     Slicing.hpp
     Support/SupportCommon.cpp
     Support/SupportCommon.hpp
+    Support/SupportFins.cpp
+    Support/SupportFins.hpp
     Support/SupportLayer.hpp
     Support/SupportMaterial.cpp
     Support/SupportMaterial.hpp

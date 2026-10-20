@@ -21,6 +21,13 @@ Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOP
   default). Every other inner wall is printed half a layer higher, like bricks in a wall, so the
   walls lock into each other and parts are stronger between layers. The outer wall stays where it
   is, so the surface looks the same. Works best with 3 or more walls.
+- **Fin supports**, a third support type next to Normal and Tree. For parts printed tilted (on an
+  edge or a corner, which makes them stronger), thin walls stand on the bed under the part and
+  hold it up, with small "tines" every few millimetres that fuse into the part and snap off
+  afterwards. Tree supports fill in automatically for any overhang the fins can't reach. Settings
+  cover fin spacing, thickness, tines, height, cross bracing and a top deck. **Fin holes** (off by
+  default) cuts a diamond lattice through the middle of each fin to save filament; it usually
+  prints a little slower.
 
 **Changed**
 - The last OrcaSlicer branding is gone:

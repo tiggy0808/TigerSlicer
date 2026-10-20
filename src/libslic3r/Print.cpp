@@ -52,6 +52,12 @@ using namespace nlohmann;
 
 namespace Slic3r {
 
+// Fin support with tree supplemental supports runs organic tree support beside the fins.
+static bool fins_with_tree_fallback(const PrintObjectConfig& config)
+{
+    return config.support_type.value == stFins && config.support_fin_fallback.value == fsfTree;
+}
+
 Print::SlicingPipelineHookFn Print::s_slicing_pipeline_hook_fn = nullptr;
 
 template class PrintState<PrintStep, psCount>;
@@ -1350,7 +1356,7 @@ static std::string tigerslicer_validate(const Print &print)
                               object->model_object()->name);
             if (object->has_support()) {
                 if (is_tree(object->config().support_type.value) ||
-                    object->config().support_style.value == smsTreeOrganic)
+                    object->config().support_style.value == smsTreeOrganic || fins_with_tree_fallback(object->config()))
                     return format(_u8L("Independent tool layer heights currently support grid and snug supports only; tree and organic supports are not yet safe on object %1%."),
                                   object->model_object()->name);
                 if (object->config().support_filament.value <= 0 ||
@@ -1612,9 +1618,11 @@ StringObjectException Print::validate(std::vector<StringObjectException> *warnin
     // Custom layering is not allowed for tree supports as of now.
     for (size_t print_object_idx = 0; print_object_idx < m_objects.size(); ++ print_object_idx)
         if (const PrintObject &print_object = *m_objects[print_object_idx];
-            print_object.has_support_material() && is_tree(print_object.config().support_type.value) && (print_object.config().support_style.value == smsTreeOrganic || 
+            print_object.has_support_material() &&
+            ((is_tree(print_object.config().support_type.value) && (print_object.config().support_style.value == smsTreeOrganic ||
                 // Orca: use organic as default
-                print_object.config().support_style.value == smsDefault) &&
+                print_object.config().support_style.value == smsDefault)) ||
+             fins_with_tree_fallback(print_object.config())) &&
             print_object.model_object()->has_custom_layering()) {
             if (const std::vector<coordf_t> &layers = layer_height_profile(print_object_idx); ! layers.empty())
                 if (! check_object_layers_fixed(print_object.slicing_parameters(), layers))
@@ -1784,8 +1792,16 @@ StringObjectException Print::validate(std::vector<StringObjectException> *warnin
 
                 // Prusa: Fixing crashes with invalid tip diameter or branch diameter
                 // https://github.com/prusa3d/PrusaSlicer/commit/96b3ae85013ac363cd1c3e98ec6b7938aeacf46d
-                if (is_tree(object->config().support_type.value)) {
-                    if (object->config().support_style == smsTreeOrganic ||
+                // Orca: fins stand on the bed; there is no raft path for them.
+                if (object->config().enable_support && object->config().support_type.value == stFins &&
+                    object->config().raft_layers.value > 0)
+                    return {L("Fin support cannot be combined with a raft. Set raft layers to 0 or choose another support type."), object,
+                            "raft_layers"};
+
+                const bool fin_tree_fallback = object->config().support_type.value == stFins &&
+                                               object->config().support_fin_fallback.value == fsfTree;
+                if (is_tree(object->config().support_type.value) || fin_tree_fallback) {
+                    if (fin_tree_fallback || object->config().support_style == smsTreeOrganic ||
                         // Orca: use organic as default
                         object->config().support_style == smsDefault) {
 
@@ -1809,6 +1825,8 @@ StringObjectException Print::validate(std::vector<StringObjectException> *warnin
                         if (object->config().tree_support_branch_diameter_organic < object->config().tree_support_tip_diameter)
                             return { L("Organic support branch diameter must not be smaller than support tree tip diameter."), object, "tree_support_branch_diameter_organic" };
                     }
+                } else if (object->config().support_type.value == stFins) {
+                    // Fins do not use the base pattern.
                 } else if (object->config().support_base_pattern == SupportMaterialPattern::smpLightning) {
                     // Orca: check if the Lightning base pattern selected
                     warn(L("The Lightning base pattern is not supported by this support type; Rectilinear will be used instead."), "support_base_pattern");
