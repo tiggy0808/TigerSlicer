@@ -59,6 +59,7 @@ namespace auto_slice {
 enum class Purpose;
 enum class SupportLevel;
 } // namespace auto_slice
+namespace calib_builder { struct Setup; }
 
 using ModelInstancePtrs = std::vector<ModelInstance*>;
 
@@ -344,16 +345,8 @@ public:
     void reload_print();
 
     // SoftFever
-    void calib_pa(const Calib_Params& params);
-    //ORCA: Add pattern parameter to calib_flowrate
-    void calib_flowrate(bool is_linear, int pass, InfillPattern pattern = ipArchimedeanChords);
-    void calib_temp(const Calib_Params& params);
-    void calib_max_vol_speed(const Calib_Params& params);
-    void calib_retraction(const Calib_Params& params);
-    void calib_VFA(const Calib_Params& params);
-    void calib_input_shaping_freq(const Calib_Params& params);
-    void calib_input_shaping_damp(const Calib_Params& params);
-    void Calib_Cornering(const Calib_Params& params);
+    // TigerSlicer: sets up the plate and profiles for a calibration builder print.
+    void calib_builder(const calib_builder::Setup &setup);
 
     BuildVolume_Type get_build_volume_type() const;
 
@@ -1024,10 +1017,6 @@ private:
     // BBS: add project slice related functions
     int start_next_slice();
 
-    void _calib_pa_pattern(const Calib_Params& params);
-    void _calib_pa_pattern_gen_gcode();
-    void _calib_pa_tower(const Calib_Params& params);
-    void _calib_pa_select_added_objects();
 
     void cut_horizontal(size_t obj_idx, size_t instance_idx, double z, ModelObjectCutAttributes attributes);
 

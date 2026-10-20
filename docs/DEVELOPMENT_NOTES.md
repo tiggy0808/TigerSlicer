@@ -7,6 +7,123 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 
 ---
 
+## Unreleased
+
+### Independent tool layer heights and colour mixing, easier to find
+- The ITLH options already existed in `PrintConfig.cpp` (upstream), but no settings page showed them.
+  `Tab.cpp` now does:
+  - `independent_tool_layer_heights` in Process → Quality → Layer height.
+  - `multi_rate_layer_height_capable` in Printer → Basic information → Advanced.
+  - An "Independent layer height" group on each extruder page: `extruder_preferred_layer_height`,
+    `extruder_layer_height_ratio` and `extruder_independent_{walls,infill,solid_infill,support}`,
+    added as `(key, "", extruder_idx)`.
+- These options, and the permission lambda, move from `comExpert` to `comAdvanced`.
+- Full Spectrum colour mixing was only in the View menu. The sidebar's Filament header now has a
+  "Color mixing" button (`m_color_mixing_btn`, `Plater.cpp`). It calls
+  `Plater::open_full_spectrum_dialog()`. `Sidebar::show_SEMM_buttons()` shows it when there are two
+  or more filament combos. It is also excluded from the header's click-to-collapse area, like the
+  other header buttons.
+
+### Calibration builder
+- The menu calibrations are replaced by one builder. Removed:
+  - `GUI/calib_dlg.{hpp,cpp}`.
+  - Plater's `calib_pa`, `_calib_pa_pattern*`, `_calib_pa_tower`, `calib_flowrate`, `calib_temp`,
+    `calib_max_vol_speed`, `calib_retraction`, `calib_VFA`, `calib_input_shaping_{freq,damp}` and
+    `Calib_Cornering`. Also the PA-pattern regeneration in `reslice()`, `set_config_values` and
+    `has_junction_deviation`.
+  - The models only those used: `calib/cornering/SCV-V2.drc`, `input_shaping/*.drc`,
+    `pressure_advance/tower_with_seam.drc`, `temperature_tower/temperature_tower.drc`,
+    `filament_flow/Orca-LinearFlow*.3mf` and `pass1.3mf`.
+- Kept on purpose: the Bambu device Calibration tab (`CalibUtils`, `CalibrationWizard*`). It still
+  uses every old `CalibMode` and the per-layer cases in `GCode::process_layer`, plus the models
+  `flowrate-test-pass{1,2}.3mf`, `auto_pa_line_*.3mf`, `pa_pattern.3mf`,
+  `pressure_advance_test.drc`, `retraction_tower.drc`, `vfa.drc` and `SpeedTestStructure.drc`.
+- `libslic3r/CalibrationBuilder.{hpp,cpp}` (`Slic3r::calib_builder`) has no GUI, so it is tested
+  directly:
+  - `Setting`: temperature, PA, retraction length and speed, flow ratio, print speed, acceleration,
+    jerk, junction deviation, and input shaping frequency and damping. New settings go at the end
+    of the enum (`Calib_Params` stores it as an int); `settings()` sets the dialog's order.
+  - `info()`: each setting's label, unit, decimals, default range and limits, and whether a grid
+    is allowed. Grids are allowed for flow ratio, print speed and acceleration only, because those
+    are region or object options; the rest are global and need a tower. The lowest accepted values
+    are ones the writer sends: `set_jerk_xy` skips jerk under 0.01, and `set_input_shaping` skips
+    a frequency or damping of 0.
+  - `sweep()` is inclusive, works in either direction, and allows at most 40 values. It counts the
+    steps as a double first, so a tiny step over a huge range is refused instead of wrapping.
+    `band_at(z, band, count)` picks the band.
+  - `fits_decimals()`: the dialog refuses a from, to or step with more decimals than the setting
+    shows, so the label on the model is the value sent (a 2.5 °C step would print 193 as 192).
+  - `printer_problem()`: jerk and junction deviation are exclusive. Marlin 2 with
+    `machine_max_junction_deviation` above 0 ignores M205 X/Y, and `set_junction_deviation` sends
+    nothing on other firmware. Input shaping needs Klipper, RRF or Marlin 2, because
+    `set_input_shaping` throws on the others.
+  - `make_tower()`: 20×20 mm blocks with a groove between bands, and the value as raised
+    seven-segment digits on the −Y face. `make_tile()`: a 22×22×4 mm tile with the value on top.
+  - `object_overrides()`: per-object options for flow, speed and acceleration.
+  - `prepare_profiles()`: per-setting preset changes. For example, PA turns pressure advance on and
+    adaptive PA off. Speed raises the volumetric and machine speed limits to the largest value.
+    Acceleration raises the machine acceleration limits. Jerk and input shaping use the
+    ringing-tower profile (vase mode, one wall).
+  - `Setup` round-trips through JSON for the dialog's presets.
+- Towers use the new `CalibMode::Calib_Builder_Tower`. `Calib_Params` gains `builder_setting`,
+  `builder_band_height`, `builder_values` and `builder_object`, the tower's `ObjectID`.
+  `GCode::apply_calibration_band()` runs after the second-layer block of `process_layer`:
+  - It does nothing unless a `PrintObject` has that model object (`Print::apply` copies objects
+    with their IDs). Only `load_files` resets the calibration mode. Without this check, a new
+    project with a primitive or a gallery shape kept the old tower's temperature changes.
+  - Bands count from the tower's bottom: `z - slicing_parameters().object_print_z_min`, so a raft
+    does not shift them.
+  - Flow, speed and acceleration go into `m_calib_config` on every layer. `_extrude` applies them,
+    as the old flow and VFA tests did. They are set key by key, because `m_calib_config` has no
+    definitions, so `apply()` throws.
+  - The other settings send one command when a band starts: `set_temperature`,
+    `set_pressure_advance`, the retraction length or speed in `m_writer.config`, `set_jerk_xy`,
+    `set_junction_deviation`, or `set_input_shaping`. On Klipper, the input shaping tower also
+    sends `MINIMUM_CRUISE_RATIO=0` once.
+  - `m_calib_builder_band` is reset with `m_calib_config`.
+- Grids add one tile per value (or the user's model). Each copy is named after its value and gets
+  `object_overrides()` in its object config, then the plate is arranged. No calibration mode is set.
+- `GUI/CalibrationBuilderDialog.{hpp,cpp}` collects the setup:
+  - setting, from/to/step (with the value count, or why the printer cannot run the test);
+  - tower or grid, and the band height (4 to 30 mm; lower leaves no gap between the digits'
+    strokes);
+  - built-in or own model, and an optional layer height (0.01 to 2 mm) and print speed.
+  - Ranges are checked as "inside", so NaN fails them.
+  - Presets are JSON in the app config section `calibration_builder`.
+  - It returns `wxID_OK` and `setup()`. MainFrame then calls `Plater::calib_builder()`, outside the
+    dialog's event handler.
+- `Plater::calib_builder()`, FFF printers only:
+  - Reads the user's model first (STL, 3MF or OBJ, through `Model::read_from_file`, the first
+    object of the file). A file that cannot be read shows an error and changes nothing.
+  - Builds the objects in memory, a generated mesh or a copy of the user's object, and sets their
+    config there: the tower's brim, or each grid copy's `object_overrides()`.
+  - Only then starts a new project and adds them with `load_model_objects()`.
+  - Found in the GUI test: the first version wrote the overrides after `add_model()`. By then
+    `TabPrintModel` held a copy of the selected (last) object's config without them, and the last
+    flow ratio tile printed at 1.0.
+  - Then edits the selected presets.
+  - Shows the band legend as a notification. If the user's own model is shorter than all the
+    bands, the notification says so.
+  - The edited presets stay edited, as with OrcaSlicer's calibrations. The next new project asks
+    whether to keep or discard them.
+- Both Calibration menus (top bar and macOS) now have one item, "Calibration builder...". It is
+  disabled for resin printers. The hint in `hints.ini` is rewritten.
+- Top bar fix (Windows and Linux): Undo, Redo and Calibration are enabled by the page change
+  handler, on Prepare only. With no Home tab, the app starts on Prepare and no page change
+  fires, so all three stayed disabled until the user switched tabs. `MainFrame::select_tab()`
+  now sets them for the page it leaves selected.
+- Tests, all tagged `[CalibrationBuilder]`:
+  - `tests/libslic3r/test_calibration_builder.cpp`: sweep, decimals, printer checks, bands, meshes,
+    overrides, profiles, JSON.
+  - `tests/fff_print/test_calibration_builder.cpp`: sliced towers for temperature, PA, retraction,
+    flow, speed, acceleration, square corner velocity, junction deviation and input shaper. Also
+    two grid copies with their own flow ratio, a tower on a raft, no change without a tower, and
+    none once the tower is gone. The speed and acceleration checks follow the
+  feedrate and `ACCEL` in force at each extrusion, because Orca often sets F on a `G1 F` line of
+  its own and travels use their own acceleration.
+
+---
+
 ## 0.0.7 (2026-10-20)
 
 Theme: Auto slice, automatic hollowing for resin, brick layers and fin supports for filament, and the

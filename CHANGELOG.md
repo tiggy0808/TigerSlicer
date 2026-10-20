@@ -3,6 +3,35 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
+## Unreleased
+
+**New**
+- **Calibration builder** (Calibration menu). One tool replaces the separate calibration tests.
+  Pick what to test: temperature, pressure advance, retraction length or speed, flow ratio, print
+  speed, acceleration, jerk (square corner velocity or junction deviation), or input shaping
+  frequency or damping. Then pick the range and step.
+  - **Tower:** one print in bands, each band at the next value. The built-in tower has the value
+    raised on every band, and you can use your own model instead.
+  - **Grid:** a labelled copy for each value (flow ratio, print speed and acceleration), all
+    printed in one go.
+  - Optionally set the layer height and print speed used for the test. Save a setup as a preset to
+    run it again later.
+- **Color mixing** button in the sidebar's Filament header (with two or more filaments). It opens
+  Full Spectrum colour mixing, which was only in the View menu before.
+
+**Changed**
+- **Independent tool layer heights** can now be found and changed: Process → Quality → Layer height,
+  Printer → Basic information → Advanced, and an "Independent layer height" group on each
+  extruder's page. These settings show in Advanced mode, not just Expert.
+- The old calibration dialogs are removed: the pressure advance line, pattern and tower tests,
+  the flow rate passes, the temperature tower, max volumetric speed, retraction, VFA, input shaping
+  and cornering. The calibration builder covers each of these.
+  The Calibration tab for Bambu Lab printers is unchanged.
+
+**Fixed**
+- Undo, Redo and the Calibration menu in the title bar now work as soon as TigerSlicer starts.
+  Before, they stayed greyed out until you switched tabs once.
+
 ## 0.0.7 (2026-10-20)
 
 **New**

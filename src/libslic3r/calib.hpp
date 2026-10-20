@@ -26,7 +26,9 @@ enum class CalibMode : int {
     Calib_Retraction_tower,
     Calib_Input_shaping_freq,
     Calib_Input_shaping_damp,
-    Calib_Cornering
+    Calib_Cornering,
+    // TigerSlicer calibration builder: a tower whose tested setting changes every band (CalibrationBuilder.hpp).
+    Calib_Builder_Tower
 };
 
 enum class CalibState { Start = 0, Preset, Calibration, CoarseSave, FineCalibration, Save, Finish };
@@ -48,6 +50,13 @@ struct Calib_Params
     // Scale the calibration model to the nozzle diameter and set the layer height accordingly (temp tower / VFA).
     // When false the 0.4 mm / 0.2 mm reference model is printed as-is.
     bool nozzle_based_resize = true;
+
+    // Calib_Builder_Tower: the tested calib_builder::Setting, the band height and one value per band from the
+    // bottom of the tower. The bands apply only while the tower (the ModelObject with this ObjectID) is printed.
+    int                 builder_setting     = -1;
+    double              builder_band_height = 0.;
+    std::vector<double> builder_values;
+    size_t              builder_object      = 0;
 
     CalibMode mode;
 };

@@ -33,7 +33,20 @@
 // BBS
 #include "BBLTopbar.hpp"
 #include "PrinterWebView.hpp"
-#include "calib_dlg.hpp"
+// TigerSlicer: what the removed calib_dlg.hpp brought in, which other files reach through this header.
+#include "wxExtensions.hpp"
+#include "Widgets/Button.hpp"
+#include "Widgets/RoundedRectangle.hpp"
+#include "Widgets/Label.hpp"
+#include "Widgets/CheckBox.hpp"
+#include "Widgets/ComboBox.hpp"
+#include "Widgets/TextInput.hpp"
+#include "Widgets/LabeledStaticBox.hpp"
+#include "Widgets/RadioGroup.hpp"
+#include "GUI_App.hpp"
+#include <wx/hyperlink.h>
+#include <wx/radiobox.h>
+#include "libslic3r/calib.hpp"
 #include "MultiMachinePage.hpp"
 #include "slic3r/plugin/host/PluginPages.hpp"
 
@@ -368,15 +381,6 @@ public:
     bool is_prepare_or_preview_tab() const;
     PluginPages& plugin_pages() { return m_plugin_pages; }
 
-    PA_Calibration_Dlg* m_pa_calib_dlg{ nullptr };
-    FlowRateCalibrationDialog* m_flow_rate_calib_dlg{ nullptr };
-    Temp_Calibration_Dlg* m_temp_calib_dlg{ nullptr };
-    MaxVolumetricSpeed_Test_Dlg* m_vol_test_dlg { nullptr };
-    VFA_Test_Dlg* m_vfa_test_dlg { nullptr };
-    Retraction_Test_Dlg* m_retraction_calib_dlg{ nullptr };
-    Input_Shaping_Freq_Test_Dlg* m_IS_freq_calib_dlg{ nullptr };
-    Input_Shaping_Damp_Test_Dlg* m_IS_damp_calib_dlg{ nullptr };
-    Cornering_Test_Dlg* m_cornering_calib_dlg{ nullptr };
 
     // BBS. Replace title bar and menu bar with top bar.
     BBLTopbar*            m_topbar{ nullptr };

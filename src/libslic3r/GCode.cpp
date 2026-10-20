@@ -6,6 +6,7 @@
 #include "libslic3r.h"
 #include "I18N.hpp"
 #include "GCode.hpp"
+#include "CalibrationBuilder.hpp"
 #include "Exception.hpp"
 #include "ExtrusionEntity.hpp"
 #include "EdgeGrid.hpp"
@@ -2901,6 +2902,7 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
     const bool skip_config_block = print.config().gcode_skip_config_block;
     const WipeTowerType wipe_tower_type = print.wipe_tower_type();
     m_calib_config.clear();
+    m_calib_builder_band = -1;
     // resets analyzer's tracking data
     m_last_height  = 0.f;
     m_last_layer_z = 0.f;
@@ -5648,9 +5650,9 @@ LayerResult GCode::process_layer(
             break;
         }
         case CalibMode::Calib_VFA_Tower: {
-            // Step the outer wall speed from start to end across the tower's layers. Plater::calib_VFA sizes the
-            // geometry so each speed step spans one visual block (a fixed number of layers), so the layer-based
-            // stepping stays aligned with the blocks regardless of nozzle size / layer height.
+            // Step the outer wall speed from start to end across the tower's layers. The calibration that set up
+            // this tower sizes the geometry so each speed step spans one visual block (a fixed number of layers),
+            // so the layer-based stepping stays aligned with the blocks regardless of nozzle size / layer height.
             float _speed = this->interpolate_value_across_layers(static_cast<float>(print.calib_params().start),
                                                                  static_cast<float>(print.calib_params().end),
                                                                  static_cast<float>(print.calib_params().step));
@@ -5777,6 +5779,11 @@ LayerResult GCode::process_layer(
         // Mark the temperature transition from 1st to 2nd layer to be finished.
         m_second_layer_things_done = true;
     }
+
+    // TigerSlicer calibration builder: the tested setting follows the band this layer is in. After the
+    // second-layer resets above, which would otherwise undo a band's temperature, acceleration or jerk.
+    if (print.calib_mode() == CalibMode::Calib_Builder_Tower)
+        gcode += this->apply_calibration_band(print, 0.5 * (layer.print_z + layer.bottom_z()));
 
     if (single_object_instance_idx == size_t(-1)) {
         // Normal (non-sequential) print.
@@ -8502,6 +8509,65 @@ std::string GCode::extrusion_role_to_string_for_parser(const ExtrusionRole & rol
         case erNone:
         default: return "Mixed";
     }
+}
+
+// TigerSlicer calibration builder: the band of the tower that a layer at height z is in, counted from the
+// tower's bottom (above any raft). Nothing changes once the tower is off the plate.
+std::string GCode::apply_calibration_band(const Print &print, double z)
+{
+    const Calib_Params &params = print.calib_params();
+    if (params.builder_setting < 0 || params.builder_values.empty())
+        return {};
+    const auto tower = std::find_if(print.objects().begin(), print.objects().end(), [&params](const PrintObject *object) {
+        return object->model_object()->id().id == params.builder_object;
+    });
+    if (tower == print.objects().end())
+        return {};
+    const auto   setting = static_cast<calib_builder::Setting>(params.builder_setting);
+    const size_t band    = calib_builder::band_at(z - (*tower)->slicing_parameters().object_print_z_min, params.builder_band_height,
+                                                  params.builder_values.size());
+    const double value   = params.builder_values[band];
+
+    // Flow, speed and acceleration are per-extrusion overrides, held for every layer of the band.
+    // (Key by key: m_calib_config has no definitions, so apply() cannot create options in it.)
+    const DynamicPrintConfig overrides = calib_builder::object_overrides(setting, value);
+    for (const std::string &key : overrides.keys())
+        m_calib_config.set_key_value(key, overrides.option(key)->clone());
+
+    // Everything else is a printer command, sent once when the band starts.
+    if (int(band) == m_calib_builder_band)
+        return {};
+    const bool first     = m_calib_builder_band < 0;
+    m_calib_builder_band = int(band);
+    std::string gcode    = "; Calibration builder: " + std::string(calib_builder::info(setting).label) + " " +
+                        calib_builder::format_value(setting, value) + "\n";
+    switch (setting) {
+    case calib_builder::Setting::Temperature: gcode += m_writer.set_temperature((unsigned int) std::lround(value)); break;
+    case calib_builder::Setting::PressureAdvance: gcode += m_writer.set_pressure_advance(value); break;
+    case calib_builder::Setting::RetractionLength:
+    case calib_builder::Setting::RetractionSpeed: {
+        const char  *key   = setting == calib_builder::Setting::RetractionLength ? "retraction_length" : "retraction_speed";
+        const size_t tools = std::max<size_t>(1, m_writer.config.retraction_length.values.size());
+        DynamicConfig cfg;
+        cfg.set_key_value(key, new ConfigOptionFloats(tools, value));
+        m_writer.config.apply(cfg);
+        break;
+    }
+    case calib_builder::Setting::Jerk: gcode += m_writer.set_jerk_xy(value); break;
+    case calib_builder::Setting::JunctionDeviation: gcode += m_writer.set_junction_deviation(value); break;
+    case calib_builder::Setting::InputShapingFrequency:
+    case calib_builder::Setting::InputShapingDamping:
+        // Klipper: no minimum cruise ratio, so every band moves the same way.
+        if (first && m_writer.get_gcode_flavor() == gcfKlipper)
+            gcode += "SET_VELOCITY_LIMIT MINIMUM_CRUISE_RATIO=0\n";
+        if (setting == calib_builder::Setting::InputShapingFrequency)
+            gcode += m_writer.set_input_shaping('A', 0.f, float(value), "");
+        else
+            gcode += m_writer.set_input_shaping('A', float(value), 0.f, "");
+        break;
+    default: break;
+    }
+    return gcode;
 }
 
 // Calculate the interpolated value for the current layer between start_value and end_value.

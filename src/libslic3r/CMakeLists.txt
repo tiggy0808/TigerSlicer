@@ -223,6 +223,8 @@ set(lisbslic3r_sources    # --- TigerSlicer ------------------------------------
     BuildVolume.cpp
     BuildVolume.hpp
     calib.cpp
+    CalibrationBuilder.cpp
+    CalibrationBuilder.hpp
     calib.hpp
     Circle.cpp
     Circle.hpp

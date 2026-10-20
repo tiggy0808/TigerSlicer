@@ -251,6 +251,8 @@ public:
     // Step will create equal layers steps from first to last value.
     // Step = 0 means gradual interpolation finishing at last value.
     float interpolate_value_across_layers(float start_value, float end_value, float step = 0.0f) const;
+    // TigerSlicer calibration builder: sets the tested setting for the band a layer at height z is in.
+    std::string apply_calibration_band(const Print &print, double z);
 
     // For Perl bindings, to be used exclusively by unit tests.
     unsigned int    layer_count() const { return m_layer_count; }
@@ -587,6 +589,8 @@ private:
     Vec2d                               m_origin;
     FullPrintConfig                     m_config;
     DynamicConfig                       m_calib_config;
+    // The calibration builder band printed last (-1 before the first), so commands go out once per band.
+    int                                 m_calib_builder_band = -1;
     // scaled G-code resolution
     double                              m_scaled_resolution;
     GCodeWriter                         m_writer;

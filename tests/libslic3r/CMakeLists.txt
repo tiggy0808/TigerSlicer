@@ -12,6 +12,7 @@ add_executable(${_TEST_NAME}_tests
 	test_batch_semantics.cpp
 	test_bounded_batch_scheduler.cpp
 	test_bridge_planner.cpp
+	test_calibration_builder.cpp
 	test_calibration_map.cpp
 	test_calibration_prints.cpp
 	test_connection_diagnostics.cpp

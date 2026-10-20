@@ -11,7 +11,7 @@ A 3D printing slicer for FDM and resin printers, in one app.
 </div>
 
 TigerSlicer is my personal slicer. It is built on [OrcaSlicer](https://github.com/OrcaSlicer/OrcaSlicer) and
-keeps most of it (calibration tools, tree supports, scarf seams, a large printer library), without the
+keeps most of it (tree supports, scarf seams, a large printer library), without the
 account and cloud features, plus the features below.
 
 ## Features
@@ -29,6 +29,10 @@ account and cloud features, plus the features below.
 - **Fin supports.** A third support type next to Normal and Tree, for parts printed tilted on an edge
   or corner: thin walls under the part with small tines that snap off afterwards, optionally with
   holes to save filament.
+- **Calibration builder.** One tool for every calibration print: temperature, pressure advance,
+  retraction, flow ratio, print speed, acceleration, jerk or input shaping. Choose the range and step,
+  then print a tower with the values raised on its bands, or a grid of labelled copies. Use your own
+  model if you like, and save setups to run again.
 - **One filament profile per material.** PLA, PETG, ABS, ASA, PC, nylons, PPS, PEEK and the rest,
   each with carbon and glass fibre versions, tuned once and offered on every printer instead of a
   list of brands.

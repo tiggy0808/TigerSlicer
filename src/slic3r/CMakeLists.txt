@@ -63,8 +63,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/BonjourDialog.hpp
     GUI/CrealityDiscoveryDialog.cpp
     GUI/CrealityDiscoveryDialog.hpp
-    GUI/calib_dlg.cpp
-    GUI/calib_dlg.hpp
+    GUI/CalibrationBuilderDialog.cpp
+    GUI/CalibrationBuilderDialog.hpp
     GUI/Calibration.cpp
     GUI/Calibration.hpp
     GUI/CalibrationPanel.cpp
