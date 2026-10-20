@@ -8287,7 +8287,7 @@ void PrintConfigDef::init_fff_params()
                      "in each extruder profile may span several synchronized layers only where their geometry remains safe and stable. "
                      "The scheduler keeps the current tool where dependencies allow, but additional synchronization planes may still add tool changes. "
                      "Existing projects keep shared layer heights until this is enabled.");
-    def->mode = comExpert;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(false));
 
     def = this->add("multi_rate_layer_height_capable", coBool);
@@ -8295,7 +8295,7 @@ void PrintConfigDef::init_fff_params()
     def->category = L("Capabilities");
     def->tooltip = L("Declare that this printer's tool offsets, clearance radius and parked-tool geometry are safe for native independent tool layer scheduling. "
                      "Independent tool layer heights cannot be enabled until this printer capability is set.");
-    def->mode = comExpert;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(false));
 
     def = this->add("extruder_preferred_layer_height", coFloats);
@@ -8304,7 +8304,7 @@ void PrintConfigDef::init_fff_params()
                      "Set to 0 to inherit the print's ordinary layer height. The value must remain between this extruder's minimum and maximum layer height.");
     def->sidetext = L("mm");
     def->min = 0;
-    def->mode = comExpert;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloats { 0. });
 
     def = this->add("extruder_layer_height_ratio", coInts);
@@ -8321,7 +8321,7 @@ void PrintConfigDef::init_fff_params()
         permission->label = label;
         permission->tooltip = format(L("Allow %1% assigned to this physical tool to use a coarser independent layer grid when geometry and dependencies prove it safe. "
                                       "This is permission, not a guarantee; unsafe or changing geometry remains on synchronization planes."), feature);
-        permission->mode = comExpert;
+        permission->mode = comAdvanced;
         permission->set_default_value(new ConfigOptionBools { default_value });
         return permission;
     };

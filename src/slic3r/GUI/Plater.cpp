@@ -732,6 +732,7 @@ struct Sidebar::priv
     ScalableButton* m_filament_icon = nullptr;
     Button * m_purge_mode_btn = nullptr;
     Button * m_flushing_volume_btn = nullptr;
+    Button * m_color_mixing_btn = nullptr; // TigerSlicer: Full Spectrum colour mixing
     TextInput* m_search_item = nullptr;
     StaticBox* m_search_bar = nullptr;
     Search::SearchObjectDialog* dia = nullptr;
@@ -2884,7 +2885,8 @@ Sidebar::Sidebar(Plater *parent)
         // also block fold/unfold feature when user clicks to spacing between icons
         int exclude_pt = p->m_bpButton_set_filament->IsShown() ? p->m_bpButton_set_filament->GetPosition().x // maximum fixed item
                                                                : p->m_panel_filament_title->GetSize().GetWidth();
-        if      (p->m_purge_mode_btn->IsShown())        exclude_pt = p->m_purge_mode_btn->GetPosition().x;
+        if      (p->m_color_mixing_btn && p->m_color_mixing_btn->IsShown()) exclude_pt = p->m_color_mixing_btn->GetPosition().x;
+        else if (p->m_purge_mode_btn->IsShown())        exclude_pt = p->m_purge_mode_btn->GetPosition().x;
         else if (p->m_flushing_volume_btn->IsShown())   exclude_pt = p->m_flushing_volume_btn->GetPosition().x;
         else if (p->m_bpButton_add_filament->IsShown()) exclude_pt = p->m_bpButton_add_filament->GetPosition().x - FromDIP(30); // reserve spacing for delete button
         else if (ams_btn->IsShown())                    exclude_pt = ams_btn->GetPosition().x;
@@ -2919,6 +2921,15 @@ Sidebar::Sidebar(Plater *parent)
     scrolled_sizer->Add(p->m_panel_filament_separator, 0, wxEXPAND);
 
     bSizer39->AddStretchSpacer(1);
+
+    // TigerSlicer: Full Spectrum colour mixing, shown once there are two filaments to mix.
+    // The same dialog is in View > Virtual Extruders - Color Mixing.
+    p->m_color_mixing_btn = new Button(p->m_panel_filament_title, _L("Color mixing"));
+    p->m_color_mixing_btn->SetStyle(ButtonStyle::Confirm, ButtonType::Compact);
+    p->m_color_mixing_btn->SetToolTip(_L("Mix new colors from the loaded filaments and paint them onto your models"));
+    p->m_color_mixing_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent &) { p->plater->open_full_spectrum_dialog(); });
+    bSizer39->Add(p->m_color_mixing_btn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(4));
+    bSizer39->Hide(p->m_color_mixing_btn);
 
     p->m_purge_mode_btn = new Button(p->m_panel_filament_title, _L("Purge mode"));
     p->m_purge_mode_btn->SetStyle(ButtonStyle::Confirm, ButtonType::Compact);
@@ -3827,6 +3838,7 @@ void Sidebar::msw_rescale()
     p->m_bpButton_set_filament->msw_rescale();
     p->m_purge_mode_btn->Rescale();
     p->m_flushing_volume_btn->Rescale();
+    p->m_color_mixing_btn->Rescale();
     set_flushing_volume_warning(is_flush_config_modified()); // ORCA reapply appearance
 
     //BBS
@@ -3913,6 +3925,7 @@ void Sidebar::sys_color_changed()
     p->m_bpButton_set_filament->msw_rescale();
     p->m_purge_mode_btn->Rescale();
     p->m_flushing_volume_btn->Rescale();
+    p->m_color_mixing_btn->Rescale();
     set_flushing_volume_warning(is_flush_config_modified()); // ORCA reapply appearance
 
     // BBS
@@ -4674,6 +4687,8 @@ void Sidebar::show_SEMM_buttons()
     p->m_bpButton_add_filament->Show(single_or_bbl);
     p->m_bpButton_del_filament->Show(is_multi);
     p->m_flushing_volume_btn->Show(  is_multi);
+    if (p->m_color_mixing_btn)
+        p->m_color_mixing_btn->Show(is_multi_material);
 
     if (is_multi) {
         for (auto &c : p->combos_filament)

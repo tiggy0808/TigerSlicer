@@ -2633,6 +2633,8 @@ void TabPrint::build()
         auto optgroup = page->new_optgroup(L("Layer height"), L"param_layer_height");
         optgroup->append_single_option_line("layer_height","quality_settings_layer_height");
         optgroup->append_single_option_line("initial_layer_print_height","quality_settings_layer_height");
+        // TigerSlicer: each tool at its own layer height (multi-tool printers).
+        optgroup->append_single_option_line("independent_tool_layer_heights");
 
         optgroup = page->new_optgroup(L("Line width"), L"param_line_width");
         optgroup->append_single_option_line("line_width","quality_settings_line_width");
@@ -5009,6 +5011,8 @@ void TabPrinter::build_fff()
         optgroup = page->new_optgroup(L("Advanced"), L"param_advanced");
 
         optgroup->append_single_option_line("printer_structure", "printer_basic_information_advanced#printer-structure");
+        // TigerSlicer: lets the print use Independent tool layer heights on this printer.
+        optgroup->append_single_option_line("multi_rate_layer_height_capable");
         optgroup->append_single_option_line("gcode_flavor", "printer_basic_information_advanced#g-code-flavor");
         optgroup->append_single_option_line("gcode_skip_config_block", "printer_basic_information_advanced#skip-g-code-config-block");
         optgroup->append_single_option_line("pellet_modded_printer", "printer_basic_information_advanced#pellet-modded-printer");
@@ -5671,6 +5675,17 @@ if (is_marlin_flavor)
             optgroup = page->new_optgroup(L("Layer height limits"), L"param_layer_height");
             optgroup->append_single_option_line("min_layer_height", "printer_extruder_basic_information#extruder-layer-height-limits", extruder_idx);
             optgroup->append_single_option_line("max_layer_height", "printer_extruder_basic_information#extruder-layer-height-limits", extruder_idx);
+
+            // TigerSlicer: this tool's own layer height when the print uses Independent tool layer heights,
+            // and which of its features may print at it. The top surface and support interface permissions
+            // exist only for old projects and are not offered.
+            optgroup = page->new_optgroup(L("Independent layer height"), L"param_layer_height");
+            optgroup->append_single_option_line("extruder_preferred_layer_height", "", extruder_idx);
+            optgroup->append_single_option_line("extruder_layer_height_ratio", "", extruder_idx);
+            optgroup->append_single_option_line("extruder_independent_walls", "", extruder_idx);
+            optgroup->append_single_option_line("extruder_independent_infill", "", extruder_idx);
+            optgroup->append_single_option_line("extruder_independent_solid_infill", "", extruder_idx);
+            optgroup->append_single_option_line("extruder_independent_support", "", extruder_idx);
 
             optgroup = page->new_optgroup(L("Position"), L"param_position");
             optgroup->append_single_option_line("extruder_offset", "printer_extruder_basic_information#extruder-offset-position", extruder_idx);
