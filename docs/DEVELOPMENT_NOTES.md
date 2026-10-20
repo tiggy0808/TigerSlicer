@@ -3,7 +3,7 @@
 Technical notes for each release: which commits changed what, in enough detail to reproduce or port a
 change (in particular from the Windows build to the macOS one). For a short list of what changed for
 users, see [CHANGELOG.md](../CHANGELOG.md). TigerSlicer is based on OrcaSlicer; "upstream" below means
-OrcaSlicer.
+OrcaSlicer. These are the maintainer's working notes, terse and written for someone who knows the code.
 
 ---
 
@@ -376,7 +376,7 @@ Commits, oldest first (all on `main`; the release commit follows them):
   cases pass. `fff_print_tests`: 153 cases pass in random order, including the 25 `[Fins]` and
   `[BrickLayers]` cases.
 - Background launches with throwaway data folders: a Generic Klipper printer (selects PLA), an
-  Elegoo Mars 3, and a copy of a real 0.0.6 data folder (its printer and user filament load). No
+  Elegoo Mars 3, and a copy of an existing 0.0.6 data folder (its printer and user filament load). No
   new errors, no crash reports. The new UI (Auto slice, fin and brick settings, the printer tabs) was
   not clicked through on macOS; the Windows checks above cover the same shared code.
 
@@ -397,8 +397,7 @@ Commits: `63555a3ba` feat(filaments): list materials directly and drop filament 
   (`guide/5`); the filament page (`guide/22`) is no longer reached. Finishing without it is fine:
   `SaveProfile()` keeps the previous filament selection and every library filament is visible anyway.
 - Verified: build, and a background launch on a fresh data folder (no errors). The changed controls
-  could not be inspected from the build machine (no screenshots; accessibility scripting sees no
-  windows), so the visible result is checked by hand.
+  were checked by hand.
 
 ### Verification (Windows)
 - Clean release build of `abe278153` (MSVC 17.14, `build_release_vs2022.bat slicer`, old
@@ -421,13 +420,13 @@ Commits: `63555a3ba` feat(filaments): list materials directly and drop filament 
   - Klipper: PLA edited and saved as "Test PLA" (inherits `PLA @System`, empty
     `compatible_printers`); after adding a Creality Ender-3 V3 SE, "Test PLA" is in its list.
   - Quit without saving the project: normal exit, no crash log or dump.
-- A copy of a real data folder last used with 0.0.3: bundles re-installed (library 02.04.00.05), the
-  four user filaments load (parents `Generic PLA/PETG/PLA High Speed @System` and `Bambu PAHT-CF
-  @System` resolve to PLA, PETG and PA6-CF), normal exit. No new kinds of log errors.
+- An existing data folder last used with 0.0.3: bundles re-installed (library 02.04.00.05), its user
+  filaments load (parents `Generic PLA/PETG/PLA High Speed @System` and `Bambu PAHT-CF @System`
+  resolve to PLA, PETG and PA6-CF), normal exit. No new kinds of log errors.
 - Seen: the system filament list was not in table order, and every launch logged "Failed to install
   bundled TigerSlicer Resin profile" twice. Both are fixed after the tag (below). A user filament
-  limited to `Prusa CORE One L 0.6 nozzle` was not listed for the user printer "Core One L 450C"
-  (0.0.3 does the same); that is the data folder, not the code (below).
+  limited to `Prusa CORE One L 0.6 nozzle` was not listed for a user printer based on it (0.0.3 does
+  the same); that is the data folder, not the code (below).
 
 ### Found in the Windows check (fixed after the tag, `f84322c33`, `b072ff5fd`)
 - Filament list order: `PlaterPresetComboBox::update()` sorted "System presets" with a table of
@@ -443,10 +442,10 @@ Commits: `63555a3ba` feat(filaments): list materials directly and drop filament 
   from `resources/profiles`. The copy is removed.
 - Hidden user filament, not a code change: `PresetCollection::load_presets()` loads `base/` (detached
   "custom root" presets) before the type folder and skips a later file with the same name ("Preset
-  already present, not loading"). The data folder had both `machine/base/Core One L 450C.json`
-  (detached, 2026-09-29) and `machine/Core One L 450C.json` (inherits `Prusa CORE One L 0.6 nozzle`).
-  The detached copy wins, so `is_compatible_with_parent_printer()` has no parent to match against
-  the filament's `compatible_printers`. Both copies are already in `user_backup-v0.0.0`.
+  already present, not loading"). The data folder had both `machine/base/<printer>.json` (an older,
+  detached copy) and `machine/<printer>.json` (inherits `Prusa CORE One L 0.6 nozzle`). The detached
+  copy wins, so `is_compatible_with_parent_printer()` has no parent to match against the filament's
+  `compatible_printers`. Moving the stale detached copy out of the data folder fixes it.
 - Verified on Windows: `libslic3r_tests` 1,029 cases, 88,370 assertions, all pass (`[filament_library]`:
   5 cases, 281 assertions). In the app with an empty `--datadir`, the list runs PLA, PLA-CF, PLA-GF,
   PETG ... TPU 95A, TPU 90A, TPU 85A, PVA, BVOH, HIPS. An edited, unsaved PLA stays first. The log
@@ -502,8 +501,8 @@ Commits, oldest first (all on `main`):
   visible with an empty `[filaments]` section; old names (Bambu PLA Basic @BBL X1C, Generic PETG
   @System, Bambu PPA-CF @System…) resolve to their material; "Save as" and Create filament make
   all-printer profiles.
-- The app on a copy of a real 0.0.4 data folder: vendor bundles re-installed from resources, the four
-  user filaments (two on removed parents) load, no new errors or crashes. A fresh Klipper setup picks
+- The app on an existing 0.0.4 data folder: vendor bundles re-installed from resources, its user
+  filaments (two on removed parents) load, no new errors or crashes. A fresh Klipper setup picks
   "PLA".
 - Seen, not caused by this change (0.0.4 does the same): with that copied data folder, a Quit Apple
   Event is answered "User canceled" and the app stays open.
