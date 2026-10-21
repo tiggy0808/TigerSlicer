@@ -16,8 +16,9 @@ Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOP
     printed in one go.
   - Optionally set the layer height and print speed used for the test. Save a setup as a preset to
     run it again later.
-- **Color mixing** button in the sidebar's Filament header (with two or more filaments). It opens
-  Full Spectrum colour mixing, which was only in the View menu before.
+- **Color mixing** button in the sidebar's Filament header, on printers with two or more extruders
+  (toolchangers, IDEX). It opens Full Spectrum colour mixing, which was only in the View menu
+  before.
 
 **Changed**
 - **Independent tool layer heights** can now be found and changed: Process → Quality → Layer height,
@@ -31,6 +32,7 @@ Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOP
 **Fixed**
 - Undo, Redo and the Calibration menu in the title bar now work as soon as TigerSlicer starts.
   Before, they stayed greyed out until you switched tabs once.
+- Cancelling "New project" no longer removes the current project's colour changes and pauses.
 
 ## 0.0.7 (2026-10-20)
 

@@ -61,7 +61,7 @@ constexpr double kMaxBandHeight = 30.;
 // on the model is the value used.
 bool fits_decimals(Setting setting, double value);
 
-// Why this printer cannot run a test of `setting`, or empty when it can. Jerk and junction deviation are
+// Why this printer cannot run a test of `setting`, or empty when it can (one short line for the dialog). Jerk and junction deviation are
 // exclusive (Marlin 2 with junction deviation on ignores jerk), and only some firmware takes input
 // shaping from G-code.
 std::string printer_problem(Setting setting, const DynamicPrintConfig &printer);

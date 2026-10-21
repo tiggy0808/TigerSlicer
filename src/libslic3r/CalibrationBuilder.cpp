@@ -67,7 +67,7 @@ std::vector<double> sweep(double from, double to, double step, std::string *erro
     // Counted as a double first: a tiny step over a huge range does not fit a size_t.
     const double steps = std::floor(std::abs(to - from) / step + 1e-6);
     if (!(steps < double(kMaxValues)))
-        return fail("That is more than " + std::to_string(kMaxValues) + " values. Use a bigger step or a smaller range.");
+        return fail("More than " + std::to_string(kMaxValues) + " values: use a bigger step or a smaller range.");
     const size_t count = size_t(steps) + 1;
     const double direction = to >= from ? 1. : -1.;
     std::vector<double> values;
@@ -320,18 +320,17 @@ std::string printer_problem(Setting setting, const DynamicPrintConfig &printer)
     switch (setting) {
     case Setting::Jerk:
         if (uses_junction_deviation(printer))
-            return "This printer uses junction deviation, not jerk. Test junction deviation instead.";
+            return "This printer uses junction deviation: test that instead.";
         break;
     case Setting::JunctionDeviation:
         if (!uses_junction_deviation(printer))
-            return "Junction deviation needs Marlin 2 with a maximum junction deviation above 0 in the printer's motion "
-                   "ability. Test jerk instead.";
+            return "Needs Marlin 2 with junction deviation on: test jerk instead.";
         break;
     case Setting::InputShapingFrequency:
     case Setting::InputShapingDamping: {
         const auto *flavor = printer.option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor");
         if (flavor == nullptr || (flavor->value != gcfKlipper && flavor->value != gcfRepRapFirmware && flavor->value != gcfMarlinFirmware))
-            return "Input shaping can only be set from G-code on Klipper, RepRapFirmware and Marlin 2.";
+            return "Input shaping needs Klipper, RepRapFirmware or Marlin 2.";
         break;
     }
     default: break;

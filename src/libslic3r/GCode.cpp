@@ -5783,7 +5783,7 @@ LayerResult GCode::process_layer(
     // TigerSlicer calibration builder: the tested setting follows the band this layer is in. After the
     // second-layer resets above, which would otherwise undo a band's temperature, acceleration or jerk.
     if (print.calib_mode() == CalibMode::Calib_Builder_Tower)
-        gcode += this->apply_calibration_band(print, 0.5 * (layer.print_z + layer.bottom_z()));
+        gcode += this->apply_calibration_band(print, layers, 0.5 * (layer.print_z + layer.bottom_z()));
 
     if (single_object_instance_idx == size_t(-1)) {
         // Normal (non-sequential) print.
@@ -8512,19 +8512,24 @@ std::string GCode::extrusion_role_to_string_for_parser(const ExtrusionRole & rol
 }
 
 // TigerSlicer calibration builder: the band of the tower that a layer at height z is in, counted from the
-// tower's bottom (above any raft). Nothing changes once the tower is off the plate.
-std::string GCode::apply_calibration_band(const Print &print, double z)
+// tower's bottom (above any raft). Layers without the tower (another object printed by object, or above
+// the tower) get no overrides, and nothing changes once the tower is off the plate.
+std::string GCode::apply_calibration_band(const Print &print, const std::vector<LayerToPrint> &layers, double z)
 {
     const Calib_Params &params = print.calib_params();
     if (params.builder_setting < 0 || params.builder_values.empty())
         return {};
-    const auto tower = std::find_if(print.objects().begin(), print.objects().end(), [&params](const PrintObject *object) {
-        return object->model_object()->id().id == params.builder_object;
-    });
-    if (tower == print.objects().end())
+    const PrintObject *tower = nullptr;
+    for (const LayerToPrint &l : layers)
+        for (const PrintObject *object : { l.object(), l.original_object })
+            if (object != nullptr && object->model_object()->id().id == params.builder_object)
+                tower = object;
+    if (tower == nullptr) {
+        m_calib_config.clear();
         return {};
+    }
     const auto   setting = static_cast<calib_builder::Setting>(params.builder_setting);
-    const size_t band    = calib_builder::band_at(z - (*tower)->slicing_parameters().object_print_z_min, params.builder_band_height,
+    const size_t band    = calib_builder::band_at(z - tower->slicing_parameters().object_print_z_min, params.builder_band_height,
                                                   params.builder_values.size());
     const double value   = params.builder_values[band];
 

@@ -6,6 +6,7 @@
 
 #include "test_helpers.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <map>
 #include <sstream>
@@ -308,6 +309,44 @@ TEST_CASE("A tower on a raft counts its bands from its own bottom", "[Calibratio
     // The first layer whose middle is kBand above the tower's bottom, not above the bed.
     CHECK(second_band_z - raft > kBand);
     CHECK(second_band_z - raft < kBand + 0.5);
+}
+
+TEST_CASE("Layers above the tower print without its overrides", "[CalibrationBuilder]")
+{
+    // A two-band flow tower (0.9, then 1.1) next to a cube twice its height.
+    DynamicPrintConfig config = DynamicPrintConfig::full_print_config();
+    config.set_deserialize_strict({ { "layer_height", 0.2 }, { "use_relative_e_distances", 1 }, { "sparse_infill_density", "0%" },
+                                    { "top_shell_layers", 0 }, { "bottom_shell_layers", 0 }, { "wall_loops", 2 } });
+    Print print;
+    Model model;
+    Test::init_print({ make_cube(20., 20., 2. * kBand), make_cube(20., 20., 4. * kBand) }, print, model, config);
+    Calib_Params params;
+    params.mode                = CalibMode::Calib_Builder_Tower;
+    params.builder_setting     = int(Setting::FlowRatio);
+    params.builder_band_height = kBand;
+    params.builder_values      = { 0.9, 1.1 };
+    params.builder_object      = model.objects.front()->id().id;
+    print.set_calib_params(params);
+    const std::string gcode = Test::gcode(print);
+    // Plastic per object and layer, from the "; printing object" markers.
+    std::map<std::string, std::map<double, double>> extruded;
+    std::string object;
+    for (const auto &[z, line] : lines_by_z(gcode)) {
+        if (line.rfind("; printing object ", 0) == 0)
+            object = line; // holds the object's id
+        else if (line.rfind("; stop printing object", 0) == 0)
+            object.clear();
+        double e;
+        if (!object.empty() && line.rfind("G1 X", 0) == 0 && number_after(line, " E", e) && e > 0.)
+            extruded[object][z] += e;
+    }
+    // The cube is the object still printing above the tower.
+    const double above = 3. * kBand;
+    const auto cube = std::find_if(extruded.begin(), extruded.end(), [above](const auto &o) { return o.second.count(above) > 0; });
+    REQUIRE(cube != extruded.end());
+    REQUIRE(cube->second.count(1.0));
+    // In the first band the cube shares the tower's 0.9; above the tower it is back at 1.0, not the last band's 1.1.
+    CHECK_THAT(cube->second.at(above) / cube->second.at(1.0), WithinRel(1.0 / 0.9, 0.01));
 }
 
 TEST_CASE("Without a builder tower nothing is changed per band", "[CalibrationBuilder]")

@@ -251,8 +251,6 @@ public:
     // Step will create equal layers steps from first to last value.
     // Step = 0 means gradual interpolation finishing at last value.
     float interpolate_value_across_layers(float start_value, float end_value, float step = 0.0f) const;
-    // TigerSlicer calibration builder: sets the tested setting for the band a layer at height z is in.
-    std::string apply_calibration_band(const Print &print, double z);
 
     // For Perl bindings, to be used exclusively by unit tests.
     unsigned int    layer_count() const { return m_layer_count; }
@@ -320,6 +318,10 @@ public:
             return sum_z / count;
         }
     };
+
+    // TigerSlicer calibration builder: sets the tested setting for the band of the tower that `layers`
+    // (at height z) print, or drops the band's overrides when none of them is the tower's.
+    std::string apply_calibration_band(const Print &print, const std::vector<LayerToPrint> &layers, double z);
 
 private:
     class GCodeOutputStream {

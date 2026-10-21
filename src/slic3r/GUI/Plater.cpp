@@ -4660,8 +4660,11 @@ void Sidebar::show_SEMM_buttons()
     p->m_bpButton_add_filament->Show(single_or_bbl);
     p->m_bpButton_del_filament->Show(is_multi);
     p->m_flushing_volume_btn->Show(  is_multi);
-    if (p->m_color_mixing_btn)
-        p->m_color_mixing_btn->Show(is_multi_material);
+    // Full Spectrum mixes on printers with two or more extruders (it counts nozzles, not filaments).
+    if (p->m_color_mixing_btn) {
+        const auto *nozzles = wxGetApp().preset_bundle->printers.get_edited_preset().config.option<ConfigOptionFloats>("nozzle_diameter");
+        p->m_color_mixing_btn->Show(nozzles != nullptr && nozzles->values.size() >= 2);
+    }
 
     if (is_multi) {
         for (auto &c : p->combos_filament)
@@ -13168,9 +13171,6 @@ SLAPrint&       Plater::sla_print()         { return p->sla_print; }
 
 int Plater::new_project(bool skip_confirm, bool silent, const wxString& project_name)
 {
-    model().calib_pa_pattern.reset(nullptr);
-    model().plates_custom_gcodes.clear();
-
     bool transfer_preset_changes = false;
     // BBS: save confirm
     auto check = [this,&transfer_preset_changes](bool yes_or_no) {
@@ -13191,6 +13191,11 @@ int Plater::new_project(bool skip_confirm, bool silent, const wxString& project_
     int result;
     if (!skip_confirm && (result = close_with_confirm(check)) == wxID_CANCEL)
         return wxID_CANCEL;
+    // TigerSlicer: cleared only now, so Cancel keeps them and a save before the new project includes them.
+    model().calib_pa_pattern.reset(nullptr);
+    model().plates_custom_gcodes.clear();
+    // A calibration tower of the old project must not change prints of the new one.
+    p->background_process.fff_print()->set_calib_params(Calib_Params());
 
     m_only_gcode = false;
     m_exported_file = false;
@@ -19633,7 +19638,7 @@ void Plater::calib_builder(const calib_builder::Setup &setup)
     Model source;
     if (!setup.model_path.empty()) {
         try {
-            source = Model::read_from_file(setup.model_path);
+            source = Model::read_from_file(setup.model_path, nullptr, nullptr, LoadStrategy::AddDefaultInstances | LoadStrategy::LoadModel);
         } catch (const std::exception &e) {
             show_error(this, format_wxstr(_L("Could not load %1%:\n%2%"), from_u8(setup.model_path), from_u8(e.what())));
             return;
@@ -19669,6 +19674,12 @@ void Plater::calib_builder(const calib_builder::Setup &setup)
     if (new_project(false, false, wxString::Format(_L("%s test"), label)) == wxID_CANCEL)
         return;
     wxGetApp().mainframe->select_tab(TAB_ID_PREPARE);
+    // Discarding the edited presets in New Project can change the printer.
+    if (const std::string problem = printer_problem(setup.setting, wxGetApp().preset_bundle->printers.get_edited_preset().config);
+        !problem.empty() || printer_technology() != ptFFF) {
+        show_error(this, problem.empty() ? _L("Calibration prints need a filament printer.") : _(wxString::FromUTF8(problem)));
+        return;
+    }
     const std::vector<size_t> objects = p->load_model_objects(built.objects);
     if (objects.empty())
         return;
@@ -19703,7 +19714,9 @@ void Plater::calib_builder(const calib_builder::Setup &setup)
         params.builder_object      = tower->id().id;
         for (size_t i = 0; i < values.size(); ++i)
             legend += (i ? ", " : "") + format_value(setup.setting, values[i]);
-        legend = format(_L("%1% tower: from the bottom, every %2% mm: %3%."), label, setup.band_height, legend);
+        legend = format(_L("%1% tower: from the bottom, every %2% mm: %3%. Print it on its own: anything beside it prints "
+                           "with the tower's settings."),
+                        label, setup.band_height, legend);
         const double height = tower->bounding_box_exact().size().z();
         if (height + EPSILON < setup.band_height * double(values.size()))
             legend += " " + format(_L("The model is %1% mm tall, so it only reaches %2% of the %3% values."), height,
@@ -19713,6 +19726,7 @@ void Plater::calib_builder(const calib_builder::Setup &setup)
         legend = format(_L("%1%: one copy per value (%2% to %3%), each named after its value."), label, format_value(setup.setting, values.front()),
                         format_value(setup.setting, values.back()));
     }
+    legend += " " + _u8L("The profile settings changed for the test are marked as modified; discard them before printing anything else.");
     p->background_process.fff_print()->set_calib_params(params);
 
     for (Preset::Type type : { Preset::TYPE_PRINT, Preset::TYPE_FILAMENT, Preset::TYPE_PRINTER })

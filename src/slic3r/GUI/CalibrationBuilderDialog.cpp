@@ -33,6 +33,9 @@ namespace {
 
 // Saved setups live in this app config section, one JSON value per name.
 constexpr const char *kPresetSection = "calibration_builder";
+// The last setup generated, shown when the dialog opens again.
+constexpr const char *kLastSection = "calibration_builder_last";
+constexpr const char *kLastKey     = "setup";
 
 // A value as the user would type it: the setting's decimals, no trailing zeros.
 wxString number_text(Setting s, double v) { return wxString::FromUTF8(format_value(s, v)); }
@@ -145,12 +148,15 @@ CalibrationBuilderDialog::CalibrationBuilderDialog(wxWindow *parent)
     if (Button *generate = buttons->GetButtonFromLabel(_L("Generate")))
         generate->Bind(wxEVT_BUTTON, [this](wxCommandEvent &) { on_generate(); });
 
-    // Start from the first setting's default sweep.
+    // Start from the last setup generated, or the first setting's default sweep.
     Setup start;
-    start.setting = Setting::Temperature;
-    start.from    = info(start.setting).from;
-    start.to      = info(start.setting).to;
-    start.step    = info(start.setting).step;
+    if (!from_json(wxGetApp().app_config->get(kLastSection, kLastKey), start)) {
+        start         = Setup();
+        start.setting = Setting::Temperature;
+        start.from    = info(start.setting).from;
+        start.to      = info(start.setting).to;
+        start.step    = info(start.setting).step;
+    }
     show(start);
     reload_presets();
 
@@ -237,7 +243,6 @@ void CalibrationBuilderDialog::update_state()
     if (values.empty()) {
         m_count->SetForegroundColour(wxColour("#D01B1B"));
         m_count->SetLabel(_(wxString::FromUTF8(error)));
-        m_count->Wrap(FromDIP(430)); // a reason can be longer than the dialog is wide
     } else {
         m_count->SetForegroundColour(wxColour("#6B6B6B"));
         wxString text = wxString::Format(_L("%d values: %s to %s"), int(values.size()), wxString::FromUTF8(format_value(setting, values.front())),
@@ -375,6 +380,7 @@ void CalibrationBuilderDialog::on_generate()
         return;
     }
     m_setup = setup;
+    wxGetApp().app_config->set(kLastSection, kLastKey, to_json(setup));
     EndModal(wxID_OK);
 }
 

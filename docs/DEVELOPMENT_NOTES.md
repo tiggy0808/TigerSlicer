@@ -20,9 +20,10 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 - These options, and the permission lambda, move from `comExpert` to `comAdvanced`.
 - Full Spectrum colour mixing was only in the View menu. The sidebar's Filament header now has a
   "Color mixing" button (`m_color_mixing_btn`, `Plater.cpp`). It calls
-  `Plater::open_full_spectrum_dialog()`. `Sidebar::show_SEMM_buttons()` shows it when there are two
-  or more filament combos. It is also excluded from the header's click-to-collapse area, like the
-  other header buttons.
+  `Plater::open_full_spectrum_dialog()`. `Sidebar::show_SEMM_buttons()` shows it when the printer
+  has two or more nozzles: `FullSpectrumDialog` counts `nozzle_diameter`, so a single-nozzle
+  multi-material printer (SEMM) only gets "needs at least two physical extruders". It is also
+  excluded from the header's click-to-collapse area, like the other header buttons.
 
 ### Calibration builder
 - The menu calibrations are replaced by one builder. Removed:
@@ -68,9 +69,13 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 - Towers use the new `CalibMode::Calib_Builder_Tower`. `Calib_Params` gains `builder_setting`,
   `builder_band_height`, `builder_values` and `builder_object`, the tower's `ObjectID`.
   `GCode::apply_calibration_band()` runs after the second-layer block of `process_layer`:
-  - It does nothing unless a `PrintObject` has that model object (`Print::apply` copies objects
-    with their IDs). Only `load_files` resets the calibration mode. Without this check, a new
-    project with a primitive or a gallery shape kept the old tower's temperature changes.
+  - It acts only on layers where one of the `LayerToPrint`s belongs to that model object
+    (`Print::apply` copies objects with their IDs). On other layers it clears `m_calib_config`:
+    above a short tower, after it in print-by-object order, or once the tower is deleted. Objects
+    printed on the tower's layers share its settings, which is why the legend says to print it
+    alone. Printer commands (temperature and so on) are not undone after the tower.
+  - `new_project()` also resets the calibration params. Before, only `load_files` did, so a new
+    project with a primitive or a gallery shape kept the old tower's mode.
   - Bands count from the tower's bottom: `z - slicing_parameters().object_print_z_min`, so a raft
     does not shift them.
   - Flow, speed and acceleration go into `m_calib_config` on every layer. `_extrude` applies them,
@@ -95,17 +100,20 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 - `Plater::calib_builder()`, FFF printers only:
   - Reads the user's model first (STL, 3MF or OBJ, through `Model::read_from_file`, the first
     object of the file). A file that cannot be read shows an error and changes nothing.
+    `LoadStrategy::LoadModel` is needed, because without it the 3MF reader loads no objects.
   - Builds the objects in memory, a generated mesh or a copy of the user's object, and sets their
     config there: the tower's brim, or each grid copy's `object_overrides()`.
   - Only then starts a new project and adds them with `load_model_objects()`.
-  - Found in the GUI test: the first version wrote the overrides after `add_model()`. By then
-    `TabPrintModel` held a copy of the selected (last) object's config without them, and the last
-    flow ratio tile printed at 1.0.
+  - Checks the printer again, because discarding the edited presets in New Project can change it.
   - Then edits the selected presets.
   - Shows the band legend as a notification. If the user's own model is shorter than all the
     bands, the notification says so.
-  - The edited presets stay edited, as with OrcaSlicer's calibrations. The next new project asks
-    whether to keep or discard them.
+  - The edited presets stay edited, as with OrcaSlicer's calibrations. The legend says so, and
+    the next new project asks whether to keep or discard them.
+- `new_project()` (upstream): `plates_custom_gcodes` and `calib_pa_pattern` were cleared before the
+  save prompt. Cancel lost them from the open project, and Yes saved it without them. They are now
+  cleared after the prompt.
+- The dialog opens with the last setup generated (app config `calibration_builder_last`).
 - Both Calibration menus (top bar and macOS) now have one item, "Calibration builder...". It is
   disabled for resin printers. The hint in `hints.ini` is rewritten.
 - Top bar fix (Windows and Linux): Undo, Redo and Calibration are enabled by the page change
@@ -121,6 +129,35 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
     none once the tower is gone. The speed and acceleration checks follow the
   feedrate and `ACCEL` in force at each extrusion, because Orca often sets F on a `G1 F` line of
   its own and travels use their own acceleration.
+
+### Verification (Windows)
+- Release build (MSVC 17.14). `libslic3r_tests`: 1053 cases pass, 13 of them `[CalibrationBuilder]`.
+  `fff_print_tests`: 165 cases pass, 12 of them `[CalibrationBuilder]`.
+- Dev build with a throwaway `--datadir`, on 2026-10-20:
+  - With the Elegoo Mars 3 selected, Calibration is disabled.
+  - On the Generic Klipper Printer, the dialog lists the 11 settings. Junction deviation shows the
+    printer warning.
+  - Temperature tower (230 to 190, step 5, 5 mm bands): 20 × 20.6 × 45 mm, named "Nozzle
+    temperature tower", band legend shown. It sliced to 561 layers. The exported G-code has 9
+    markers and 9 `M104` lines, 225 at Z 5.08 and 220 at Z 10.04, with nothing in between.
+  - Preset "Flow grid" saved, then loaded back with its setting, range and layout.
+  - Flow ratio grid: 11 tiles named "Flow ratio 0.9" to "Flow ratio 1.1", arranged.
+  - In the grid's G-code, the last tile printed at 1.0. That came from the test, not the builder:
+    clicking an object's settings icon in the object list resets its settings ("Click the icon to
+    reset all settings of the object").
+  - Untouched, the grid prints at 0.900, 0.920, … 1.100 of the 1.0 tile's plastic, all 11 tiles.
+- 2026-10-21, after the review fixes:
+  - Calibration is enabled at startup.
+  - The STL/3MF/OBJ picker works, and a 20 mm cube as the tower model gets "only reaches 4 of the
+    9 values".
+  - Cancel on the save prompt keeps the project.
+  - The ITLH options show in Advanced mode.
+  - The Color mixing button appeared with two filaments on a single-nozzle printer, where the
+    dialog cannot mix, so it now needs two nozzles.
+- Also found and fixed in those runs:
+  - The red reason under the range was cut off. Wrapping it and re-fitting the dialog widened the
+    dialog and lost the model radio buttons' paint, so every reason is now one short line instead.
+  - The top bar bug described above.
 
 ---
 
