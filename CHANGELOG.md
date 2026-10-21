@@ -3,7 +3,7 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
-## Unreleased
+## 0.0.8 (2026-10-21)
 
 **New**
 - **Calibration builder** (Calibration menu). One tool replaces the separate calibration tests.
@@ -33,6 +33,8 @@ Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOP
 - Undo, Redo and the Calibration menu in the title bar now work as soon as TigerSlicer starts.
   Before, they stayed greyed out until you switched tabs once.
 - Cancelling "New project" no longer removes the current project's colour changes and pauses.
+- Upgrading no longer hides your own printers and process presets that are based on a printer you
+  don't have selected in the printer list.
 
 ## 0.0.7 (2026-10-20)
 

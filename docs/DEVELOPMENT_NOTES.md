@@ -7,7 +7,39 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 
 ---
 
-## Unreleased
+## 0.0.8 (2026-10-21)
+
+Theme: one calibration builder instead of the separate calibration tests, and independent tool layer
+heights and colour mixing where people can find them.
+
+Commits, oldest first (all on `main`; the release commit follows them):
+
+| Commit | Subject |
+|---|---|
+| `0f1a32b1b` | docs: Windows verification for 0.0.7 |
+| `a5e8f27b5` | chore(github): tidy workflows and issue templates for a public repo |
+| `3f7dcf90d` | docs: README, build guide and community files for going public |
+| `381d22b18` | chore: remove unused OrcaSlicer leftovers |
+| `15ff2a3bc` | feat: show independent tool layer heights and a Color mixing button |
+| `6411a2745` | feat: calibration builder replaces the separate calibration tests |
+| `92409623a` | fix: calibration builder fixes from review and app testing |
+| `019d95d10` | fix: keep a printer maker's profiles that your own presets are based on |
+
+### Unselected printer makers keep their system profiles
+- `PresetUpdater::priv::check_installed_vendor_profiles()` runs on every launch. Since 0.0.1 (the
+  `if (true || enabled_config_update)` from `340f13831`), it deleted `system/<vendor>.json` and
+  `system/<vendor>/` for every vendor in `resources/profiles` that had no model selected in the app
+  config's `models`.
+- User presets that inherit from that vendor then fail to load ("can not find parent …") and
+  disappear.
+- Found in the 0.0.8 smoke test, on a copy of a real data folder:
+  - One vendor is selected in `models`. A user printer and two process presets were made from
+    another vendor's printer, whose `system/` profiles were installed earlier.
+  - Copies opened in 0.0.6, 0.0.7 and 0.0.8 all lost that vendor's system profiles.
+  - That folder's own 0.0.6 runs never did. Their check took 25 ms and updated nothing, not even
+    Custom and Prusa at 2.4.0.3 against 2.4.0.4 in resources. That was not explained.
+- Unselected vendors now keep their profiles, and they are not updated. Their printers stay hidden,
+  because visibility follows the selected models.
 
 ### Independent tool layer heights and colour mixing, easier to find
 - The ITLH options already existed in `PrintConfig.cpp` (upstream), but no settings page showed them.
