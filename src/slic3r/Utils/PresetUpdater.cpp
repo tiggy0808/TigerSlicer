@@ -1071,13 +1071,10 @@ void PresetUpdater::priv::check_installed_vendor_profiles() const
                             bundles.insert(vendor_name);
                         }
                     }
-                    else {
-                        //need to be removed because not installed
-                        fs::remove(path_in_vendor);
-                        const auto path_of_vendor = vendor_path / vendor_name;
-                        if (fs::exists(path_of_vendor))
-                            fs::remove_all(path_of_vendor);
-                    }
+                    // TigerSlicer: a vendor that is no longer selected keeps its system profiles. The user's own
+                    // printers and presets can inherit from them (a "Copy" of a vendor printer), and removing
+                    // them made those presets disappear after an upgrade. Its printers stay hidden anyway,
+                    // because only the models selected in the app config are shown.
                 }
                 else if (is_vendor_enabled) {
                     bundles.insert(vendor_name);
