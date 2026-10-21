@@ -190,6 +190,24 @@ Commits, oldest first (all on `main`; the release commit follows them):
   - The red reason under the range was cut off. Wrapping it and re-fitting the dialog widened the
     dialog and lost the model radio buttons' paint, so every reason is now one short line instead.
   - The top bar bug described above.
+  - The one-line reasons were not seen in the app: a Windows TextInputHost window blocked clicks.
+- Release build from `9ad906c5a`, with a clean `build\OrcaSlicer`: no errors.
+  - Packaged with the `%TEMP%\tsrel008` kit (from tsrel007, only the version and paths changed).
+  - 9,318 files. The removed calibration models are gone; the ones the Bambu tab uses are kept.
+  - Also 38 empty files that the 0.0.7 zip lacked (Python `__init__.py` files, upstream
+    placeholders).
+- Release assets:
+  - `TigerSlicer-0.0.8-win64-Setup.exe`, 229,470,208 B, sha256 `14f9877d…f6edbd`.
+  - `TigerSlicer-0.0.8-win64.zip`, 235,856,554 B, sha256 `4d9a228e…d6ac8e`.
+  - Both digests were checked on GitHub after upload.
+- Smoke test: the Setup.exe test install (`TIGERSLICER_INSTALL_DIR`) on a copy of a real 0.0.6 data
+  folder.
+  - Its log reads "Version 0.0.8 build 9ad906c5a".
+  - The user printer and process presets on the unselected vendor load. Before
+    `019d95d10`, they failed with "can not find parent".
+  - No crash log, and no errors that the 0.0.6 runs of that folder don't also log:
+    `calc_exclude_triangles` and an unsupported printer type.
+  - This run was log-only, without clicking through.
 
 ---
 
