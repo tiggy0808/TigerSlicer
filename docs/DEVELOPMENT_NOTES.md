@@ -200,7 +200,7 @@ Commits, oldest first (all on `main`; the release commit follows them):
     only.
 - Release build from `790cb6bee`, with a clean `build\OrcaSlicer`: no errors.
   - It installed the same 9,317 files as 0.0.9, which ships 9,318 with `uninstall.ps1`.
-  - Packaged with the `%TEMP%	srel010` kit: copied from tsrel009 with only the version and paths
+  - Packaged with the `%TEMP%\tsrel010` kit: copied from tsrel009 with only the version and paths
     changed.
 - Release assets:
   - `TigerSlicer-0.0.10-win64-Setup.exe`, 229,535,744 B, sha256 `9766646f…f881cc`.
