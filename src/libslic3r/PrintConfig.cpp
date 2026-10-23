@@ -379,7 +379,8 @@ static t_config_enum_values s_keys_map_SupportType{{"normal(auto)", stNormalAuto
                                                    {"tree(auto)", stTreeAuto},
                                                    {"normal(manual)", stNormal},
                                                    {"tree(manual)", stTree},
-                                                   {"fins", stFins}};
+                                                   {"fins", stFins},
+                                                   {"fins(manual)", stFinsManual}};
 CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(SupportType)
 
 static t_config_enum_values s_keys_map_FinSupportFallback{{"none", fsfNone}, {"tree", fsfTree}, {"normal", fsfNormal}};
@@ -6688,19 +6689,22 @@ void PrintConfigDef::init_fff_params()
     def->tooltip  = L("Normal (auto) and Tree (auto) are used to generate support automatically. "
                       "If Normal (manual) or Tree (manual) is selected, only support enforcers are generated.\n"
                       "Fins are thin breakaway walls standing beside the object wherever the object hangs over the bed, "
-                      "fused to it by single-layer tines. They hold parts printed tilted onto an edge. The overhang threshold applies only "
-                      "to supplemental tree or normal supports when Fins is selected.");
+                      "fused to it by single-layer tines. They hold parts printed tilted onto an edge. Fins (auto) stand under the "
+                      "whole object; Fins (manual) only under support enforcers, painted or added as enforcer volumes. "
+                      "The overhang threshold applies only to the supplemental tree or normal supports of Fins (auto).");
     def->enum_keys_map = &ConfigOptionEnum<SupportType>::get_enum_values();
     def->enum_values.push_back("normal(auto)");
     def->enum_values.push_back("tree(auto)");
     def->enum_values.push_back("normal(manual)");
     def->enum_values.push_back("tree(manual)");
     def->enum_values.push_back("fins");
+    def->enum_values.push_back("fins(manual)");
     def->enum_labels.push_back(L("Normal (auto)"));
     def->enum_labels.push_back(L("Tree (auto)"));
     def->enum_labels.push_back(L("Normal (manual)"));
     def->enum_labels.push_back(L("Tree (manual)"));
-    def->enum_labels.push_back(L("Fins"));
+    def->enum_labels.push_back(L("Fins (auto)"));
+    def->enum_labels.push_back(L("Fins (manual)"));
     def->mode = comSimple;
     def->set_default_value(new ConfigOptionEnum<SupportType>(stNormalAuto));
 
@@ -7007,14 +7011,18 @@ void PrintConfigDef::init_fff_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionEnum<SupportMaterialStyle>(smsDefault));
 
-    def           = this->add("support_fin_spacing", coFloat);
+    def           = this->add("support_fin_spacing", coFloatOrPercent);
     def->label    = L("Fin spacing");
     def->category = L("Support");
-    def->tooltip  = L("Distance between neighboring fins. Fins are oriented automatically to cross the edge the object leans over.");
-    def->sidetext = L("mm"); // millimeters, CIS languages need translation
-    def->min      = 1;
-    def->mode     = comAdvanced;
-    def->set_default_value(new ConfigOptionFloat(8));
+    def->tooltip  = L("How close together the fins stand. As a percentage, the share of the area under the object that the fins "
+                      "fill, like an infill density: at 15%, 1.6 mm fins stand about 10 mm apart. In mm, the gap between "
+                      "neighboring fins. Under an object that would tip over, the fins run the way it leans.");
+    def->sidetext    = L("mm or %");
+    def->min         = 1;
+    def->max         = 100;
+    def->max_literal = 50;
+    def->mode        = comAdvanced;
+    def->set_default_value(new ConfigOptionFloatOrPercent(15., true));
 
     def           = this->add("support_fin_thickness", coFloat);
     def->label    = L("Fin thickness");
@@ -7026,16 +7034,20 @@ void PrintConfigDef::init_fff_params()
     def->mode     = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(1.6));
 
-    def           = this->add("support_fin_tine_spacing", coFloat);
+    def           = this->add("support_fin_tine_spacing", coFloatOrPercent);
     def->label    = L("Tine spacing");
     def->category = L("Support");
-    def->tooltip  = L("Vertical distance between tines. A tine is a one-layer bead that fuses a fin to the object so the object "
-                      "cannot lean away from it; each one leaves a small mark. Tines only bond when the fins and the object use "
-                      "the same filament. Set to 0 to disable tines.");
-    def->sidetext = L("mm"); // millimeters, CIS languages need translation
-    def->min      = 0;
-    def->mode     = comAdvanced;
-    def->set_default_value(new ConfigOptionFloat(5));
+    def->tooltip  = L("How often the fins have tines, the small teeth along their top edge that hold the object. A tine is a "
+                      "one-layer bead that fuses a fin to the object so the object cannot lean away from it; each one leaves a "
+                      "small mark. As a percentage, the share of each fin's height that is tines: at 0.2 mm layers, 4% puts a "
+                      "tine every 5 mm. In mm, the height between tines. Tines only bond when the fins and the object use the "
+                      "same filament. Set to 0 to disable tines.");
+    def->sidetext    = L("mm or %");
+    def->min         = 0;
+    def->max         = 100;
+    def->max_literal = 50;
+    def->mode        = comAdvanced;
+    def->set_default_value(new ConfigOptionFloatOrPercent(4., true));
 
     def           = this->add("support_fin_tine_base_rows", coBool);
     def->label    = L("Extra tines near the bed");

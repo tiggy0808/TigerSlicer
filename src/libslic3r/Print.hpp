@@ -476,7 +476,9 @@ public:
         return blockers;
     }
     const Polygons& fin_support_reserved() const { return m_fin_support_reserved; }
-    std::vector<Polygons>       slice_support_enforcers() const { return this->slice_support_volumes(ModelVolumeType::SUPPORT_ENFORCER); }
+    // Enforcers give the reserved fin columns up: tree and normal supports apply enforcers after blockers, so an
+    // enforcer would otherwise grow supplemental supports inside the fins.
+    std::vector<Polygons> slice_support_enforcers() const;
 
     // Helpers to project custom facets on slices
     void project_and_append_custom_facets(bool seam, EnforcerBlockerType type, std::vector<Polygons>& expolys, std::vector<std::pair<Vec3f,Vec3f>>* vertical_points=nullptr) const;

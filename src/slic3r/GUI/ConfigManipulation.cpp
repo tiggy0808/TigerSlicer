@@ -874,11 +874,12 @@ void ConfigManipulation::toggle_print_fff_options(DynamicPrintConfig *config, in
     bool have_support_material = config->opt_bool("enable_support") || have_raft;
 
     SupportType support_type = config->opt_enum<SupportType>("support_type");
-    const bool support_is_fins   = config->opt_bool("enable_support") && support_type == stFins;
+    const bool support_is_fins   = config->opt_bool("enable_support") && is_fins(support_type);
     const auto fin_fallback      = config->opt_enum<FinSupportFallback>("support_fin_fallback");
     const bool have_fin_fallback = support_is_fins && fin_fallback != fsfNone;
+    const bool fins_manual       = support_is_fins && support_type == stFinsManual;
     if (have_fin_fallback)
-        support_type = fin_fallback == fsfTree ? stTreeAuto : stNormalAuto;
+        support_type = fin_fallback_support_type(support_type, fin_fallback);
     const bool have_top_interface = config->opt_int(support_is_fins ? "support_fin_interface_layers" : "support_interface_top_layers") > 0;
     bool have_support_interface   = have_top_interface ||
                                     ((!support_is_fins || have_fin_fallback) && config->opt_int("support_interface_bottom_layers") > 0);
@@ -921,10 +922,11 @@ void ConfigManipulation::toggle_print_fff_options(DynamicPrintConfig *config, in
 
     // Fin support: fins are placed from the object shape, not from overhang detection or support patterns.
     for (auto el : {"support_fin_spacing", "support_fin_thickness", "support_fin_tine_spacing", "support_fin_height",
-                    "support_fin_lean_side_only", "support_fin_cross_spacing", "support_fin_holes", "support_fin_interface_layers",
-                    "support_fin_fallback"})
+                    "support_fin_cross_spacing", "support_fin_holes", "support_fin_interface_layers", "support_fin_fallback"})
         toggle_line(el, support_is_fins);
-    const bool fin_tines = support_is_fins && config->opt_float("support_fin_tine_spacing") > 0.;
+    // With Fins (manual) the enforcers choose the side.
+    toggle_line("support_fin_lean_side_only", support_is_fins && !fins_manual);
+    const bool fin_tines = support_is_fins && config->option<ConfigOptionFloatOrPercent>("support_fin_tine_spacing")->value > 0.;
     for (auto el : {"support_fin_tine_depth", "support_fin_tine_base_rows"})
         toggle_line(el, fin_tines);
     for (auto el :

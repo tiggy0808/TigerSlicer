@@ -18,11 +18,15 @@
 // detection. For every object layer up to support_fin_height:
 //  1. The fin region is the area under the object (the projection of all layers above) that
 //     is clear of the object down to the bed, kept support_object_xy_distance off the object
-//     and support_top_z_distance below it. Support blockers are subtracted.
+//     and support_top_z_distance below it. Support blockers are subtracted. Fins (manual)
+//     (TigerSlicer) keeps only the part under support enforcers: the projection of the enforcer
+//     volumes and painted enforcer facets at or above the layer.
 //  2. The region is clipped to parallel strips (the fins), support_fin_thickness wide and one
-//     every support_fin_spacing. The strips are fixed in XY for the whole object, so each fin
-//     is one continuous wall. They run across the long axis of the fin regions, so they end
-//     at the edge the object leans over. A column between two strips gets its own fin.
+//     every support_fin_spacing (or, as a percentage, filling that share of the area). The strips
+//     are fixed in XY for the whole object, so each fin is one continuous wall. Under an object that
+//     would tip over, they run the way it leans (TigerSlicer), so each fin is a wall in the plane it
+//     would tip in; under one that stands on its own they run across the long axis of the fin regions. One strip runs down the middle of the fin regions, so a
+//     narrow part gets one fin down its middle (TigerSlicer). A column between two strips gets its own fin.
 //     With support_fin_lean_side_only, only the fin columns on the side the object leans toward
 //     are kept (see keep_lean_side()).
 //     With support_fin_cross_spacing, fins also run across the main fins, bracing them into a scaffold.
@@ -40,11 +44,13 @@
 #include "SupportFins.hpp"
 #include "SupportCommon.hpp"
 #include "../ClipperUtils.hpp"
+#include "../Geometry/ConvexHull.hpp"
 #include "../Layer.hpp"
 #include "../Print.hpp"
 
 #include <algorithm>
 #include <cmath>
+#include <optional>
 #include <boost/log/trivial.hpp>
 #include <tbb/parallel_for.h>
 
@@ -55,6 +61,8 @@ static constexpr double kBaseHeight     = 1.0;
 static constexpr double kBaseWidthRatio = 3.0;
 // A fin taller than this many times its length is reported as slender.
 static constexpr double kSlenderRatio = 10.0;
+// An object whose center of mass is less than this far (mm) from the center of its bed contact is balanced.
+static constexpr double kMinLean = 0.5;
 
 // Extra rows near the bed: the first just above the foot, then gaps from kTineGapMin growing by
 // kTineGapGrowth until they reach the regular tine spacing.
@@ -116,11 +124,31 @@ static Polygons fin_hole_bands(const BoundingBox& rbox, double angle, double z)
     return bands;
 }
 
+// Height between tine rows in mm, 0 for none. As a percentage (TigerSlicer), support_fin_tine_spacing is
+// the share of a fin's height taken by its one-layer tines, like a density: 4% at 0.2 mm layers is a
+// row every 5 mm.
+static double tine_row_spacing(const PrintObjectConfig& config)
+{
+    const ConfigOptionFloatOrPercent& spacing = config.support_fin_tine_spacing;
+    if (spacing.value <= 0.)
+        return 0.;
+    return spacing.percent ? config.layer_height.value * 100. / std::min(spacing.value, 100.) : spacing.value;
+}
+
+// Distance between the centers of neighboring fins. support_fin_spacing in mm is the gap between them;
+// as a percentage (TigerSlicer) it is the share of the area the fins fill, like an infill density.
+static coord_t fin_pitch(const ConfigOptionFloatOrPercent& spacing, coord_t thickness)
+{
+    if (spacing.percent)
+        return coord_t(double(thickness) * 100. / std::clamp(spacing.value, 1., 100.));
+    return std::max<coord_t>(0, scaled<coord_t>(spacing.value)) + thickness;
+}
+
 std::vector<bool> fin_tine_layers(const PrintObject& object)
 {
     const PrintObjectConfig& config = object.config();
     const auto layers               = object.layers();
-    const double spacing            = config.support_fin_tine_spacing.value;
+    const double spacing            = tine_row_spacing(config);
     std::vector<bool> rows(layers.size(), false);
     if (spacing <= 0.)
         return rows;
@@ -154,22 +182,87 @@ static Polygon fin_strip(const BoundingBox& rbox, double angle, coord_t y, coord
     return strip;
 }
 
-// Parallel strips `width` wide with centers on a global grid of `pitch`, running along `angle`
-// and covering `bbox`.
-static Polygons fin_strips(const BoundingBox& bbox, double angle, coord_t pitch, coord_t width)
+// Parallel strips `width` wide with centers `pitch` apart and one at `offset`, running along
+// `angle` and covering `bbox`. `offset` is measured across the strips, in the frame rotated by -angle.
+static Polygons fin_strips(const BoundingBox& bbox, double angle, coord_t pitch, coord_t width, coord_t offset)
 {
     const BoundingBox rbox = rotated_extents(bbox, angle, width);
     Polygons strips;
-    for (coord_t k = coord_t(std::floor(double(rbox.min.y()) / pitch)); k * pitch <= rbox.max.y() + pitch; ++k)
-        strips.emplace_back(fin_strip(rbox, angle, k * pitch, width));
+    for (coord_t k = coord_t(std::floor(double(rbox.min.y() - offset) / pitch)); offset + k * pitch <= rbox.max.y() + pitch; ++k)
+        strips.emplace_back(fin_strip(rbox, angle, offset + k * pitch, width));
     return strips;
 }
 
-// Direction the fins run, in radians: across the long axis of the fin regions.
-// Second moments are summed per island about the island's own centroid, so islands on
-// opposite sides of the object do not read as one region spread across the object.
-static double fin_angle(const std::vector<Polygons>& regions)
+// Area-weighted centroid of `expolys` (holes subtract) in scaled coordinates; `area` receives the total area.
+static Vec2d area_centroid(const ExPolygons& expolys, double& area)
 {
+    Vec2d sum = Vec2d::Zero();
+    area      = 0.;
+    for (const ExPolygon& expoly : expolys) {
+        // Polygon::area() is signed: contours are CCW (positive) and holes CW (negative).
+        sum += expoly.contour.area() * expoly.contour.centroid().cast<double>();
+        area += expoly.contour.area();
+        for (const Polygon& hole : expoly.holes) {
+            sum += hole.area() * hole.centroid().cast<double>();
+            area += hole.area();
+        }
+    }
+    return area > 0. ? Vec2d(sum / area) : sum;
+}
+
+// Where to put the strips of fin_strips() across `footprint`: one down its middle, through its
+// area centroid, and the rest every pitch either side of it. A part narrower than two pitches gets
+// one fin, down its middle, which is where a round or tilted part hangs lowest.
+static coord_t fin_strips_offset(const Polygons& footprint, double angle)
+{
+    Polygons across = footprint;
+    for (Polygon& poly : across)
+        poly.rotate(-angle);
+    double area;
+    return coord_t(std::lround(area_centroid(union_ex(across), area).y()));
+}
+
+// The center of the object's contact with the bed, and the way the object leans: from that center
+// to its center of mass. Both in XY, scaled. `tips_over` when the center of mass is outside the
+// convex hull of the contact, so the object would fall over without support.
+struct FinLean
+{
+    Vec2d base;
+    Vec2d lean;
+    bool  tips_over;
+};
+
+// Empty when the object or its bed contact has no area.
+static std::optional<FinLean> object_lean(const LayerPtrs& layers)
+{
+    // Center of mass in XY: slice centroids weighted by slice area times layer height.
+    Vec2d com   = Vec2d::Zero();
+    double mass = 0.;
+    for (const Layer* layer : layers) {
+        double area;
+        const Vec2d c = area_centroid(layer->lslices, area);
+        com += c * area * layer->height;
+        mass += area * layer->height;
+    }
+    double base_area;
+    const Vec2d base = area_centroid(layers.front()->lslices, base_area);
+    if (mass <= 0. || base_area <= 0.)
+        return std::nullopt;
+    com /= mass;
+    const Point com_point(coord_t(std::lround(com.x())), coord_t(std::lround(com.y())));
+    return FinLean{base, com - base, !Geometry::convex_hull(layers.front()->lslices).contains(com_point)};
+}
+
+// Direction the fins run, in radians. A fin is stiff only in its own plane, so under an object that
+// would tip over the fins run the way it leans, where they hold it up: a long part tilted along its
+// length gets fins down its length, not a row of short fins across it. Under an object that stands
+// on its own they run across the long axis of the fin regions. Second moments are summed per island
+// about the island's own centroid, so islands on opposite sides of the object do not read as one
+// region spread across the object.
+static double fin_angle(const LayerPtrs& layers, const std::vector<Polygons>& regions)
+{
+    if (const std::optional<FinLean> lean = object_lean(layers); lean && lean->tips_over && lean->lean.norm() >= scale_(kMinLean))
+        return std::atan2(lean->lean.y(), lean->lean.x());
     double sxx = 0., syy = 0., sxy = 0.;
     for (const Polygons& region : regions)
         for (const ExPolygon& island : union_ex(region)) {
@@ -208,42 +301,14 @@ static double fin_angle(const std::vector<Polygons>& regions)
     return 0.5 * std::atan2(2. * sxy, sxx - syy) + 0.5 * M_PI;
 }
 
-// Area-weighted centroid of `expolys` (holes subtract) in scaled coordinates; `area` receives the total area.
-static Vec2d area_centroid(const ExPolygons& expolys, double& area)
-{
-    Vec2d sum = Vec2d::Zero();
-    area      = 0.;
-    for (const ExPolygon& expoly : expolys) {
-        // Polygon::area() is signed: contours are CCW (positive) and holes CW (negative).
-        sum += expoly.contour.area() * expoly.contour.centroid().cast<double>();
-        area += expoly.contour.area();
-        for (const Polygon& hole : expoly.holes) {
-            sum += hole.area() * hole.centroid().cast<double>();
-            area += hole.area();
-        }
-    }
-    return area > 0. ? Vec2d(sum / area) : sum;
-}
-
 // Keeps only the fin columns on the side the object leans toward: the side of its bed contact
 // that its center of mass lies on. Those fins hold the object up in compression; a tine is too
 // thin to hold it in tension from the other side. A balanced object keeps its largest column's side.
 static void keep_lean_side(const LayerPtrs& layers, std::vector<Polygons>& regions)
 {
-    // Center of mass in XY: slice centroids weighted by slice area times layer height.
-    Vec2d com   = Vec2d::Zero();
-    double mass = 0.;
-    for (const Layer* layer : layers) {
-        double area;
-        const Vec2d c = area_centroid(layer->lslices, area);
-        com += c * area * layer->height;
-        mass += area * layer->height;
-    }
-    double base_area;
-    const Vec2d base = area_centroid(layers.front()->lslices, base_area);
-    if (mass <= 0. || base_area <= 0.)
+    const std::optional<FinLean> object = object_lean(layers);
+    if (!object)
         return;
-    com /= mass;
 
     // Fin regions only narrow going up, so the lowest one holds every fin column.
     auto lowest = std::find_if(regions.begin(), regions.end(), [](const Polygons& region) { return !region.empty(); });
@@ -252,13 +317,13 @@ static void keep_lean_side(const LayerPtrs& layers, std::vector<Polygons>& regio
     const ExPolygons columns = union_ex(*lowest);
     if (columns.empty())
         return;
-    auto column_offset       = [&base](const ExPolygon& column) {
+    auto column_offset       = [&base = object->base](const ExPolygon& column) {
         double area;
         return Vec2d(area_centroid({column}, area) - base);
     };
 
-    Vec2d lean = com - base;
-    if (lean.norm() < scale_(0.5)) {
+    Vec2d lean = object->lean;
+    if (lean.norm() < scale_(kMinLean)) {
         const auto largest = std::max_element(columns.begin(), columns.end(),
                                               [](const ExPolygon& a, const ExPolygon& b) { return a.area() < b.area(); });
         lean               = column_offset(*largest);
@@ -274,6 +339,22 @@ static void keep_lean_side(const LayerPtrs& layers, std::vector<Polygons>& regio
     for (Polygons& region : regions)
         if (!region.empty())
             region = intersection(region, keep);
+}
+
+// How far a layer may reach past the one below before tree and normal supports support it: the
+// lower layer offset they use for the support threshold angle, or for the threshold overlap when the
+// angle is 0 (auto).
+static float overhang_threshold_offset(const PrintObjectConfig& config, const Layer& lower_layer)
+{
+    const int threshold = config.support_threshold_angle.value;
+    if (threshold > 0)
+        // +1 makes the threshold inclusive, as in tree and normal supports.
+        return scaled<float>(lower_layer.height / std::tan(std::min(threshold + 1, 89) * M_PI / 180.));
+    float width = 0.f;
+    for (const LayerRegion* layerm : lower_layer.regions())
+        width += layerm->flow(frExternalPerimeter).scaled_width();
+    width /= float(std::max<size_t>(1, lower_layer.region_count()));
+    return width - float(scale_(config.support_threshold_overlap.get_abs_value(unscale_(width))));
 }
 
 bool generate_fin_support(PrintObject& object, Polygons* reserved_columns)
@@ -298,6 +379,15 @@ bool generate_fin_support(PrintObject& object, Polygons* reserved_columns)
 
     std::vector<Polygons> blockers = object.slice_support_blockers();
     object.project_and_append_custom_facets(false, EnforcerBlockerType::BLOCKER, blockers);
+    const bool manual = config.support_type.value == stFinsManual;
+    // Enforced areas: where Fins (manual) stand, and overhangs the supplemental supports take at any slope.
+    std::vector<Polygons> enforcers;
+    if (manual || reserved_columns != nullptr) {
+        enforcers = object.slice_support_enforcers();
+        object.project_and_append_custom_facets(false, EnforcerBlockerType::ENFORCER, enforcers);
+    }
+    if (manual && std::all_of(enforcers.begin(), enforcers.end(), [](const Polygons& layer) { return layer.empty(); }))
+        return false;
 
     // 1. Fin regions, only for the layers up to the fin height.
     const coordf_t fin_height = config.support_fin_height.value;
@@ -345,22 +435,51 @@ bool generate_fin_support(PrintObject& object, Polygons* reserved_columns)
         }
     }
 
-    if (config.support_fin_lean_side_only.value)
+    // Fins (manual): only under the enforced areas at or above each layer, projected down to the bed.
+    if (manual) {
+        Polygons enforced;
+        for (size_t i = num_layers; i-- > 0;) {
+            if (i < enforcers.size() && !enforcers[i].empty())
+                enforced = union_(enforced, enforcers[i]);
+            if (!regions[i].empty())
+                regions[i] = enforced.empty() ? Polygons() : intersection(regions[i], enforced);
+            if (object.print()->canceled())
+                return false;
+        }
+    }
+
+    // With Fins (manual) the enforcers already choose the side.
+    if (config.support_fin_lean_side_only.value && !manual)
         keep_lean_side(layers, regions);
 
     // Give supplemental supports complete vertical columns wherever a real overhang
     // cannot be reached by a fin. Reserving whole columns keeps both generators from
-    // cutting the other one's load-bearing path to the bed.
+    // cutting the other one's load-bearing path to the bed. A real overhang is one the
+    // supplemental supports would support (TigerSlicer): steeper slopes, such as the 40 degree
+    // sides of a part tilted 40 degrees, would get no support from them, only a gap cut through the fins.
     if (reserved_columns != nullptr) {
         reserved_columns->clear();
         Polygons uncovered;
-        size_t support_idx = 0;
-        const float bead   = float(support_params.support_material_flow.scaled_spacing());
+        size_t support_idx        = 0;
+        const float bead          = float(support_params.support_material_flow.scaled_spacing());
+        const float any_slope     = 0.5f * bead;
+        const int   forced_layers = config.enforce_support_layers.value;
         for (size_t i = 1; i < num_layers; ++i) {
             const double support_z = layers[i]->bottom_z() - top_gap;
             while (support_idx + 1 < i && layers[support_idx + 1]->print_z <= support_z + EPSILON)
                 ++support_idx;
-            Polygons overhang = diff(outlines[i], offset(outlines[i - 1], 0.5f * bead));
+            const bool enforced = i < enforcers.size() && !enforcers[i].empty();
+            // Manual supplemental supports only support enforced overhangs; leave the rest to the fins.
+            if (manual && !enforced)
+                continue;
+            // Enforced overhangs, and all overhangs in the first enforce_support_layers layers, are
+            // supported whatever their slope, as tree and normal supports do.
+            const float lower_offset = manual || int(i) < forced_layers ? any_slope : overhang_threshold_offset(config, *layers[i - 1]);
+            Polygons overhang        = diff(outlines[i], offset(outlines[i - 1], lower_offset));
+            if (manual)
+                overhang = intersection(overhang, offset(enforcers[i], bead));
+            else if (enforced && lower_offset > any_slope)
+                append(overhang, intersection(diff(outlines[i], offset(outlines[i - 1], any_slope)), offset(enforcers[i], bead)));
             if (layers[support_idx]->print_z <= support_z + EPSILON)
                 overhang = diff(overhang, offset(regions[support_idx], float(scale_(support_params.gap_xy)) + bead));
             append(uncovered, overhang);
@@ -384,13 +503,16 @@ bool generate_fin_support(PrintObject& object, Polygons* reserved_columns)
     const coord_t thickness = 2 * spacing *
                               std::max<coord_t>(1,
                                                 coord_t(std::lround(scaled<double>(config.support_fin_thickness.value) / (2. * spacing))));
-    const coord_t pitch     = std::max<coord_t>(0, scaled<coord_t>(config.support_fin_spacing.value)) + thickness;
+    const coord_t pitch     = fin_pitch(config.support_fin_spacing, thickness);
     // A tine is one bead out and one bead back: two extrusions wide, never wider than the fin.
     const coord_t tine_width = std::min(thickness, 2 * spacing);
-    const double angle       = fin_angle(regions);
-    Polygons fins            = fin_strips(bbox, angle, pitch, thickness);
-    Polygons feet            = fin_strips(bbox, angle, pitch, coord_t(kBaseWidthRatio * thickness));
-    Polygons tine_strips     = fin_strips(bbox, angle, pitch, tine_width);
+    const double angle       = fin_angle(layers, regions);
+    // Regions only narrow going up, so the lowest one holds every fin column.
+    const Polygons footprint = *std::find_if(regions.begin(), regions.end(), [](const Polygons& region) { return !region.empty(); });
+    const coord_t fin_offset  = fin_strips_offset(footprint, angle);
+    Polygons fins             = fin_strips(bbox, angle, pitch, thickness, fin_offset);
+    Polygons feet             = fin_strips(bbox, angle, pitch, coord_t(kBaseWidthRatio * thickness), fin_offset);
+    Polygons tine_strips      = fin_strips(bbox, angle, pitch, tine_width, fin_offset);
     const BoundingBox rbox   = rotated_extents(bbox, angle, thickness);
     // Pieces narrower than half an extrusion cannot be printed; drop them.
     const float min_width = 0.25f * float(spacing);
@@ -405,33 +527,30 @@ bool generate_fin_support(PrintObject& object, Polygons* reserved_columns)
     Polygons holed_fins = main_fins;
     Polygons cross_fins;
     if (cross_pitch > 0) {
-        cross_fins = fin_strips(bbox, cross_angle, cross_pitch, thickness);
+        const coord_t cross_offset = fin_strips_offset(footprint, cross_angle);
+        cross_fins                 = fin_strips(bbox, cross_angle, cross_pitch, thickness, cross_offset);
         append(fins, cross_fins);
-        append(feet, fin_strips(bbox, cross_angle, cross_pitch, coord_t(kBaseWidthRatio * thickness)));
+        append(feet, fin_strips(bbox, cross_angle, cross_pitch, coord_t(kBaseWidthRatio * thickness), cross_offset));
     }
-    // Regions only narrow going up, so the lowest layer holds every fin column. A column narrower
-    // than the fin spacing may fall between two grid fins: give it its own fin through its center,
-    // fixed for all layers so the fin stands on itself all the way down to the bed.
-    for (const Polygons& region : regions)
-        if (!region.empty()) {
-            for (const ExPolygon& island : union_ex(region))
-                if (intersection(to_polygons(island), main_fins).empty()) {
-                    Point c = island.contour.centroid();
-                    c.rotate(-angle);
-                    fins.emplace_back(fin_strip(rbox, angle, c.y(), thickness));
-                    feet.emplace_back(fin_strip(rbox, angle, c.y(), coord_t(kBaseWidthRatio * thickness)));
-                    tine_strips.emplace_back(fin_strip(rbox, angle, c.y(), tine_width));
-                    holed_fins.emplace_back(fin_strip(rbox, angle, c.y(), thickness));
-                    if (cross_pitch > 0) {
-                        // Brace it with a cross fin through the same center.
-                        Point cc = island.contour.centroid();
-                        cc.rotate(-cross_angle);
-                        fins.emplace_back(fin_strip(cross_rbox, cross_angle, cc.y(), thickness));
-                        cross_fins.emplace_back(fin_strip(cross_rbox, cross_angle, cc.y(), thickness));
-                        feet.emplace_back(fin_strip(cross_rbox, cross_angle, cc.y(), coord_t(kBaseWidthRatio * thickness)));
-                    }
-                }
-            break;
+    // A column narrower than the fin spacing may fall between two grid fins, or be grazed by one too
+    // thin to print: give it its own fin through its center, fixed for all layers so the fin stands on
+    // itself all the way down to the bed.
+    for (const ExPolygon& island : union_ex(footprint))
+        if (opening(intersection(to_polygons(island), main_fins), min_width).empty()) {
+            Point c = island.contour.centroid();
+            c.rotate(-angle);
+            fins.emplace_back(fin_strip(rbox, angle, c.y(), thickness));
+            feet.emplace_back(fin_strip(rbox, angle, c.y(), coord_t(kBaseWidthRatio * thickness)));
+            tine_strips.emplace_back(fin_strip(rbox, angle, c.y(), tine_width));
+            holed_fins.emplace_back(fin_strip(rbox, angle, c.y(), thickness));
+            if (cross_pitch > 0) {
+                // Brace it with a cross fin through the same center.
+                Point cc = island.contour.centroid();
+                cc.rotate(-cross_angle);
+                fins.emplace_back(fin_strip(cross_rbox, cross_angle, cc.y(), thickness));
+                cross_fins.emplace_back(fin_strip(cross_rbox, cross_angle, cc.y(), thickness));
+                feet.emplace_back(fin_strip(cross_rbox, cross_angle, cc.y(), coord_t(kBaseWidthRatio * thickness)));
+            }
         }
     fins                             = union_(fins);
     feet                             = union_(feet);

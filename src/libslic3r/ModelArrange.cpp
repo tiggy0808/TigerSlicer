@@ -174,7 +174,7 @@ ArrangePolygon get_instance_arrange_poly(ModelInstance* instance, const Slic3r::
     const bool        enable_support = supp_type_ptr != nullptr && supp_type_ptr->getBool();
     const SupportType support_type   = support_type_ptr != nullptr ? support_type_ptr->value : stNormalAuto;
 
-    if (enable_support && (support_type == stNormalAuto || support_type == stNormal || support_type == stFins))
+    if (enable_support && (support_type == stNormalAuto || support_type == stNormal || is_fins(support_type)))
         ap.brim_width = 6.0;
     else if (enable_support) {
         ap.brim_width = 24.0; // 2*MAX_BRANCH_RADIUS_FIRST_LAYER

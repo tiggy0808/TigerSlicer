@@ -4873,7 +4873,7 @@ void PrintObject::_generate_support_material()
     m_fin_support_reserved.clear();
     // Fins stand on the bed. A raft (rejected with fins by Print::validate, but still built when support
     // is off) and enforced support layers go through the classic generator, which builds them alone.
-    if (m_config.enable_support && m_config.support_type.value == stFins && !this->has_raft()) {
+    if (m_config.enable_support && is_fins(m_config.support_type.value) && !this->has_raft()) {
         const auto fallback = m_config.support_fin_fallback.value;
         bool       slender  = false;
         try {
@@ -4896,7 +4896,7 @@ void PrintObject::_generate_support_material()
             fin_layers.swap(m_support_layers);
             const PrintObjectConfig original_config = m_config;
             try {
-                m_config.support_type.value = fallback == fsfTree ? stTreeAuto : stNormalAuto;
+                m_config.support_type.value = fin_fallback_support_type(original_config.support_type.value, fallback);
                 if (fallback == fsfTree)
                     m_config.support_style.value = smsTreeOrganic;
                 m_config.support_interface_top_layers.value = original_config.support_fin_interface_layers.value;
@@ -5319,6 +5319,16 @@ static void project_triangles_to_slabs(ConstLayerPtrsAdaptor layers, const index
     }
 }
 
+std::vector<Polygons> PrintObject::slice_support_enforcers() const
+{
+    std::vector<Polygons> enforcers = this->slice_support_volumes(ModelVolumeType::SUPPORT_ENFORCER);
+    if (!m_fin_support_reserved.empty())
+        for (Polygons& layer : enforcers)
+            if (!layer.empty())
+                layer = diff(layer, m_fin_support_reserved);
+    return enforcers;
+}
+
 void PrintObject::project_and_append_custom_facets(
         bool seam, EnforcerBlockerType type, std::vector<Polygons>& out, std::vector<std::pair<Vec3f, Vec3f>>* vertical_points) const
 {
@@ -5336,6 +5346,11 @@ void PrintObject::project_and_append_custom_facets(
                     std::vector<Polygons> projected;
                     // Support blockers or enforcers. Project downward facing painted areas upwards to their respective slicing plane.
                     slice_mesh_slabs(custom_facets, zs_from_layers(this->layers()), this->trafo_centered() * mv->get_matrix(), nullptr, &projected, vertical_points, [](){});
+                    // Painted enforcers give the reserved fin columns up, as slice_support_enforcers() does.
+                    if (type == EnforcerBlockerType::ENFORCER && !m_fin_support_reserved.empty())
+                        for (Polygons& layer : projected)
+                            if (!layer.empty())
+                                layer = diff(layer, m_fin_support_reserved);
                     // Merge these projections with the output, layer by layer.
                     assert(! projected.empty());
                     assert(out.empty() || out.size() == projected.size());

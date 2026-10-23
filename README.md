@@ -28,7 +28,7 @@ account and cloud features, plus the features below.
   walls lock into each other and parts are stronger between layers.
 - **Fin supports.** A third support type next to Normal and Tree, for parts printed tilted on an edge
   or corner: thin walls under the part with small tines that snap off afterwards, optionally with
-  holes to save filament.
+  holes to save filament. Auto puts them under the whole part; manual only where you paint support.
 - **Calibration builder.** One tool for every calibration print: temperature, pressure advance,
   retraction, flow ratio, print speed, acceleration, jerk or input shaping. Choose the range and step,
   then print a tower with the values raised on its bands, or a grid of labelled copies. Use your own

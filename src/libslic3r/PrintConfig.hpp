@@ -280,8 +280,10 @@ enum SupportType {
     stTreeAuto,
     stNormal,
     stTree,
-    // Orca: breakaway fins beside the object, see Support/SupportFins.cpp.
-    stFins
+    // Orca: breakaway fins beside the object, see Support/SupportFins.cpp. Saved as "fins" (auto).
+    stFins,
+    // TigerSlicer: fins only under support enforcers (painted or enforcer volumes).
+    stFinsManual
 };
 enum FinSupportFallback { fsfNone, fsfTree, fsfNormal };
 
@@ -296,6 +298,16 @@ inline bool is_tree_slim(SupportType type, SupportMaterialStyle style)
 inline bool is_auto(SupportType stype)
 {
     return std::set<SupportType>{stNormalAuto, stTreeAuto}.count(stype) != 0;
+};
+inline bool is_fins(SupportType stype)
+{
+    return stype == stFins || stype == stFinsManual;
+};
+// The support type that the supplemental supports of fin support run as: manual with Fins (manual).
+inline SupportType fin_fallback_support_type(SupportType fins, FinSupportFallback fallback)
+{
+    const bool manual = fins == stFinsManual;
+    return fallback == fsfTree ? (manual ? stTree : stTreeAuto) : (manual ? stNormal : stNormalAuto);
 };
 
 enum SeamPosition {
@@ -1178,18 +1190,6 @@ PRINT_CONFIG_CLASS_DEFINE(
     // Spacing between interface lines (the hatching distance). Set zero to get a solid interface.
     ((ConfigOptionFloat,               support_interface_spacing))
     ((ConfigOptionFloatsNullable,      support_interface_speed))
-    ((ConfigOptionEnum<SupportMaterialPattern>, support_base_pattern))
-    ((ConfigOptionEnum<SupportMaterialInterfacePattern>, support_interface_pattern))
-    // Spacing between support material lines (the hatching distance).
-    ((ConfigOptionFloat, support_base_pattern_spacing))((ConfigOptionFloat, support_expansion))(
-        (ConfigOptionFloatsNullable, support_speed))((ConfigOptionEnum<SupportMaterialStyle>, support_style))
-    // Orca: breakaway fin support (support_type == fins).
-    ((ConfigOptionFloat, support_fin_spacing))((ConfigOptionFloat, support_fin_thickness))((ConfigOptionFloat, support_fin_tine_spacing))((
-        ConfigOptionBool, support_fin_tine_base_rows))((ConfigOptionFloat, support_fin_tine_depth))((ConfigOptionFloat, support_fin_height))(
-        (ConfigOptionBool, support_fin_lean_side_only))((ConfigOptionFloat, support_fin_cross_spacing))((ConfigOptionBool, support_fin_holes))((ConfigOptionInt,
-                                                                                                         support_fin_interface_layers))
-
-    // Orca: a flag enabling the ability to override flow ratios
     // TigerSlicer: global in OrcaSlicer, set per object here.
     ((ConfigOptionFloatOrPercent,      initial_layer_line_width))
     ((ConfigOptionInt,                 slow_down_layers))
@@ -1198,6 +1198,18 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionBool,                reduce_infill_retraction))
     ((ConfigOptionFloatsNullable,      initial_layer_speed))
     ((ConfigOptionFloatsNullable,      initial_layer_infill_speed))
+    ((ConfigOptionEnum<SupportMaterialPattern>, support_base_pattern))
+    ((ConfigOptionEnum<SupportMaterialInterfacePattern>, support_interface_pattern))
+    // Spacing between support material lines (the hatching distance).
+    ((ConfigOptionFloat, support_base_pattern_spacing))((ConfigOptionFloat, support_expansion))(
+        (ConfigOptionFloatsNullable, support_speed))((ConfigOptionEnum<SupportMaterialStyle>, support_style))
+    // Orca: breakaway fin support (support_type == fins).
+    ((ConfigOptionFloatOrPercent, support_fin_spacing))((ConfigOptionFloat, support_fin_thickness))((ConfigOptionFloatOrPercent, support_fin_tine_spacing))((
+        ConfigOptionBool, support_fin_tine_base_rows))((ConfigOptionFloat, support_fin_tine_depth))((ConfigOptionFloat, support_fin_height))(
+        (ConfigOptionBool, support_fin_lean_side_only))((ConfigOptionFloat, support_fin_cross_spacing))((ConfigOptionBool, support_fin_holes))((ConfigOptionInt,
+                                                                                                         support_fin_interface_layers))
+
+    // Orca: a flag enabling the ability to override flow ratios
     ((ConfigOptionBool,     set_other_flow_ratios))
     // Orca: support-related flow ratios (available for overriding, if set_other_flow_ratios is enabled)
     ((ConfigOptionFloat,    support_flow_ratio))

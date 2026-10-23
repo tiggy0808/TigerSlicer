@@ -6,6 +6,7 @@
 #include "libslic3r/ClipperUtils.hpp"
 #include "libslic3r/GCodeReader.hpp"
 #include "libslic3r/Layer.hpp"
+#include "libslic3r/TriangleSelector.hpp"
 
 #include "test_helpers.hpp" // get access to init_print, etc
 // After test_helpers.hpp: SupportParameters.hpp is not self-contained.
@@ -280,6 +281,140 @@ TEST_CASE("Fin support holds a cube tipped onto an edge regardless of the overha
     }
 }
 
+// A 50 x 8 x 8 mm bar tilted 35 degrees along its length onto one end, its length turned `yaw`
+// degrees from X: it leans along its length, toward its raised end.
+static TriangleMesh bar_tilted_along_length(double yaw)
+{
+    TriangleMesh bar = make_cube(50, 8, 8);
+    bar.translate(-25, -4, -4);
+    bar.rotate_y(float(-35. * M_PI / 180.));
+    bar.rotate_z(float(yaw * M_PI / 180.));
+    bar.translate(0, 0, float(-bar.bounding_box().min.z()));
+    return bar;
+}
+
+TEST_CASE("Fins under a part tilted along its length run down its length", "[SupportMaterial][Fins]")
+{
+    const double yaw = GENERATE(0., 30.);
+    CAPTURE(yaw);
+    Slic3r::Print print;
+    Slic3r::Test::init_and_process_print({bar_tilted_along_length(yaw)}, print,
+                                         {
+                                             {"enable_support", 1},
+                                             {"support_type", "fins"},
+                                             {"support_fin_fallback", "none"},
+                                             {"layer_height", 0.2},
+                                             {"support_fin_spacing", 8},
+                                             {"support_fin_thickness", 1.6},
+                                             {"support_fin_tine_spacing", 0},
+                                         });
+    const PrintObject& object = *print.objects().front();
+    const SupportLayer* mid   = nullptr;
+    // Above the overhanging face at the bar's lower end, which is 6.6 mm tall.
+    for (const SupportLayer* layer : object.support_layers())
+        if (layer->print_z > 10.) {
+            mid = layer;
+            break;
+        }
+    REQUIRE(mid != nullptr);
+    // The bar is 8 mm wide, narrower than two fins 8 mm apart: one fin, down the middle of the bar.
+    REQUIRE(mid->support_islands.size() == 1);
+    const ExPolygon& fin = mid->support_islands.front();
+    Polygon along = fin.contour;
+    along.rotate(-yaw * M_PI / 180.);
+    const BoundingBox b = along.bounding_box();
+    CHECK(b.size().x() > 4 * b.size().y());
+    // The bar's center line runs through the object's origin.
+    CHECK(std::abs(unscale<double>(b.center().y())) < 0.5);
+}
+
+// The tilted bar with a 4 x 4 mm bore down its length, like a pulley on a shaft.
+static TriangleMesh tube_tilted_along_length()
+{
+    TriangleMesh tube = make_cube(50, 8, 2); // floor, z -4..-2
+    tube.translate(-25, -4, -4);
+    TriangleMesh roof = make_cube(50, 8, 2); // z 2..4
+    roof.translate(-25, -4, 2);
+    tube.merge(roof);
+    for (const float y : {-4.f, 2.f}) {
+        TriangleMesh side = make_cube(50, 2, 4); // z -2..2
+        side.translate(-25, y, -2);
+        tube.merge(side);
+    }
+    tube.rotate_y(float(-35. * M_PI / 180.));
+    tube.translate(0, 0, float(-tube.bounding_box().min.z()));
+    return tube;
+}
+
+// Tilted 35 degrees, the bore's roof slopes at 35 degrees: no overhang at a 30 degree threshold, so the
+// supplemental supports would not support it, and no column is cut through the fin for them.
+TEST_CASE("Fins are not cut for slopes the supplemental supports leave alone", "[SupportMaterial][Fins]")
+{
+    Slic3r::Print print;
+    Slic3r::Test::init_and_process_print({tube_tilted_along_length()}, print,
+                                         {
+                                             {"enable_support", 1},
+                                             {"support_type", "fins"},
+                                             {"support_fin_fallback", "tree"},
+                                             {"support_threshold_angle", 30},
+                                             {"layer_height", 0.2},
+                                             {"support_fin_spacing", 8},
+                                             {"support_fin_thickness", 1.6},
+                                             {"support_fin_tine_spacing", 0},
+                                         });
+    const PrintObject& object = *print.objects().front();
+    size_t checked            = 0;
+    // Above the overhanging face at the tube's lower end, up to the top of the fin.
+    for (const SupportLayer* layer : object.support_layers())
+        if (layer->print_z > 7. && !layer->support_islands.empty()) {
+            CAPTURE(layer->print_z);
+            CHECK(layer->support_islands.size() == 1);
+            ++checked;
+        }
+    CHECK(checked > 20);
+}
+
+// Painting the bore's roof asks for support inside the bore at any slope; the supplemental supports get room for it.
+TEST_CASE("Fins leave room for supplemental supports under a painted enforcer at any slope", "[SupportMaterial][Fins]")
+{
+    DynamicPrintConfig config = DynamicPrintConfig::full_print_config();
+    config.set_deserialize_strict({{"enable_support", 1},
+                                   {"support_type", "fins"},
+                                   {"support_fin_fallback", "normal"},
+                                   {"support_threshold_angle", 30},
+                                   {"layer_height", 0.2},
+                                   {"support_fin_tine_spacing", 0}});
+    Print print;
+    Model model;
+    Test::init_print({tube_tilted_along_length()}, print, model, config);
+    // The roof's underside, the bore's ceiling, faces down more steeply than the tube's end faces.
+    ModelVolume* volume             = model.objects.front()->volumes.front();
+    const indexed_triangle_set& its = volume->mesh().its;
+    TriangleSelector selector(volume->mesh());
+    size_t painted = 0;
+    for (int i = 12; i < 24; ++i) // the roof is the second cube merged
+        if (its_face_normal(its, its.indices[i]).z() < -0.7f) {
+            selector.set_facet(i, EnforcerBlockerType::ENFORCER);
+            ++painted;
+        }
+    REQUIRE(painted == 2);
+    volume->supported_facets.set(selector);
+    print.apply(model, config);
+    print.process();
+    // Support inside the bore: in the holes of the tube's slices.
+    double inside = 0.;
+    for (const SupportLayer* layer : print.objects().front()->support_layers())
+        if (const Layer* object_layer = print.objects().front()->get_layer_at_printz(layer->print_z, EPSILON)) {
+            Polygons bore;
+            for (const ExPolygon& slice : object_layer->lslices)
+                append(bore, slice.holes);
+            for (Polygon& hole : bore)
+                hole.reverse();
+            inside += area(intersection(to_polygons(layer->support_islands), bore));
+        }
+    CHECK(inside > scale_(scale_(1.)));
+}
+
 TEST_CASE("Fin support stops at the fin height", "[SupportMaterial][Fins]")
 {
     Slic3r::Print print;
@@ -294,6 +429,116 @@ TEST_CASE("Fin support stops at the fin height", "[SupportMaterial][Fins]")
     const PrintObject& object = *print.objects().front();
     REQUIRE(!object.support_layers().empty());
     REQUIRE(object.support_layers().back()->print_z <= 4. + EPSILON);
+}
+
+// The support table with fins of `type`, optionally with a support enforcer box over the slab's overhang
+// on the -X side of the stem only (x 0..10 of the 30 mm slab; the stem is x 10..20).
+static void process_table_fins(Print& print, Model& model, const std::string& type, const std::string& fallback, bool enforcer)
+{
+    DynamicPrintConfig config = DynamicPrintConfig::full_print_config();
+    config.set_deserialize_strict({{"enable_support", 1},
+                                   {"support_type", type},
+                                   {"support_fin_fallback", fallback},
+                                   {"layer_height", 0.2},
+                                   {"support_fin_tine_spacing", 0}});
+    Test::init_print({support_table()}, print, model, config);
+    if (enforcer) {
+        model.objects.front()->add_volume(make_cube(10, 30, 12), ModelVolumeType::SUPPORT_ENFORCER, false);
+        print.apply(model, config);
+    }
+    print.process();
+}
+
+// X extent of the stem and of the support at about z = 5, in the object's slice coordinates.
+static std::pair<BoundingBox, BoundingBox> stem_and_support_at_5mm(const PrintObject& object)
+{
+    BoundingBox stem, support;
+    for (const SupportLayer* layer : object.support_layers())
+        if (layer->print_z > 5.) {
+            support = get_extents(layer->support_islands);
+            if (const Layer* object_layer = object.get_layer_at_printz(layer->print_z, EPSILON))
+                stem = get_extents(object_layer->lslices);
+            break;
+        }
+    return {stem, support};
+}
+
+TEST_CASE("Fins (manual) stand only under support enforcers", "[SupportMaterial][Fins]")
+{
+    const char* fallback = GENERATE("none", "tree");
+    CAPTURE(fallback);
+    Print print;
+    Model model;
+    process_table_fins(print, model, "fins(manual)", fallback, true);
+    const auto [stem, support] = stem_and_support_at_5mm(*print.objects().front());
+    REQUIRE(stem.defined);
+    REQUIRE(support.defined);
+    // The enforcer ends at the stem's -X face. Fins beside the stem reach that edge; none go past it.
+    CHECK(support.max.x() <= stem.min.x() + scaled<coord_t>(0.01));
+}
+
+TEST_CASE("Fins (manual) stand under painted enforcers", "[SupportMaterial][Fins]")
+{
+    const char* fallback = GENERATE("none", "tree");
+    CAPTURE(fallback);
+    DynamicPrintConfig config = DynamicPrintConfig::full_print_config();
+    config.set_deserialize_strict({{"enable_support", 1},
+                                   {"support_type", "fins(manual)"},
+                                   {"support_fin_fallback", fallback},
+                                   {"layer_height", 0.2},
+                                   {"support_fin_tine_spacing", 0}});
+    Print print;
+    Model model;
+    Test::init_print({cube_on_edge()}, print, model, config);
+    // Paint the underside face on the -Y side of the edge the cube rests on.
+    ModelVolume* volume             = model.objects.front()->volumes.front();
+    const indexed_triangle_set& its = volume->mesh().its;
+    TriangleSelector selector(volume->mesh());
+    size_t painted = 0;
+    for (int i = 0; i < int(its.indices.size()); ++i) {
+        const Vec3f normal = its_face_normal(its, its.indices[i]);
+        if (normal.z() < -0.5f && normal.y() < -0.5f) {
+            selector.set_facet(i, EnforcerBlockerType::ENFORCER);
+            ++painted;
+        }
+    }
+    REQUIRE(painted > 0);
+    volume->supported_facets.set(selector);
+    print.apply(model, config);
+    print.process();
+    BoundingBox support;
+    for (const SupportLayer* layer : print.objects().front()->support_layers())
+        if (!layer->support_islands.empty())
+            support.merge(get_extents(layer->support_islands));
+    REQUIRE(support.defined);
+    // The cube rests on its edge at y = 0 of the object: fins on the painted -Y side only.
+    CHECK(support.min.y() < -scaled<coord_t>(5.));
+    CHECK(support.max.y() < scaled<coord_t>(0.5));
+}
+
+TEST_CASE("Fins (manual) without an enforcer add no support", "[SupportMaterial][Fins]")
+{
+    Print print;
+    Model model;
+    process_table_fins(print, model, "fins(manual)", "none", false);
+    for (const SupportLayer* layer : print.objects().front()->support_layers()) {
+        CAPTURE(layer->print_z);
+        CHECK(layer->support_islands.empty());
+    }
+}
+
+TEST_CASE("Fins (auto) stand on every side whatever the enforcers", "[SupportMaterial][Fins]")
+{
+    const bool enforcer = GENERATE(false, true);
+    CAPTURE(enforcer);
+    Print print;
+    Model model;
+    process_table_fins(print, model, "fins", "none", enforcer);
+    const auto [stem, support] = stem_and_support_at_5mm(*print.objects().front());
+    REQUIRE(stem.defined);
+    REQUIRE(support.defined);
+    CHECK(support.min.x() < stem.min.x());
+    CHECK(support.max.x() > stem.max.x());
 }
 
 TEST_CASE("Fin support on a raft is rejected", "[SupportMaterial][Fins]")
@@ -365,6 +610,35 @@ TEST_CASE("Fin support with cross fins adds bracing across the main fins", "[Sup
     const auto braced = slice_table(6.);
     // Halfway up the stem, the scaffold covers more area than the parallel fins alone.
     CHECK(support_area_at(*braced->objects().front(), 5.) > support_area_at(*plain->objects().front(), 5.));
+}
+
+TEST_CASE("Fin and tine spacing as a percentage are densities", "[SupportMaterial][Fins]")
+{
+    auto table_print = [](const char* fin_spacing, const char* tine_spacing) {
+        auto print = std::make_unique<Slic3r::Print>();
+        Slic3r::Test::init_and_process_print({support_table()}, *print,
+                                             {
+                                                 {"enable_support", 1},
+                                                 {"support_type", "fins"},
+                                                 {"support_fin_fallback", "none"},
+                                                 {"layer_height", 0.2},
+                                                 {"support_fin_spacing", fin_spacing},
+                                                 {"support_fin_tine_spacing", tine_spacing},
+                                             });
+        return print;
+    };
+    // Twice the density, twice the fin area (give or take a fin cut short at the edge).
+    const auto sparse = table_print("15%", "4%");
+    const auto dense  = table_print("30%", "4%");
+    const double ratio = support_area_at(*dense->objects().front(), 5.) / support_area_at(*sparse->objects().front(), 5.);
+    CAPTURE(ratio);
+    CHECK(ratio > 1.6);
+    CHECK(ratio < 2.4);
+    // Tines 4% of the height at 0.2 mm layers are the rows of tines every 5 mm.
+    const auto in_mm = table_print("15%", "5");
+    CHECK(fin_tine_layers(*sparse->objects().front()) == fin_tine_layers(*in_mm->objects().front()));
+    CHECK(DynamicPrintConfig::full_print_config().option<ConfigOptionFloatOrPercent>("support_fin_spacing")->percent);
+    CHECK(DynamicPrintConfig::full_print_config().option<ConfigOptionFloatOrPercent>("support_fin_tine_spacing")->percent);
 }
 
 // Support layers carrying interface extrusions.

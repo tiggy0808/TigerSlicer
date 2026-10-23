@@ -34,7 +34,7 @@ struct SupportParameters {
 
 	    {
             // Orca: fin support has its own interface layer count; it never prints bottom interfaces.
-            const bool fin_support              = object_config.support_type.value == stFins;
+            const bool fin_support              = is_fins(object_config.support_type.value);
             this->num_top_interface_layers      = std::max(0, fin_support ? object_config.support_fin_interface_layers.value :
                                                                             object_config.support_interface_top_layers.value);
             this->num_bottom_interface_layers   = fin_support ? 0 : std::max(0, number_of_support_interface_bottom_layers(object_config));
@@ -78,7 +78,7 @@ struct SupportParameters {
             this->support_layer_height_min = std::min(this->support_layer_height_min, std::max(0.01, layer->height));
 
         if (this->num_top_interface_layers == 0 && this->num_bottom_interface_layers == 0 &&
-            !(object_config.support_type.value == stFins && object_config.support_fin_tine_spacing.value > 0.)) {
+            !(is_fins(object_config.support_type.value) && object_config.support_fin_tine_spacing.value > 0.)) {
             // No interface layers allowed, print everything with the base support pattern.
             this->support_material_interface_flow = this->support_material_flow;
         }
@@ -195,7 +195,7 @@ struct SupportParameters {
                                                        object_config.tree_support_wall_count.value == 0 ? 0.25 * sqr(scaled<double>(5.0)) * M_PI :
                                                                                                           std::numeric_limits<double>::max();
 
-        this->fins                = object_config.support_type.value == stFins;
+        this->fins                = is_fins(object_config.support_type.value);
         support_style = object_config.support_style;
         support_interface_pattern = object_config.support_interface_pattern;
         if (support_style != smsDefault) {
