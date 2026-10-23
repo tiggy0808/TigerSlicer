@@ -178,7 +178,10 @@ bool Layer::is_perimeter_compatible(const Print& print, const PrintRegion& a, co
         && config.seam_slope_entire_loop  == other_config.seam_slope_entire_loop
         && config.seam_slope_min_length   == other_config.seam_slope_min_length
         && config.seam_slope_steps        == other_config.seam_slope_steps
-        && config.seam_slope_inner_walls  == other_config.seam_slope_inner_walls;
+        && config.seam_slope_inner_walls  == other_config.seam_slope_inner_walls
+        // TigerSlicer: the G-code writer takes the small feature lines' speed from the region that owns the walls.
+        // The other small feature settings are looked up for each line, by where it lies.
+        && config.thin_wall_speed         == other_config.thin_wall_speed;
 }
 
 // Here the perimeters are created cummulatively for all layer regions sharing the same parameters influencing the perimeters.

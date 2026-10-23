@@ -151,6 +151,31 @@ std::vector<PrintedLayerDeviation> print_deviation(const Print &print)
     return out;
 }
 
+// The first of `regions` whose slices hold `at`, if any.
+static const LayerRegion *region_at(const std::vector<LayerRegion *> &regions, const Point &at)
+{
+    for (const LayerRegion *region : regions)
+        for (const Surface &surface : region->slices.surfaces)
+            if (surface.expolygon.contains(at))
+                return region;
+    return nullptr;
+}
+
+const LayerRegion *region_of(const std::vector<LayerRegion *> &regions, const ExPolygon &part)
+{
+    if (const Point middle = part.contour.centroid(); part.contains(middle))
+        if (const LayerRegion *region = region_at(regions, middle))
+            return region;
+    const LayerRegion *most    = regions.empty() ? nullptr : regions.front();
+    double             overlap = 0.;
+    for (const LayerRegion *region : regions)
+        if (const double a = area(intersection_ex(ExPolygons{part}, to_expolygons(region->slices.surfaces))); a > overlap) {
+            overlap = a;
+            most    = region;
+        }
+    return most;
+}
+
 ExPolygons features_below_width(const ExPolygons &slices, coord_t min_width)
 {
     ExPolygons features;
@@ -340,17 +365,18 @@ static bool pull_end(Points &points, bool back, double pull)
     return true;
 }
 
-void add_small_feature_lines(LayerRegion &layerm, const SurfaceCollection &slices, const ExPolygons &fill_area)
+void add_small_feature_lines(LayerRegion                    &layerm,
+                             const std::vector<LayerRegion *> &regions,
+                             const SurfaceCollection          &slices,
+                             const ExPolygons                 &fill_area)
 {
-    const PrintRegionConfig &config = layerm.region().config();
-    const SmallFeaturePolicy policy = config.small_feature_policy.value;
-    if (policy == sfpDrop)
+    if (std::all_of(regions.begin(), regions.end(),
+                    [](const LayerRegion *region) { return region->region().config().small_feature_policy.value == sfpDrop; }))
         return;
 
-    const Flow   ext_flow  = layerm.flow(frExternalPerimeter);
-    const double nozzle    = ext_flow.nozzle_diameter();
-    const double min_width = config.small_feature_min_width.get_abs_value(nozzle);
-    const double height    = layerm.layer()->height;
+    const Flow   ext_flow = layerm.flow(frExternalPerimeter);
+    const double nozzle   = ext_flow.nozzle_diameter();
+    const double height   = layerm.layer()->height;
 
     const ExPolygons model = to_expolygons(slices.surfaces);
     Polygons         covered;
@@ -375,6 +401,13 @@ void add_small_feature_lines(LayerRegion &layerm, const SurfaceCollection &slice
 
     for (const ExPolygon &piece : uncovered) {
         if (area(intersection_ex(ExPolygons{piece}, thin)) < 0.5 * piece.area())
+            continue;
+        // The settings of the region the part lies in.
+        const LayerRegion       *region    = region_of(regions, piece);
+        const PrintRegionConfig &config    = (region != nullptr ? *region : layerm).region().config();
+        const SmallFeaturePolicy policy    = config.small_feature_policy.value;
+        const double             min_width = config.small_feature_min_width.get_abs_value(nozzle);
+        if (policy == sfpDrop)
             continue;
         // The wall loop nearest the part's middle.
         const Point    middle  = piece.contour.centroid();
@@ -430,13 +463,24 @@ void add_small_feature_lines(LayerRegion &layerm, const SurfaceCollection &slice
 
 namespace {
 
-// Where the narrow gaps of a layer are, and how narrow a bead beside them gets.
+// Where the narrow gaps of a layer are, and whose settings say how narrow a bead beside them gets.
 struct GapFit
 {
     AABBTreeLines::LinesDistancer<Line> gaps;
-    // Scaled: the narrowest a bead gets, and the spill into a gap that is left alone.
-    double min_width;
-    double tolerance;
+    // Scaled: the spill into a gap that is left alone.
+    double                              tolerance;
+    const LayerRegion                  &owner;
+    const std::vector<LayerRegion *>   &regions;
+    double                              nozzle;
+
+    // The narrowest (scaled) `path` may get, by the region it lies in, or -1 when that region lets walls fill gaps.
+    double min_width(const ExtrusionPath &path) const
+    {
+        const Point3            &middle = path.polyline.points[path.polyline.points.size() / 2];
+        const LayerRegion       *region = region_at(regions, Point(middle.x(), middle.y()));
+        const PrintRegionConfig &config = (region != nullptr ? *region : owner).region().config();
+        return config.narrow_gap_policy.value == ngpKeepOpen ? scaled<double>(config.small_feature_min_width.get_abs_value(nozzle)) : -1.;
+    }
 };
 
 } // namespace
@@ -463,10 +507,13 @@ static double gap_distance(GapFit &fit, const Line &segment, double reach)
 // distance from the gaps can't reach into them. Stretches near a gap are looked at every 50 um.
 static ExtrusionPaths fit_path(const ExtrusionPath &path, GapFit &fit)
 {
+    if (path.polyline.points.size() < 2 || path.mm3_per_mm <= 0.)
+        return {path};
+    const double min_width = fit.min_width(path);
+    if (min_width < 0.)
+        return {path};
     const Points points = path.polyline.to_polyline().points;
     const double width  = scaled<double>(path.width);
-    if (points.size() < 2 || path.mm3_per_mm <= 0.)
-        return {path};
 
     // Each stretch's end and width, from the path's start.
     std::vector<std::pair<Point, double>> stretches;
@@ -485,7 +532,7 @@ static ExtrusionPaths fit_path(const ExtrusionPath &path, GapFit &fit)
             if (distance < 0.5 * width - fit.tolerance) {
                 // Rounded down to 5 um, so that pieces don't split on noise.
                 const double grain = scaled<double>(0.005);
-                fitted             = std::clamp(std::floor(2. * distance / grain) * grain, std::min(fit.min_width, width), width);
+                fitted             = std::clamp(std::floor(2. * distance / grain) * grain, std::min(min_width, width), width);
                 narrowed |= fitted < width;
             }
             stretches.emplace_back(to, fitted);
@@ -554,10 +601,10 @@ static void fit_collection(ExtrusionEntityCollection &collection, GapFit &fit)
     }
 }
 
-void keep_narrow_gaps_open(LayerRegion &layerm, const ExPolygons &layer_slices)
+void keep_narrow_gaps_open(LayerRegion &layerm, const std::vector<LayerRegion *> &regions, const ExPolygons &layer_slices)
 {
-    const PrintRegionConfig &config = layerm.region().config();
-    if (config.narrow_gap_policy.value != ngpKeepOpen)
+    if (std::none_of(regions.begin(), regions.end(),
+                     [](const LayerRegion *region) { return region->region().config().narrow_gap_policy.value == ngpKeepOpen; }))
         return;
     const Flow   ext_flow = layerm.flow(frExternalPerimeter);
     const double line     = std::max(ext_flow.width(), layerm.flow(frPerimeter).width());
@@ -565,9 +612,8 @@ void keep_narrow_gaps_open(LayerRegion &layerm, const ExPolygons &layer_slices)
     const ExPolygons gaps = diff_ex(closing_ex(layer_slices, float(scale_(line))), layer_slices);
     if (gaps.empty())
         return;
-    GapFit fit{AABBTreeLines::LinesDistancer<Line>(to_lines(gaps)),
-               scaled<double>(config.small_feature_min_width.get_abs_value(ext_flow.nozzle_diameter())),
-               scaled<double>(0.5 * kDeviationTolerance)};
+    GapFit fit{AABBTreeLines::LinesDistancer<Line>(to_lines(gaps)), scaled<double>(0.5 * kDeviationTolerance), layerm, regions,
+               ext_flow.nozzle_diameter()};
     fit_collection(layerm.perimeters, fit);
     fit_collection(layerm.thin_fills, fit);
 }

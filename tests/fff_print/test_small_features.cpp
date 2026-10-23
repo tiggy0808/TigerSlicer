@@ -529,3 +529,115 @@ TEST_CASE("Keeping narrow gaps open leaves every slot open and still prints the 
     // And it exports.
     CHECK(!gcode(*print).empty());
 }
+
+// The reference pulley with two modifiers around its axis, its whole height: a cylinder of radius 7.5 mm with
+// `teeth_policy`, which takes in the teeth, then one of radius 4 mm with `bore_policy` around the 5 mm bore, which wins
+// where the two overlap.
+static std::unique_ptr<Print> slice_pulley_with_modifiers(SmallFeaturePolicy teeth_policy, SmallFeaturePolicy bore_policy, Model &model)
+{
+    const TriangleMesh  pulley = pulley_mesh();
+    const BoundingBoxf3 box    = pulley.bounding_box();
+    ModelObject        *object = model.add_object();
+    object->name               = "pulley";
+    object->add_volume(pulley);
+    for (const auto &[radius, policy] : {std::make_pair(7.5, teeth_policy), std::make_pair(4., bore_policy)}) {
+        TriangleMesh cylinder = make_cylinder(radius, box.size().z() + 1.);
+        cylinder.translate(float(box.center().x()), float(box.center().y()), float(box.min.z() - 0.5));
+        ModelVolume *modifier = object->add_volume(std::move(cylinder), ModelVolumeType::PARAMETER_MODIFIER);
+        modifier->config.set_key_value("small_feature_policy", new ConfigOptionEnum<SmallFeaturePolicy>(policy));
+    }
+    object->add_instance();
+    object->ensure_on_bed();
+    auto print = std::make_unique<Print>();
+    print->apply(model, pulley_config());
+    print->process();
+    return print;
+}
+
+TEST_CASE("Modifiers set the small feature policy of their part of an object", "[SmallFeatures]")
+{
+    const bool teeth_outside = GENERATE(true, false);
+    CAPTURE(teeth_outside);
+    Model      model;
+    const auto print = slice_pulley_with_modifiers(teeth_outside ? sfpOutside : sfpInside, teeth_outside ? sfpInside : sfpOutside, model);
+    Model      plain_model;
+    const auto plain = slice_pulley({{"small_feature_policy", "outside"}}, plain_model);
+    size_t     checked = 0;
+    for (size_t i = 0; i < print->objects().front()->layers().size(); ++i) {
+        const Layer &layer = *print->objects().front()->layers()[i];
+        if (layer.print_z < 1.2 || layer.print_z > 7.9)
+            continue;
+        CAPTURE(layer.print_z);
+        // The teeth and the bore are regions of their own...
+        CHECK(std::count_if(layer.regions().begin(), layer.regions().end(), [](const LayerRegion *region) { return !region->slices.empty(); }) == 2);
+        // ...that share their walls, so the modifiers add none.
+        size_t loops = 0, plain_loops = 0;
+        std::function<void(const ExtrusionEntity &, size_t &)> count = [&count](const ExtrusionEntity &entity, size_t &n) {
+            if (const auto *collection = dynamic_cast<const ExtrusionEntityCollection *>(&entity))
+                for (const ExtrusionEntity *child : collection->entities)
+                    count(*child, n);
+            else if (dynamic_cast<const ExtrusionLoop *>(&entity) != nullptr)
+                ++n;
+        };
+        for (const LayerRegion *region : layer.regions())
+            count(region->perimeters, loops);
+        for (const LayerRegion *region : plain->objects().front()->layers()[i]->regions())
+            count(region->perimeters, plain_loops);
+        CHECK(loops == plain_loops);
+
+        // Every tooth gets a line by the teeth's policy: out to the reference's spike ends, or with its bead stopping
+        // at the tip.
+        const Point          center = get_extents(layer.lslices).center();
+        const ExtrusionPaths lines  = layer_dead_ends(layer);
+        CHECK(lines.size() == 22);
+        for (const ExtrusionPath &line : lines) {
+            const double end = relative_mm(line.last_point(), center).norm();
+            CAPTURE(line.width, end);
+            if (teeth_outside)
+                CHECK_THAT(end, Catch::Matchers::WithinAbs(6.649, 0.02));
+            else
+                CHECK(end + 0.5 * line.width <= 6.749);
+        }
+        const SmallFeatures::LayerDeviation deviation = SmallFeatures::layer_deviation(layer);
+        for (const SmallFeatures::DeviationArea &area : deviation.overshoot) {
+            const double r = relative_mm(area.shape.contour.centroid(), center).norm();
+            CAPTURE(r, area.magnitude);
+            // Nothing spills into the bore...
+            CHECK(r > 4.);
+            // ...nor past the teeth, where they print inside the model.
+            if (!teeth_outside)
+                CHECK((r < 6.2 || r > 6.9));
+        }
+        ++checked;
+    }
+    CHECK(checked > 40);
+}
+
+TEST_CASE("Each object prints its thin features by its own small feature policy", "[SmallFeatures]")
+{
+    // Two 10 x 10 x 3 mm blocks, each with a fin 4 mm long and 0.25 mm thick standing out of one side, too thin for a
+    // classic wall: the first object with the outside policy, the second with the default, drop.
+    auto block_with_fin = [] {
+        TriangleMesh block = make_cube(10, 10, 3);
+        TriangleMesh fin   = make_cube(4, 0.25, 3);
+        fin.translate(10, 5, 0);
+        block.merge(fin);
+        return block;
+    };
+    Model                                                          model;
+    Print                                                          print;
+    const std::vector<std::vector<ConfigBase::SetDeserializeItem>> overrides = {{{"small_feature_policy", "outside"}}, {}};
+    DynamicPrintConfig                                             config    = DynamicPrintConfig::full_print_config();
+    config.set_deserialize_strict({{"nozzle_diameter", "0.4"}, {"layer_height", 0.2}, {"initial_layer_print_height", 0.2}, {"wall_generator", "classic"}});
+    init_print({block_with_fin(), block_with_fin()}, print, model, config, &overrides);
+    print.process();
+    REQUIRE(print.objects().size() == 2);
+    double unprinted[2] = {0., 0.};
+    for (size_t i = 0; i < 2; ++i)
+        for (const Layer *layer : print.objects()[i]->layers())
+            for (const SmallFeatures::DeviationArea &area : SmallFeatures::layer_deviation(*layer).undershoot)
+                unprinted[i] += unscale<double>(unscale<double>(area.shape.area()));
+    CAPTURE(unprinted[0], unprinted[1]);
+    // The fin is 1 mm2 on each of the 15 layers: the first object prints it, the second leaves it out.
+    CHECK(unprinted[1] - unprinted[0] > 15 * 1. * 0.9);
+}

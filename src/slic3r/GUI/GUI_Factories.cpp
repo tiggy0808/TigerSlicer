@@ -127,7 +127,14 @@ std::map<std::string, std::vector<SimpleSettingData>> SettingsFactory::PART_CATE
        {"zaa_enabled", "", 1},
        {"zaa_minimize_perimeter_height", "", 2},
        {"zaa_dont_alternate_fill_direction", "", 3},
-       {"zaa_min_z", "", 4}}},
+       {"zaa_min_z", "", 4},
+       // TigerSlicer: small feature accuracy (experimental), per part and per modifier.
+       {"small_feature_policy", "", 20},
+       {"small_feature_min_width", "", 21},
+       {"tip_overshoot", "", 22},
+       {"thin_wall_speed", "", 23},
+       {"thin_wall_flow_ratio", "", 24},
+       {"narrow_gap_policy", "", 25}}},
      {L("Strength"),
       {{"wall_loops", "", 1},
        {"top_shell_layers", L("Top solid layers"), 1},
@@ -206,6 +213,15 @@ std::vector<std::string> SettingsFactory::get_options(const bool is_part)
     return options;
 }
 
+// TigerSlicer: drops the experimental settings unless "Show experimental features" is on.
+static void remove_hidden_experimental(std::vector<SimpleSettingData> &options)
+{
+    options.erase(std::remove_if(options.begin(), options.end(), [](const SimpleSettingData &setting) {
+        const ConfigOptionDef *def = print_config_def.get(setting.name);
+        return def != nullptr && !experimental_option_shown(def->experimental);
+    }), options.end());
+}
+
 std::vector<SimpleSettingData> SettingsFactory::get_visible_options(const std::string& category, const bool is_part)
 {
     /*t_config_option_keys options = {
@@ -251,6 +267,7 @@ std::vector<SimpleSettingData> SettingsFactory::get_visible_options(const std::s
         return (setting1.priority < setting2.priority);
     };
     std::sort(options.begin(), options.end(), sort_func);
+    remove_hidden_experimental(options);
     return options;
 }
 
@@ -281,6 +298,8 @@ std::map<std::string, std::vector<SimpleSettingData>> SettingsFactory::get_all_v
         }
     }
 
+    for (auto &[category, options] : option_maps)
+        remove_hidden_experimental(options);
     return option_maps;
 }
 

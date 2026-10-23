@@ -1333,22 +1333,44 @@ void PrintObject::warn_features_below_printable_width()
 {
     if (this->num_printing_regions() == 0 || m_layers.empty())
         return;
-    const PrintRegion &region    = this->printing_region(0);
-    const double       nozzle    = m_print->config().nozzle_diameter.get_at(region.extruder(frExternalPerimeter) - 1);
-    const double       min_width = region.config().small_feature_min_width.get_abs_value(nozzle);
-    if (min_width <= 0.)
-        return;
-    // Counted on the layer with the most of them, so a feature through many layers counts once.
+    auto nozzle_of    = [this](const PrintRegion &region) { return m_print->config().nozzle_diameter.get_at(region.extruder(frExternalPerimeter) - 1); };
+    auto min_width_of = [&nozzle_of](const PrintRegion &region) { return region.config().small_feature_min_width.get_abs_value(nozzle_of(region)); };
+    // Each feature counts against the minimum width of the region it lies in, as a modifier can set its own. Counted on
+    // the layer with the most of them, so a feature through many layers counts once.
     std::vector<size_t> counts(m_layers.size(), 0);
-    tbb::parallel_for(tbb::blocked_range<size_t>(0, m_layers.size()), [this, &counts, min_width](const tbb::blocked_range<size_t> &range) {
-        for (size_t i = range.begin(); i < range.end(); ++i)
-            counts[i] = SmallFeatures::features_below_width(m_layers[i]->lslices, scaled<coord_t>(min_width)).size();
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, m_layers.size()), [this, &counts, &min_width_of](const tbb::blocked_range<size_t> &range) {
+        for (size_t i = range.begin(); i < range.end(); ++i) {
+            const Layer        &layer = *m_layers[i];
+            std::vector<double> widths;
+            for (const LayerRegion *region : layer.regions())
+                if (!region->slices.empty())
+                    widths.push_back(min_width_of(region->region()));
+            sort_remove_duplicates(widths);
+            for (const double width : widths)
+                if (width > 0.)
+                    for (const ExPolygon &feature : SmallFeatures::features_below_width(layer.lslices, scaled<coord_t>(width)))
+                        if (const LayerRegion *region = SmallFeatures::region_of(layer.regions(), feature);
+                            region != nullptr && min_width_of(region->region()) == width)
+                            ++counts[i];
+        }
     });
     const size_t most = *std::max_element(counts.begin(), counts.end());
-    if (most > 0)
-        this->active_step_add_warning(PrintStateBase::WarningLevel::NON_CRITICAL,
-                                      Slic3r::format(L("%1%: %2% features below printable width for a %3% mm nozzle (narrower than %4% mm)."),
-                                                     this->model_object()->name, most, nozzle, min_width));
+    if (most == 0)
+        return;
+    // The minimum width named in the warning, when the object's regions agree on it.
+    std::vector<double> widths;
+    for (size_t i = 0; i < this->num_printing_regions(); ++i)
+        widths.push_back(min_width_of(this->printing_region(i)));
+    sort_remove_duplicates(widths);
+    const double nozzle = nozzle_of(this->printing_region(0));
+    this->active_step_add_warning(
+        PrintStateBase::WarningLevel::NON_CRITICAL,
+        widths.size() == 1 ?
+            Slic3r::format(L("%1%: %2% features below printable width for a %3% mm nozzle (narrower than %4% mm)."),
+                           this->model_object()->name, most, nozzle, widths.front()) :
+            Slic3r::format(L("%1%: %2% features below printable width for a %3% mm nozzle (narrower than the small feature "
+                             "minimum width where they are)."),
+                           this->model_object()->name, most, nozzle));
 }
 
 bool PrintObject::invalidate_state_by_config_options(

@@ -63,18 +63,27 @@ std::vector<PrintedLayerDeviation> print_deviation(const Print &print);
 // sharp corner leaves, shorter than they are wide, are not features.
 ExPolygons features_below_width(const ExPolygons &slices, coord_t min_width);
 
-// Prints what the walls leave uncovered of the region's thin parts, narrower than two outer walls, by its
-// small_feature_policy (experimental). Each such part gets one line through its middle, its width and free end set by
-// the policy. A line that starts at a wall loop
-// becomes that loop's dead end, printed out and back as the loop passes it; any other is an open path of its own.
-// `slices` are the region's slices the walls were made from, and `fill_area` the area left for infill, which counts
-// as covered.
-void add_small_feature_lines(LayerRegion &layerm, const SurfaceCollection &slices, const ExPolygons &fill_area);
+// The region of `regions` that `part` lies in: the one holding its middle, or else the one it overlaps most. Null when
+// `regions` is empty.
+const LayerRegion *region_of(const std::vector<LayerRegion *> &regions, const ExPolygon &part);
 
-// Narrows the region's walls where they spill into a gap of the layer narrower than two lines, so that the gap keeps
+// Prints what the walls of `layerm` leave uncovered of its thin parts, narrower than two outer walls, by
+// small_feature_policy (experimental). Each such part gets one line through its middle, its width and free end set by
+// the policy. A line that starts at a wall loop becomes that loop's dead end, printed out and back as the loop passes it;
+// any other is an open path of its own.
+// `regions` are the regions that share these walls; each part takes the small feature settings of the one it lies in,
+// so that an object's modifiers can set their own. `slices` are the slices the walls were made from, and `fill_area`
+// the area left for infill, which counts as covered.
+void add_small_feature_lines(LayerRegion                    &layerm,
+                             const std::vector<LayerRegion *> &regions,
+                             const SurfaceCollection          &slices,
+                             const ExPolygons                 &fill_area);
+
+// Narrows the walls of `layerm` where they spill into a gap of the layer narrower than two lines, so that the gap keeps
 // its size (narrow_gap_policy keep_open, experimental). A bead gets no wider than twice its distance from the gaps, and
-// no narrower than small_feature_min_width. `layer_slices` are all of the layer's slices.
-void keep_narrow_gaps_open(LayerRegion &layerm, const ExPolygons &layer_slices);
+// no narrower than small_feature_min_width. Each path takes the settings of the one of `regions` (those that share these
+// walls) it lies in. `layer_slices` are all of the layer's slices.
+void keep_narrow_gaps_open(LayerRegion &layerm, const std::vector<LayerRegion *> &regions, const ExPolygons &layer_slices);
 
 } // namespace SmallFeatures
 } // namespace Slic3r
