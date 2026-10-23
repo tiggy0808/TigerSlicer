@@ -2674,11 +2674,10 @@ void PrintConfigDef::init_fff_params()
     def = this->add("print_flow_ratio", coFloat);
     def->label = L("Flow ratio");
     def->category = L("Quality");
-    def->tooltip = L("The material may have volumetric change after switching between molten and crystalline states. "
-                     "This setting changes all extrusion flow of this filament in G-code proportionally. "
-                     "The recommended value range is between 0.95 and 1.05. "
-                     "You may be able to tune this value to get a nice flat surface if there is slight overflow or underflow."
-                     "\n\nThe final object flow ratio is this value multiplied by the filament flow ratio.");
+    def->tooltip = L("Flow ratio for one object, on top of its filament's flow ratio: the object prints with this value "
+                     "multiplied by the filament flow ratio. Set it for a model in the Objects view of the process settings "
+                     "to make that model print with more or less filament without changing the filament profile. "
+                     "The recommended value range is between 0.95 and 1.05.");
     def->mode = comAdvanced;
     def->max = 2.f;
     def->min = 0.01f;

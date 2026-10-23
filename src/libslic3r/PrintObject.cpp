@@ -1333,6 +1333,18 @@ bool PrintObject::invalidate_state_by_config_options(
     std::vector<PrintObjectStep> steps;
     bool invalidated = false;
     for (const t_config_option_key &opt_key : opt_keys) {
+        // TigerSlicer: these were PrintConfig options in OrcaSlicer; invalidate as Print::invalidate_state_by_config_options() did.
+        if (opt_key == "initial_layer_line_width") {
+            for (PrintObjectStep step : {posPerimeters, posEstimateCurledExtrusions, posInfill, posSupportMaterial, posSimplifyPath,
+                                         posSimplifyInfill, posSimplifySupportPath})
+                steps.emplace_back(step);
+            invalidated |= m_print->invalidate_step(psSkirtBrim);
+            continue;
+        }
+        if (opt_key == "initial_layer_speed" || opt_key == "initial_layer_infill_speed") {
+            invalidated |= m_print->invalidate_steps({psWipeTower, psSkirtBrim, psGCodeExport});
+            continue;
+        }
         if (   opt_key == "brim_width"
             || opt_key == "brim_object_gap"
             || opt_key == "brim_use_efc_outline"
@@ -1685,7 +1697,12 @@ bool PrintObject::invalidate_state_by_config_options(
             || opt_key == "filament_flow_ratio"
             || opt_key == "scarf_joint_flow_ratio"
             || opt_key == "spiral_starting_flow_ratio"
-            || opt_key == "spiral_finishing_flow_ratio") {
+            || opt_key == "spiral_finishing_flow_ratio"
+            // TigerSlicer: PrintConfig options in OrcaSlicer.
+            || opt_key == "slow_down_layers"
+            || opt_key == "reduce_crossing_wall"
+            || opt_key == "max_travel_detour_distance"
+            || opt_key == "reduce_infill_retraction") {
             invalidated |= m_print->invalidate_step(psGCodeExport);
         } else if (
                opt_key == "flush_into_infill"

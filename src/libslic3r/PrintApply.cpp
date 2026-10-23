@@ -1488,6 +1488,13 @@ Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_
 	    m_default_object_config.apply_only(new_full_config, object_diff, true);
 	    // Handle changes to regions config defaults
 	    m_default_region_config.apply_only(new_full_config, region_diff, true);
+        // TigerSlicer: the skirt, the brim and the wipe tower use the global first layer width and speed. These are
+        // object options, so when every object overrides them no object diff below invalidates those steps.
+        for (const char *key : {"initial_layer_line_width", "initial_layer_speed"})
+            if (std::find(object_diff.begin(), object_diff.end(), key) != object_diff.end()) {
+                update_apply_status(this->invalidate_steps({psSkirtBrim, psWipeTower}));
+                break;
+            }
         //m_full_print_config = std::move(new_full_config);
         m_full_print_config = new_full_config;
         update_filament_self_index_cache();

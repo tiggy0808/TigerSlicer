@@ -3121,7 +3121,7 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
         file.write_format("; top infill extrusion width = %.2fmm\n",          region.flow(*first_object, frTopSolidInfill,    layer_height).width());
         if (print.has_support_material())
             file.write_format("; support material extrusion width = %.2fmm\n", support_material_flow(first_object).width());
-        if (print.config().initial_layer_line_width.value > 0)
+        if (first_object->config().initial_layer_line_width.value > 0)
             file.write_format("; first layer extrusion width = %.2fmm\n",   region.flow(*first_object, frPerimeter, initial_layer_print_height, true).width());
         file.write_format("\n");
     }
@@ -6275,8 +6275,12 @@ LayerResult GCode::process_layer(
                 if (group.skirt.empty())
                     continue;
 
+                // TigerSlicer: the combined skirt goes round every object, so it prints with the global first layer
+                // speed and slow layers, not those of whichever object was printed last.
+                m_config.apply(print.default_object_config());
                 std::string skirt_gcode = generate_skirt(print, group.skirt, Point(0, 0), layer.object()->config().skirt_start_angle,
                                                           layer_tools, layer, extruder_id, m_skirt_group_done[group_idx]);
+                m_config.apply(layer.object()->config(), true);
                 gcode += std::move(skirt_gcode);
             }
         }
@@ -6378,6 +6382,10 @@ LayerResult GCode::process_layer(
                 InstanceToPrint &instance_to_print = instances_to_print[visit.instance_idx];
                 const auto& inst = instance_to_print.print_object.instances()[instance_to_print.instance_id];
                 const LayerToPrint &layer_to_print = layers[instance_to_print.layer_id];
+                // TigerSlicer: the object's own settings (first layer speed, support speed) also hold for its skirt
+                // and brim, rather than whatever the previous object left in m_config.
+                m_config.apply(print.default_region_config());
+                m_config.apply(instance_to_print.print_object.config(), true);
                 if (visit.first_visit && print_wipe_extrusions == (is_anything_overridden ? 1 : 0)) {
                     gcode += generate_object_skirt_group(print, instance_to_print.print_object, instance_to_print.instance_id, layer_tools, layer, extruder_id);
                     gcode += generate_object_brim(print, instance_to_print.print_object, instance_to_print.instance_id, first_layer);
@@ -6386,8 +6394,6 @@ LayerResult GCode::process_layer(
                 // To control print speed of the 1st object layer printed over raft interface.
                 bool object_layer_over_raft = layer_to_print.object_layer && layer_to_print.object_layer->id() > 0 &&
                     instance_to_print.print_object.slicing_parameters().raft_layers() == layer_to_print.object_layer->id();
-                m_config.apply(print.default_region_config());
-                m_config.apply(instance_to_print.print_object.config(), true);
                 m_layer = layer_to_print.layer();
                 m_object_layer_over_raft = object_layer_over_raft;
                 if (m_config.reduce_crossing_wall)

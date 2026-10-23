@@ -1190,6 +1190,14 @@ PRINT_CONFIG_CLASS_DEFINE(
                                                                                                          support_fin_interface_layers))
 
     // Orca: a flag enabling the ability to override flow ratios
+    // TigerSlicer: global in OrcaSlicer, set per object here.
+    ((ConfigOptionFloatOrPercent,      initial_layer_line_width))
+    ((ConfigOptionInt,                 slow_down_layers))
+    ((ConfigOptionBool,                reduce_crossing_wall))
+    ((ConfigOptionFloatOrPercent,      max_travel_detour_distance))
+    ((ConfigOptionBool,                reduce_infill_retraction))
+    ((ConfigOptionFloatsNullable,      initial_layer_speed))
+    ((ConfigOptionFloatsNullable,      initial_layer_infill_speed))
     ((ConfigOptionBool,     set_other_flow_ratios))
     // Orca: support-related flow ratios (available for overriding, if set_other_flow_ratios is enabled)
     ((ConfigOptionFloat,    support_flow_ratio))
@@ -1769,8 +1777,6 @@ PRINT_CONFIG_CLASS_DERIVED_DEFINE(
     ((ConfigOptionInts,               close_additional_fan_first_x_layers))
     ((ConfigOptionInts,               additional_fan_full_speed_layer))
     ((ConfigOptionFloats,             first_x_layer_fan_speed))
-    ((ConfigOptionBool,               reduce_crossing_wall))
-    ((ConfigOptionFloatOrPercent,     max_travel_detour_distance))
     ((ConfigOptionPoints,             printable_area))
     ((ConfigOptionPointsGroups,       extruder_printable_area))
     ((ConfigOptionBool,               support_parallel_printheads))
@@ -1820,12 +1826,9 @@ PRINT_CONFIG_CLASS_DERIVED_DEFINE(
     ((ConfigOptionBools,              activate_air_filtration_on_completion))
     ((ConfigOptionInts,               during_print_exhaust_fan_speed))
     ((ConfigOptionInts,               complete_print_exhaust_fan_speed))
-    ((ConfigOptionFloatOrPercent,     initial_layer_line_width))
     ((ConfigOptionFloat,              initial_layer_print_height))
-    ((ConfigOptionFloatsNullable,     initial_layer_speed))
 
     //BBS
-    ((ConfigOptionFloatsNullable,     initial_layer_infill_speed))
     ((ConfigOptionInts,               nozzle_temperature_initial_layer))
     ((ConfigOptionInts,               full_fan_speed_layer))
     // ORCA: explicit override for the part cooling fan speed on the first printed layer.
@@ -1839,7 +1842,6 @@ PRINT_CONFIG_CLASS_DERIVED_DEFINE(
     ((ConfigOptionPoint,              best_object_pos))
     ((ConfigOptionFloats,             slow_down_min_speed))
     ((ConfigOptionFloats,             nozzle_diameter))
-    ((ConfigOptionBool,               reduce_infill_retraction))
     ((ConfigOptionBool,               ooze_prevention))
     ((ConfigOptionString,             filename_format))
     ((ConfigOptionStrings,            post_process))
@@ -1935,7 +1937,6 @@ PRINT_CONFIG_CLASS_DERIVED_DEFINE(
     ((ConfigOptionBool,                exclude_object))
     ((ConfigOptionFloats,             grab_length))
     ((ConfigOptionBool,                gcode_comments))
-    ((ConfigOptionInt,                 slow_down_layers))
     ((ConfigOptionInts,                support_material_interface_fan_speed))
     ((ConfigOptionInts,                internal_bridge_fan_speed)) // ORCA: Add support for separate internal bridge fan speed control
     ((ConfigOptionInts,                ironing_fan_speed))

@@ -56,6 +56,7 @@ public:
 	// wipe_area	-- space available for one toolchange in mm
     WipeTower2(const PrintConfig& config,
 	          const PrintRegionConfig& default_region_config,
+	          const PrintObjectConfig& default_object_config,
 			  int plate_idx, Vec3d plate_origin,
 			  const std::vector<std::vector<float>>& wiping_matrix,
 			  size_t initial_tool);

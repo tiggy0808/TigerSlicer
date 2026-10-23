@@ -1017,7 +1017,7 @@ bool WipeTower2::wait_for_temp_enabled(const PrintConfig& config)
     return config.wait_for_temp_on_wipe_tower.value && !config.single_extruder_multi_material.value;
 }
 
-WipeTower2::WipeTower2(const PrintConfig& config, const PrintRegionConfig& default_region_config,int plate_idx, Vec3d plate_origin, const std::vector<std::vector<float>>& wiping_matrix, size_t initial_tool) :
+WipeTower2::WipeTower2(const PrintConfig& config, const PrintRegionConfig& default_region_config, const PrintObjectConfig& default_object_config, int plate_idx, Vec3d plate_origin, const std::vector<std::vector<float>>& wiping_matrix, size_t initial_tool) :
     m_semm(config.single_extruder_multi_material.value),
     m_enable_filament_ramming(config.enable_filament_ramming.value),
     m_wipe_tower_filament(config.wipe_tower_filament.value),
@@ -1053,7 +1053,8 @@ WipeTower2::WipeTower2(const PrintConfig& config, const PrintRegionConfig& defau
     // it is taken over following default. Speeds from config are not
     // easily accessible here.
     const float default_speed = 60.f;
-    m_first_layer_speed = config.initial_layer_speed.get_at(get_extruder_index(config, (unsigned int)initial_tool));
+    // TigerSlicer: initial_layer_speed is an object option (a PrintConfig member in OrcaSlicer).
+    m_first_layer_speed = default_object_config.initial_layer_speed.get_at(get_extruder_index(config, (unsigned int)initial_tool));
     if (m_first_layer_speed == 0.f) // just to make sure autospeed doesn't break it.
         m_first_layer_speed = default_speed / 2.f;
 

@@ -417,6 +417,8 @@ public:
     void update_all_layer_depth(float wipe_tower_depth);
     void set_nozzle_last_layer_id();
     void set_first_layer_flow_ratio(const float flow_ratio);
+    // TigerSlicer: initial_layer_speed is an object option here (a PrintConfig member in OrcaSlicer).
+    void set_first_layer_speed(float speed);
     // Orca: default/initial-layer/travel acceleration are object-scope options here (PrintConfig
     // members in BBS), so Print pushes the resolved per-variant columns in via this setter.
     void set_accelerations(const std::vector<double> &normal, const std::vector<double> &first_layer_normal,

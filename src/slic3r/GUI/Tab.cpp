@@ -3340,6 +3340,8 @@ void TabPrintModel::build()
             optgroup->append_single_option_line("sparse_infill_density", "strength_settings_infill#sparse-infill-density");
             optgroup->append_single_option_line("wall_loops", "strength_settings_walls");
             optgroup->append_single_option_line("enable_support", "support_settings_support");
+            // TigerSlicer: this object's flow on top of its filament's, otherwise easy to miss among the surface flow ratios.
+            optgroup->append_single_option_line("print_flow_ratio", "quality_settings_wall_and_surfaces#surface-flow-ratio");
     m_pages.pop_back();
     m_pages.insert(m_pages.begin(), page);
 

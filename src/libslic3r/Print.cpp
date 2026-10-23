@@ -115,8 +115,6 @@ bool Print::invalidate_state_by_config_options(const ConfigOptionResolver & /* n
     static std::unordered_set<std::string> steps_gcode = {
         //BBS
         "additional_cooling_fan_speed",
-        "reduce_crossing_wall",
-        "max_travel_detour_distance",
         "printable_area",
         //BBS: add bed_exclude_area
         "bed_exclude_area",
@@ -187,7 +185,6 @@ bool Print::invalidate_state_by_config_options(const ConfigOptionResolver & /* n
         "max_volumetric_extrusion_rate_slope",
         "max_volumetric_extrusion_rate_slope_segment_length",
         "extrusion_rate_smoothing_external_perimeter_only",
-        "reduce_infill_retraction",
         "filename_format",
         "retraction_minimum_travel",
         "retract_before_wipe",
@@ -379,14 +376,11 @@ bool Print::invalidate_state_by_config_options(const ConfigOptionResolver & /* n
             || opt_key == "prime_volume"
             || opt_key == "flush_into_infill"
             || opt_key == "flush_into_support"
-            || opt_key == "initial_layer_infill_speed"
             || opt_key == "travel_speed"
             || opt_key == "travel_speed_z"
-            || opt_key == "initial_layer_speed"
             || opt_key == "initial_layer_travel_speed"
             || opt_key == "initial_layer_travel_acceleration"
             || opt_key == "initial_layer_travel_jerk"
-            || opt_key == "slow_down_layers"
             || opt_key == "idle_temperature"
             || opt_key == "wipe_tower_cone_angle"
             || opt_key == "wipe_tower_extra_spacing"
@@ -418,8 +412,7 @@ bool Print::invalidate_state_by_config_options(const ConfigOptionResolver & /* n
             osteps.emplace_back(posSupportMaterial);
             osteps.emplace_back(posSimplifySupportPath);
         } else if (
-               opt_key == "initial_layer_line_width"
-            || opt_key == "min_layer_height"
+               opt_key == "min_layer_height"
             || opt_key == "max_layer_height"
             //|| opt_key == "resolution"
             //BBS: when enable arc fitting, we must re-generate perimeter
@@ -1875,6 +1868,9 @@ StringObjectException Print::validate(std::vector<StringObjectException> *warnin
             std::string err_msg;
             if (!validate_extrusion_width(object->config(), "line_width", layer_height, err_msg))
             	return {err_msg, object, "line_width"};
+            // TigerSlicer: set per object, so checked per object too.
+            if (!validate_extrusion_width(object->config(), "initial_layer_line_width", initial_layer_print_height, err_msg))
+                return {err_msg, object, "initial_layer_line_width"};
             if (object->has_support() || object->has_raft()) {
                 if (!validate_extrusion_width(object->config(), "support_line_width", layer_height, err_msg))
                     return {err_msg, object, "support_line_width"};
@@ -2244,7 +2240,8 @@ double Print::skirt_first_layer_height() const
 
 Flow Print::brim_flow() const
 {
-    ConfigOptionFloatOrPercent width = m_config.initial_layer_line_width;
+    // TigerSlicer: the first layer line width is set per object; the brim, like the skirt, uses the global one.
+    ConfigOptionFloatOrPercent width = m_default_object_config.initial_layer_line_width;
     if (width.value <= 0)
         width = m_print_regions.front()->config().inner_wall_line_width;
     if (width.value <= 0)
@@ -2266,10 +2263,10 @@ Flow Print::brim_flow() const
 Flow Print::skirt_flow() const
 {
 
-    // Orca: fall back to m_config if no objects are present
-    ConfigOptionFloatOrPercent width = m_config.initial_layer_line_width;
+    // Orca: fall back to the global setting if no objects are present
+    ConfigOptionFloatOrPercent width = m_default_object_config.initial_layer_line_width;
     if (width.value <= 0)
-        width = m_objects.empty() ? m_config.initial_layer_line_width : m_objects.front()->config().line_width;
+        width = m_objects.empty() ? m_default_object_config.initial_layer_line_width : m_objects.front()->config().line_width;
 
     /* We currently use a random object's support material extruder.
        While this works for most cases, we should probably consider all of the support material
@@ -4379,6 +4376,9 @@ void Print::_make_wipe_tower()
                                          m_default_object_config.travel_acceleration.values,
                                          first_layer_travel_accels);
         }
+        // TigerSlicer: initial_layer_speed is an object option here, so the tower takes the global one.
+        wipe_tower.set_first_layer_speed(float(m_default_object_config.initial_layer_speed.get_at(
+            get_extruder_index(m_config, (unsigned int) m_wipe_tower_data.tool_ordering.first_extruder()))));
         // Feed the has_filament_switcher device flag (develop-only dynamic key, read defensively from
         // the full config — no shipping profile sets it) and the shared printable bed used by the PETG
         // pre-extrusion offset clamp. Both are inert unless has_filament_switcher is set.
@@ -4570,7 +4570,7 @@ void Print::_make_wipe_tower()
             }
         }
         // Initialize the wipe tower.
-        WipeTower2 wipe_tower(m_config, m_default_region_config, m_plate_index, m_origin, wipe_volumes,
+        WipeTower2 wipe_tower(m_config, m_default_region_config, m_default_object_config, m_plate_index, m_origin, wipe_volumes,
                               m_wipe_tower_data.tool_ordering.first_extruder());
 
         // wipe_tower.set_retract();
@@ -4782,7 +4782,7 @@ std::tuple<float, float> Print::object_skirt_offset(double margin_height) const
     
     float max_nozzle_diameter = *std::max_element(m_config.nozzle_diameter.values.begin(), m_config.nozzle_diameter.values.end());
     float max_layer_height    = *std::max_element(config().max_layer_height.values.begin(), config().max_layer_height.values.end());
-    float line_width = m_config.initial_layer_line_width.get_abs_value(max_nozzle_diameter);
+    float line_width = m_default_object_config.initial_layer_line_width.get_abs_value(max_nozzle_diameter);
     float object_skirt_witdh  = skirt_flow().width() + (config().skirt_loops - 1) * skirt_flow().spacing();
     float object_skirt_offset = 0;
 

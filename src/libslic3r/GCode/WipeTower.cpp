@@ -21,6 +21,8 @@ static constexpr double WIPE_TOWER_RESOLUTION = 0.1;
 // Orca: SCALING_FACTOR is a runtime variable (large-printer switch), so this cannot be constexpr
 #define WT_SIMPLIFY_TOLERANCE_SCALED (0.001 / SCALING_FACTOR)
 static constexpr int    arc_fit_size = 20;
+// First layer speed (mm/s) when none is configured: half the 60 mm/s default speed.
+static constexpr float kDefaultFirstLayerSpeed = 60.f / 2.f;
 #define SCALED_WIPE_TOWER_RESOLUTION (WIPE_TOWER_RESOLUTION / SCALING_FACTOR)
 enum class LimitFlow { None, LimitPrintFlow, LimitRammingFlow, LimitRammingFlowNC};//nc:nozzle change
 static const std::map<float, float> nozzle_diameter_to_nozzle_change_width{{0.2f, 0.5f}, {0.4f, 1.0f}, {0.6f, 1.2f}, {0.8f, 1.4f}};
@@ -1832,13 +1834,9 @@ WipeTower::WipeTower(const PrintConfig& config, int plate_idx, Vec3d plate_origi
     // the ctor reading them from config.
     m_max_accels = config.machine_max_acceleration_extruding.values.front();
 
-    // Read absolute value of first layer speed, if given as percentage,
-    // it is taken over following default. Speeds from config are not
-    // easily accessible here.
-    const float default_speed = 60.f;
-    m_first_layer_speed       = config.initial_layer_speed.get_at(get_extruder_index(config, (unsigned int) initial_tool));
-    if (m_first_layer_speed == 0.f) // just to make sure autospeed doesn't break it.
-        m_first_layer_speed = default_speed / 2.f;
+    // TigerSlicer: initial_layer_speed is an object option here (a PrintConfig member in OrcaSlicer),
+    // so Print pushes it in with set_first_layer_speed(). Until then, half the default speed.
+    m_first_layer_speed = kDefaultFirstLayerSpeed;
 
     // If this is a single extruder MM printer, we will use all the SE-specific config values.
     // Otherwise, the defaults will be used to turn off the SE stuff.
@@ -4314,6 +4312,12 @@ void WipeTower::set_nozzle_last_layer_id()
 void WipeTower::set_first_layer_flow_ratio(const float flow_ratio)
 {
     m_first_layer_flow_ratio = flow_ratio;
+}
+
+void WipeTower::set_first_layer_speed(float speed)
+{
+    // 0 is autospeed, which the tower cannot resolve: fall back to the default.
+    m_first_layer_speed = speed > 0.f ? speed : kDefaultFirstLayerSpeed;
 }
 
 // Orca: default/initial-layer/travel acceleration are object-scope options here (PrintConfig
