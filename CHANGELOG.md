@@ -3,7 +3,7 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
-## Unreleased
+## 0.0.11 (2026-10-23)
 
 **Changed**
 - **One bed temperature.** Filament settings have a single bed temperature (first layer and other

@@ -7,7 +7,17 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 
 ---
 
-## Unreleased
+## 0.0.11 (2026-10-23)
+
+Theme: one bed temperature for every build plate, and the experimental features switch where people
+see it. Developed and verified on macOS; nothing here is platform-specific.
+
+Commits, oldest first (all on `main`; the release commit follows them):
+
+| Commit | Subject |
+|---|---|
+| `571c42a85` | feat(ui): turn experimental features on and off from the process settings and the View menu |
+| `b6bbbdb15` | feat(filaments): one bed temperature for every build plate |
 
 ### One bed temperature for every build plate
 - `get_bed_temp_key()` / `get_bed_temp_1st_layer_key()` (PrintConfig.hpp) return the `hot_plate_temp`
@@ -41,6 +51,15 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
   config on every menu update.
 - Verified on macOS: build, and background launches with the setting off and on (no new `[error]`
   lines, no crash). The button and menu item were not looked at on screen.
+
+### Verification (macOS)
+- Release build on macOS 15.6.1 (Apple Silicon), Apple clang 17.0.0, from the release commit:
+  `./build_release_macos.sh -a arm64 -x -s` with `BUILD_TESTS` off.
+- Tests (from `b6bbbdb15`): fff_print 194 of 195 pass, including `[BedTemperature]`; the failure is the
+  compiler-dependent `[Regression]` hash test (see 0.0.10). libslic3r 1,054 pass.
+- Background launches with throwaway data folders on a Generic Klipper printer, a Bambu Lab X1 Carbon
+  and a copy of a real 0.0.10 data folder: no new `[error]` lines, no crash. The new button, menu item
+  and Bed line were not looked at on screen.
 
 ---
 
