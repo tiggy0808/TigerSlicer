@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "100"
     ],
-    "textured_plate_temp": [
-        "100"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "100"
-    ],
-    "eng_plate_temp": [
-        "100"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "100"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "renamed_from": "\"Flashforge ASA-GF @FF C5\";\"Flashforge ASA-GF @FF C5P\""
 }

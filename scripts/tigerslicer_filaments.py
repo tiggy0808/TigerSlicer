@@ -28,26 +28,26 @@ SUFFIX = " @System"
 #   base: library template to inherit (resources/profiles/OrcaFilamentLibrary/filament/base)
 #   id: filament_id (the OGF* ids are the old generic ones, which printer integrations map to)
 #   nozzle, nozzle_first, nozzle_low, nozzle_high: nozzle temperatures (°C)
-#   bed: smooth/textured/engineering plate (°C); cool: cool plate (0 = not suitable)
+#   bed: bed temperature (°C), the same on every build plate
 #   chamber: chamber temperature for printers that heat it (°C)
 #   fan_min, fan_max: part cooling (%); vol: max volumetric speed (mm³/s)
 #   density (g/cm³), soft: softening temperature (°C), flow: flow ratio, cost (per kg)
 BASE = {
-    "PLA":   dict(base="fdm_filament_pla",  id="OGFL99", nozzle=220, nozzle_first=220, nozzle_low=190, nozzle_high=240, bed=60,  cool=35, chamber=0,  fan_min=100, fan_max=100, vol=15,  density=1.24, soft=45,  flow=0.98, cost=20),
-    "PETG":  dict(base="fdm_filament_pet",  id="OGFG99", nozzle=245, nozzle_first=245, nozzle_low=220, nozzle_high=260, bed=75,  cool=60, chamber=0,  fan_min=30,  fan_max=60,  vol=12,  density=1.27, soft=70,  flow=0.96, cost=22),
-    "PCTG":  dict(base="fdm_filament_pctg", id="OGFG97", nozzle=255, nozzle_first=255, nozzle_low=240, nozzle_high=270, bed=75,  cool=60, chamber=0,  fan_min=20,  fan_max=60,  vol=12,  density=1.23, soft=70,  flow=0.97, cost=25),
-    "ABS":   dict(base="fdm_filament_abs",  id="OGFB99", nozzle=255, nozzle_first=260, nozzle_low=240, nozzle_high=270, bed=100, cool=0,  chamber=40, fan_min=10,  fan_max=40,  vol=16,  density=1.04, soft=100, flow=0.95, cost=20),
-    "ASA":   dict(base="fdm_filament_asa",  id="OGFB98", nozzle=260, nozzle_first=260, nozzle_low=240, nozzle_high=280, bed=100, cool=0,  chamber=40, fan_min=10,  fan_max=40,  vol=14,  density=1.07, soft=100, flow=0.95, cost=24),
-    "PC":    dict(base="fdm_filament_pc",   id="OGFC99", nozzle=270, nozzle_first=270, nozzle_low=260, nozzle_high=290, bed=110, cool=0,  chamber=50, fan_min=0,   fan_max=30,  vol=12,  density=1.20, soft=130, flow=0.94, cost=30),
-    "PA6":   dict(base="fdm_filament_pa",   id="OGFN99", nozzle=270, nozzle_first=275, nozzle_low=250, nozzle_high=290, bed=90,  cool=0,  chamber=50, fan_min=0,   fan_max=30,  vol=10,  density=1.14, soft=108, flow=0.96, cost=35),
-    "PA12":  dict(base="fdm_filament_pa",   id="TSFN12", nozzle=255, nozzle_first=260, nozzle_low=240, nozzle_high=280, bed=80,  cool=0,  chamber=40, fan_min=0,   fan_max=30,  vol=10,  density=1.01, soft=90,  flow=0.96, cost=40),
-    "PA612": dict(base="fdm_filament_pa",   id="TSFN61", nozzle=260, nozzle_first=265, nozzle_low=240, nozzle_high=280, bed=80,  cool=0,  chamber=40, fan_min=0,   fan_max=30,  vol=10,  density=1.06, soft=100, flow=0.96, cost=40),
-    "PPA":   dict(base="fdm_filament_ppa",  id="TSFN95", nozzle=300, nozzle_first=300, nozzle_low=290, nozzle_high=320, bed=100, cool=0,  chamber=60, fan_min=0,   fan_max=30,  vol=6,   density=1.17, soft=180, flow=0.96, cost=60),
-    "PPS":   dict(base="fdm_filament_pps",  id="TSFS50", nozzle=320, nozzle_first=320, nozzle_low=310, nozzle_high=340, bed=110, cool=0,  chamber=60, fan_min=0,   fan_max=30,  vol=6,   density=1.35, soft=200, flow=0.96, cost=80),
-    "PEI":   dict(base="fdm_filament_pps",  id="TSFE10", nozzle=380, nozzle_first=380, nozzle_low=360, nozzle_high=400, bed=120, cool=0,  chamber=90, fan_min=0,   fan_max=10,  vol=5,   density=1.34, soft=150, flow=0.96, cost=150),
-    "PEKK":  dict(base="fdm_filament_pps",  id="TSFE20", nozzle=360, nozzle_first=360, nozzle_low=340, nozzle_high=380, bed=120, cool=0,  chamber=90, fan_min=0,   fan_max=0,   vol=5,   density=1.27, soft=150, flow=0.96, cost=200),
-    "PEEK":  dict(base="fdm_filament_pps",  id="TSFE30", nozzle=400, nozzle_first=400, nozzle_low=380, nozzle_high=420, bed=120, cool=0,  chamber=90, fan_min=0,   fan_max=0,   vol=5,   density=1.30, soft=150, flow=0.96, cost=250),
-    "PP":    dict(base="fdm_filament_pp",   id="OGFP97", nozzle=230, nozzle_first=235, nozzle_low=220, nozzle_high=250, bed=80,  cool=0,  chamber=0,  fan_min=20,  fan_max=50,  vol=10,  density=0.90, soft=90,  flow=0.98, cost=30),
+    "PLA":   dict(base="fdm_filament_pla",  id="OGFL99", nozzle=220, nozzle_first=220, nozzle_low=190, nozzle_high=240, bed=60,  chamber=0,  fan_min=100, fan_max=100, vol=15,  density=1.24, soft=45,  flow=0.98, cost=20),
+    "PETG":  dict(base="fdm_filament_pet",  id="OGFG99", nozzle=245, nozzle_first=245, nozzle_low=220, nozzle_high=260, bed=75,  chamber=0,  fan_min=30,  fan_max=60,  vol=12,  density=1.27, soft=70,  flow=0.96, cost=22),
+    "PCTG":  dict(base="fdm_filament_pctg", id="OGFG97", nozzle=255, nozzle_first=255, nozzle_low=240, nozzle_high=270, bed=75,  chamber=0,  fan_min=20,  fan_max=60,  vol=12,  density=1.23, soft=70,  flow=0.97, cost=25),
+    "ABS":   dict(base="fdm_filament_abs",  id="OGFB99", nozzle=255, nozzle_first=260, nozzle_low=240, nozzle_high=270, bed=100,  chamber=40, fan_min=10,  fan_max=40,  vol=16,  density=1.04, soft=100, flow=0.95, cost=20),
+    "ASA":   dict(base="fdm_filament_asa",  id="OGFB98", nozzle=260, nozzle_first=260, nozzle_low=240, nozzle_high=280, bed=100,  chamber=40, fan_min=10,  fan_max=40,  vol=14,  density=1.07, soft=100, flow=0.95, cost=24),
+    "PC":    dict(base="fdm_filament_pc",   id="OGFC99", nozzle=270, nozzle_first=270, nozzle_low=260, nozzle_high=290, bed=110,  chamber=50, fan_min=0,   fan_max=30,  vol=12,  density=1.20, soft=130, flow=0.94, cost=30),
+    "PA6":   dict(base="fdm_filament_pa",   id="OGFN99", nozzle=270, nozzle_first=275, nozzle_low=250, nozzle_high=290, bed=90,   chamber=50, fan_min=0,   fan_max=30,  vol=10,  density=1.14, soft=108, flow=0.96, cost=35),
+    "PA12":  dict(base="fdm_filament_pa",   id="TSFN12", nozzle=255, nozzle_first=260, nozzle_low=240, nozzle_high=280, bed=80,   chamber=40, fan_min=0,   fan_max=30,  vol=10,  density=1.01, soft=90,  flow=0.96, cost=40),
+    "PA612": dict(base="fdm_filament_pa",   id="TSFN61", nozzle=260, nozzle_first=265, nozzle_low=240, nozzle_high=280, bed=80,   chamber=40, fan_min=0,   fan_max=30,  vol=10,  density=1.06, soft=100, flow=0.96, cost=40),
+    "PPA":   dict(base="fdm_filament_ppa",  id="TSFN95", nozzle=300, nozzle_first=300, nozzle_low=290, nozzle_high=320, bed=100,  chamber=60, fan_min=0,   fan_max=30,  vol=6,   density=1.17, soft=180, flow=0.96, cost=60),
+    "PPS":   dict(base="fdm_filament_pps",  id="TSFS50", nozzle=320, nozzle_first=320, nozzle_low=310, nozzle_high=340, bed=110,  chamber=60, fan_min=0,   fan_max=30,  vol=6,   density=1.35, soft=200, flow=0.96, cost=80),
+    "PEI":   dict(base="fdm_filament_pps",  id="TSFE10", nozzle=380, nozzle_first=380, nozzle_low=360, nozzle_high=400, bed=120,  chamber=90, fan_min=0,   fan_max=10,  vol=5,   density=1.34, soft=150, flow=0.96, cost=150),
+    "PEKK":  dict(base="fdm_filament_pps",  id="TSFE20", nozzle=360, nozzle_first=360, nozzle_low=340, nozzle_high=380, bed=120,  chamber=90, fan_min=0,   fan_max=0,   vol=5,   density=1.27, soft=150, flow=0.96, cost=200),
+    "PEEK":  dict(base="fdm_filament_pps",  id="TSFE30", nozzle=400, nozzle_first=400, nozzle_low=380, nozzle_high=420, bed=120,  chamber=90, fan_min=0,   fan_max=0,   vol=5,   density=1.30, soft=150, flow=0.96, cost=250),
+    "PP":    dict(base="fdm_filament_pp",   id="OGFP97", nozzle=230, nozzle_first=235, nozzle_low=220, nozzle_high=250, bed=80,   chamber=0,  fan_min=20,  fan_max=50,  vol=10,  density=0.90, soft=90,  flow=0.98, cost=30),
 }
 # Carbon and glass fibre versions: hotter, slower, heavier, and they need a hardened nozzle.
 FIBRE_DENSITY = {  # (CF, GF)
@@ -63,12 +63,12 @@ FIBRE_IDS = {  # (CF, GF)
 }
 # Materials without fibre versions.
 OTHER = {
-    "TPU 95A": dict(base="fdm_filament_tpu",  id="OGFU99", type="TPU",  nozzle=225, nozzle_first=225, nozzle_low=210, nozzle_high=240, bed=45, cool=35, chamber=0,  fan_min=100, fan_max=100, vol=3.6, density=1.21, soft=30, flow=1.0,  cost=30),
-    "TPU 90A": dict(base="fdm_filament_tpu",  id="TSFU90", type="TPU",  nozzle=220, nozzle_first=220, nozzle_low=205, nozzle_high=235, bed=45, cool=35, chamber=0,  fan_min=100, fan_max=100, vol=2.5, density=1.18, soft=30, flow=1.0,  cost=32),
-    "TPU 85A": dict(base="fdm_filament_tpu",  id="TSFU85", type="TPU",  nozzle=215, nozzle_first=215, nozzle_low=200, nozzle_high=230, bed=45, cool=35, chamber=0,  fan_min=100, fan_max=100, vol=1.8, density=1.16, soft=30, flow=1.0,  cost=35),
-    "PVA":     dict(base="fdm_filament_pva",  id="OGFS99", type="PVA",  nozzle=210, nozzle_first=215, nozzle_low=190, nozzle_high=230, bed=60, cool=45, chamber=0,  fan_min=50,  fan_max=100, vol=10,  density=1.23, soft=55, flow=0.95, cost=60),
-    "BVOH":    dict(base="fdm_filament_bvoh", id="OGFS97", type="BVOH", nozzle=215, nozzle_first=220, nozzle_low=190, nozzle_high=240, bed=60, cool=45, chamber=0,  fan_min=50,  fan_max=100, vol=8,   density=1.14, soft=60, flow=1.0,  cost=80),
-    "HIPS":    dict(base="fdm_filament_hips", id="OGFS98", type="HIPS", nozzle=240, nozzle_first=240, nozzle_low=220, nozzle_high=260, bed=100, cool=0, chamber=40, fan_min=10,  fan_max=40,  vol=8,   density=1.04, soft=90, flow=1.0,  cost=25),
+    "TPU 95A": dict(base="fdm_filament_tpu",  id="OGFU99", type="TPU",  nozzle=225, nozzle_first=225, nozzle_low=210, nozzle_high=240, bed=45, chamber=0,  fan_min=100, fan_max=100, vol=3.6, density=1.21, soft=30, flow=1.0,  cost=30),
+    "TPU 90A": dict(base="fdm_filament_tpu",  id="TSFU90", type="TPU",  nozzle=220, nozzle_first=220, nozzle_low=205, nozzle_high=235, bed=45, chamber=0,  fan_min=100, fan_max=100, vol=2.5, density=1.18, soft=30, flow=1.0,  cost=32),
+    "TPU 85A": dict(base="fdm_filament_tpu",  id="TSFU85", type="TPU",  nozzle=215, nozzle_first=215, nozzle_low=200, nozzle_high=230, bed=45, chamber=0,  fan_min=100, fan_max=100, vol=1.8, density=1.16, soft=30, flow=1.0,  cost=35),
+    "PVA":     dict(base="fdm_filament_pva",  id="OGFS99", type="PVA",  nozzle=210, nozzle_first=215, nozzle_low=190, nozzle_high=230, bed=60, chamber=0,  fan_min=50,  fan_max=100, vol=10,  density=1.23, soft=55, flow=0.95, cost=60),
+    "BVOH":    dict(base="fdm_filament_bvoh", id="OGFS97", type="BVOH", nozzle=215, nozzle_first=220, nozzle_low=190, nozzle_high=240, bed=60, chamber=0,  fan_min=50,  fan_max=100, vol=8,   density=1.14, soft=60, flow=1.0,  cost=80),
+    "HIPS":    dict(base="fdm_filament_hips", id="OGFS98", type="HIPS", nozzle=240, nozzle_first=240, nozzle_low=220, nozzle_high=260, bed=100, chamber=40, fan_min=10,  fan_max=40,  vol=8,   density=1.04, soft=90, flow=1.0,  cost=25),
 }
 
 
@@ -116,9 +116,8 @@ def profile_json(name, m, renamed_from):
         "required_nozzle_HRC": s(m["hrc"]),
         "compatible_printers": [],
     }
-    for plate in ("hot_plate_temp", "textured_plate_temp", "eng_plate_temp"):
-        j[plate] = j[plate + "_initial_layer"] = temp(m["bed"])
-    j["cool_plate_temp"] = j["cool_plate_temp_initial_layer"] = temp(m["cool"])
+    # One bed temperature for every build plate: the app reads the hot_plate_temp pair for all of them.
+    j["hot_plate_temp"] = j["hot_plate_temp_initial_layer"] = temp(m["bed"])
     if renamed_from:
         j["renamed_from"] = ";".join('"' + n.replace("\\", "\\\\").replace('"', '\\"') + '"' for n in sorted(renamed_from))
     return j

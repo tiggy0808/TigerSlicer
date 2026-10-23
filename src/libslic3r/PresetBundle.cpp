@@ -4454,6 +4454,8 @@ DynamicPrintConfig PresetBundle::full_fff_config(bool apply_extruder, std::optio
     out.option<ConfigOptionStrings>("extruder_ams_count", true)->values   = save_extruder_ams_count_to_string(this->extruder_ams_counts);
 
 	out.option<ConfigOptionEnumGeneric>("printer_technology", true)->value = ptFFF;
+    // TigerSlicer: every build plate prints at the filament's one bed temperature.
+    unify_bed_temperatures(out);
     return out;
 }
 

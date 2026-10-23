@@ -6,6 +6,9 @@ Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOP
 ## Unreleased
 
 **Changed**
+- **One bed temperature.** Filament settings have a single bed temperature (first layer and other
+  layers), like the nozzle, instead of one per build plate. Every plate prints at it. You still pick
+  the build plate, for printers whose start G-code needs to know which one is installed.
 - Experimental features can be turned on and off where you'd look for them: the flask button next
   to the Simple/Advanced switch at the top of the process settings (pink when they are on), and
   **View > Show Experimental Features**. The setting in Preferences > General still works too.

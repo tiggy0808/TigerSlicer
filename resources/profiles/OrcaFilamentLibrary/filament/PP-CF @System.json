@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "80"
     ],
-    "textured_plate_temp": [
-        "80"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "80"
-    ],
-    "eng_plate_temp": [
-        "80"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "80"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "renamed_from": "\"Eryone PP-CF\";\"Eryone PP-CF @0.2 nozzle\";\"Generic PE-CF @BBL A1\";\"Generic PE-CF @BBL A1M\";\"Generic PE-CF @BBL A2L\";\"Generic PE-CF @BBL H2C\";\"Generic PE-CF @BBL H2C 0.4 nozzle\";\"Generic PE-CF @BBL H2D\";\"Generic PE-CF @BBL H2DP\";\"Generic PE-CF @BBL H2S 0.4 nozzle\";\"Generic PE-CF @BBL P2S\";\"Generic PE-CF @BBL X1C\";\"Generic PE-CF @BBL X2D\";\"Generic PE-CF @BBL X2D 0.4 nozzle\";\"Generic PE-CF @System\";\"Generic PP-CF @BBL A1\";\"Generic PP-CF @BBL H2C\";\"Generic PP-CF @BBL H2C 0.4 nozzle\";\"Generic PP-CF @BBL H2D\";\"Generic PP-CF @BBL H2DP\";\"Generic PP-CF @BBL H2S 0.4 nozzle\";\"Generic PP-CF @BBL P2S\";\"Generic PP-CF @BBL X1C\";\"Generic PP-CF @BBL X2D\";\"Generic PP-CF @BBL X2D 0.4 nozzle\";\"Generic PP-CF @K2 Plus-all\";\"Generic PP-CF @System\";\"Tiertime Generic PE-CF\";\"Tiertime Generic PE-CF@300HS\";\"Tiertime Generic PP-CF\";\"Tiertime Generic PP-CF@300HS\""
 }

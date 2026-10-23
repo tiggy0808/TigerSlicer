@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "100"
     ],
-    "textured_plate_temp": [
-        "100"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "100"
-    ],
-    "eng_plate_temp": [
-        "100"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "100"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "renamed_from": "\"Eryone ABS-CF\";\"Eryone ABS-CF @0.2 nozzle\";\"Flashforge ABS-CF @FF G4\";\"Flashforge ABS-CF @FF G4 0.6 nozzle\";\"Flashforge ABS-CF @FF G4P\";\"Flashforge ABS-CF @FF G4P 0.6 nozzle\";\"Generic ABS-CF @Elegoo Centauri\""
 }

@@ -57,23 +57,5 @@
     ],
     "hot_plate_temp_initial_layer": [
         "75"
-    ],
-    "textured_plate_temp": [
-        "75"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "75"
-    ],
-    "eng_plate_temp": [
-        "75"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "75"
-    ],
-    "cool_plate_temp": [
-        "60"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "60"
     ]
 }

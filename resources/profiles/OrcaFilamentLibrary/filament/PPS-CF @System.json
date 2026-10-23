@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "110"
     ],
-    "textured_plate_temp": [
-        "110"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "110"
-    ],
-    "eng_plate_temp": [
-        "110"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "110"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "renamed_from": "\"Bambu PPS-CF @BBL H2C\";\"Bambu PPS-CF @BBL H2C 0.4 nozzle\";\"Bambu PPS-CF @BBL H2D\";\"Bambu PPS-CF @BBL H2DP\";\"Bambu PPS-CF @BBL H2S\";\"Bambu PPS-CF @BBL X1E\";\"FlashForge PPS-CF @FF G4 0.6 nozzle\";\"FlashForge PPS-CF @FF G4P 0.6 nozzle\";\"Flashforge PPS-CF\";\"Flashforge PPS-CF @FF C5\";\"Flashforge PPS-CF @FF C5P\";\"Flashforge PPS-CF @FF G4\";\"Flashforge PPS-CF @FF G4P\";\"Generic PPS-CF @BBL H2C\";\"Generic PPS-CF @BBL H2C 0.4 nozzle\";\"Generic PPS-CF @BBL H2D\";\"Generic PPS-CF @BBL H2DP\";\"Generic PPS-CF @BBL H2S 0.4 nozzle\";\"Generic PPS-CF @BBL X1E\";\"Generic PPS-CF @K1 Max_CFS-C-all\";\"Generic PPS-CF @K1C-all\";\"Generic PPS-CF @K1C_CFS-C-all\";\"Generic PPS-CF @K1_CFS-C-all\";\"Generic PPS-CF @K2 Plus-all\";\"PPS Carbone (Performance)\";\"QIDI PPS-CF\";\"QIDI PPS-CF @0.6 nozzle\";\"QIDI PPS-CF @0.8 nozzle\";\"QIDI PPS-CF @Qidi Q1 Pro 0.4 nozzle\";\"QIDI PPS-CF @Qidi Q1 Pro 0.6 nozzle\";\"QIDI PPS-CF @Qidi Q1 Pro 0.8 nozzle\";\"QIDI PPS-CF @Qidi Q2 0.4 nozzle\";\"QIDI PPS-CF @Qidi Q2 0.6 nozzle\";\"QIDI PPS-CF @Qidi Q2 0.8 nozzle\";\"QIDI PPS-CF @Qidi Q2C 0.4 nozzle\";\"QIDI PPS-CF @Qidi Q2C 0.6 nozzle\";\"QIDI PPS-CF @Qidi Q2C 0.8 nozzle\";\"QIDI PPS-CF @Qidi X-Max 4 0.4 nozzle\";\"QIDI PPS-CF @Qidi X-Max 4 0.6 nozzle\";\"QIDI PPS-CF @Qidi X-Max 4 0.8 nozzle\";\"QIDI PPS-CF @Qidi X-Plus 4 0.4 nozzle\";\"QIDI PPS-CF @Qidi X-Plus 4 0.6 nozzle\";\"QIDI PPS-CF @Qidi X-Plus 4 0.8 nozzle\";\"QIDI PPS-CF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI PPS-CF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI PPS-CF @Qidi X-Plus 5 0.8 nozzle\";\"Tiertime Generic PPS-CF\";\"Tiertime Generic PPS-CF@300HS\""
 }

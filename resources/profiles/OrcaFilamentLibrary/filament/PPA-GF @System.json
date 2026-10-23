@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "100"
     ],
-    "textured_plate_temp": [
-        "100"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "100"
-    ],
-    "eng_plate_temp": [
-        "100"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "100"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "renamed_from": "\"Flashforge PPA-GF\";\"Generic PPA-GF @BBL H2C\";\"Generic PPA-GF @BBL H2C 0.4 nozzle\";\"Generic PPA-GF @BBL H2D\";\"Generic PPA-GF @BBL H2DP\";\"Generic PPA-GF @BBL H2S 0.4 nozzle\";\"Generic PPA-GF @BBL P2S\";\"Generic PPA-GF @BBL X1C\";\"Generic PPA-GF @BBL X1E\";\"Generic PPA-GF @BBL X2D\";\"Generic PPA-GF @BBL X2D 0.4 nozzle\";\"Generic PPA-GF @System\";\"Grauts HPP4GF25 P1 @iQ TiQ2 0.4 Nozzle\";\"Tiertime Generic PPA-GF\";\"Tiertime Generic PPA-GF@300HS\""
 }

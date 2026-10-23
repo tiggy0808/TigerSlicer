@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "75"
     ],
-    "textured_plate_temp": [
-        "75"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "75"
-    ],
-    "eng_plate_temp": [
-        "75"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "75"
-    ],
-    "cool_plate_temp": [
-        "60"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "60"
-    ],
     "renamed_from": "\"Elegoo PETG-GF @EC\";\"Elegoo PETG-GF @EC2\";\"Elegoo PETG-GF @ECC\";\"Elegoo PETG-GF @ECC2\";\"Elegoo PETG-GF @EN2 Series\";\"Elegoo PETG-GF @EN3 Series\";\"Elegoo PETG-GF @EN4 Series\";\"Elegoo PETG-GF @Elegoo Giga\";\"Elegoo PETG-GF @System\";\"FusRock Generic PET-GF\";\"Generic PETG-GF @K2 Plus-all\";\"Generic PETG-GF @K2 Pro-all\";\"Generic PETG-GF @K2-all\";\"Hyper PETG-GF @K1C-all\";\"Hyper PETG-GF @K2 Plus-all\";\"Hyper PETG-GF @K2 Pro-all\";\"Hyper PETG-GF @K2-all\";\"QIDI PET-GF\";\"QIDI PET-GF @0.6 nozzle\";\"QIDI PET-GF @0.8 nozzle\";\"QIDI PET-GF @Qidi Q1 Pro 0.4 nozzle\";\"QIDI PET-GF @Qidi Q1 Pro 0.6 nozzle\";\"QIDI PET-GF @Qidi Q1 Pro 0.8 nozzle\";\"QIDI PET-GF @Qidi Q2 0.4 nozzle\";\"QIDI PET-GF @Qidi Q2 0.6 nozzle\";\"QIDI PET-GF @Qidi Q2 0.8 nozzle\";\"QIDI PET-GF @Qidi Q2C 0.4 nozzle\";\"QIDI PET-GF @Qidi Q2C 0.6 nozzle\";\"QIDI PET-GF @Qidi Q2C 0.8 nozzle\";\"QIDI PET-GF @Qidi X-Max 4 0.4 nozzle\";\"QIDI PET-GF @Qidi X-Max 4 0.6 nozzle\";\"QIDI PET-GF @Qidi X-Max 4 0.8 nozzle\";\"QIDI PET-GF @Qidi X-Plus 4 0.4 nozzle\";\"QIDI PET-GF @Qidi X-Plus 4 0.6 nozzle\";\"QIDI PET-GF @Qidi X-Plus 4 0.8 nozzle\";\"QIDI PET-GF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI PET-GF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI PET-GF @Qidi X-Plus 5 0.8 nozzle\";\"QIDI PETG-GF\";\"QIDI PETG-GF @Qidi Q1 Pro 0.4 nozzle\";\"QIDI PETG-GF @Qidi Q1 Pro 0.6 nozzle\";\"QIDI PETG-GF @Qidi Q1 Pro 0.8 nozzle\";\"QIDI PETG-GF @Qidi Q2 0.4 nozzle\";\"QIDI PETG-GF @Qidi Q2 0.6 nozzle\";\"QIDI PETG-GF @Qidi Q2 0.8 nozzle\";\"QIDI PETG-GF @Qidi Q2C 0.4 nozzle\";\"QIDI PETG-GF @Qidi Q2C 0.6 nozzle\";\"QIDI PETG-GF @Qidi Q2C 0.8 nozzle\";\"QIDI PETG-GF @Qidi X-Max 4 0.4 nozzle\";\"QIDI PETG-GF @Qidi X-Max 4 0.6 nozzle\";\"QIDI PETG-GF @Qidi X-Max 4 0.8 nozzle\";\"QIDI PETG-GF @Qidi X-Plus 4 0.4 nozzle\";\"QIDI PETG-GF @Qidi X-Plus 4 0.6 nozzle\";\"QIDI PETG-GF @Qidi X-Plus 4 0.8 nozzle\";\"QIDI PETG-GF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI PETG-GF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI PETG-GF @Qidi X-Plus 5 0.8 nozzle\""
 }

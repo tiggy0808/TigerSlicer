@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "80"
     ],
-    "textured_plate_temp": [
-        "80"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "80"
-    ],
-    "eng_plate_temp": [
-        "80"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "80"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "renamed_from": "\"Generic PP-GF @BBL A1\";\"Generic PP-GF @BBL H2C\";\"Generic PP-GF @BBL H2C 0.4 nozzle\";\"Generic PP-GF @BBL H2D\";\"Generic PP-GF @BBL H2DP\";\"Generic PP-GF @BBL H2S 0.4 nozzle\";\"Generic PP-GF @BBL P2S\";\"Generic PP-GF @BBL X1C\";\"Generic PP-GF @BBL X2D\";\"Generic PP-GF @BBL X2D 0.4 nozzle\";\"Generic PP-GF @System\";\"Tiertime Generic PP-GF\";\"Tiertime Generic PP-GF@300HS\""
 }

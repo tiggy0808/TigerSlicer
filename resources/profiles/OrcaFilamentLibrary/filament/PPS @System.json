@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "110"
     ],
-    "textured_plate_temp": [
-        "110"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "110"
-    ],
-    "eng_plate_temp": [
-        "110"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "110"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "renamed_from": "\"FlashForge PPS @FF G4 0.6 HF nozzle\";\"FlashForge PPS @FF G4 0.6 nozzle\";\"FlashForge PPS @FF G4 0.8 HF nozzle\";\"FlashForge PPS @FF G4P 0.6 HF nozzle\";\"FlashForge PPS @FF G4P 0.6 nozzle\";\"FlashForge PPS @FF G4P 0.8 HF nozzle\";\"Flashforge PPS @FF G4\";\"Flashforge PPS @FF G4P\";\"Generic PPS @BBL H2C\";\"Generic PPS @BBL H2C 0.4 nozzle\";\"Generic PPS @BBL H2D\";\"Generic PPS @BBL H2DP\";\"Generic PPS @BBL H2S 0.4 nozzle\";\"Generic PPS @BBL X1E\";\"Generic PPS @K1 Max_CFS-C-all\";\"Generic PPS @K1C-all\";\"Generic PPS @K1C_CFS-C-all\";\"Generic PPS @K1_CFS-C-all\";\"Generic PPS @K2 Plus-all\";\"Tiertime Generic PPS\";\"Tiertime Generic PPS@300HS\""
 }

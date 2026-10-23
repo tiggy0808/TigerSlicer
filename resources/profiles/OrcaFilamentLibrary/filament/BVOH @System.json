@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "60"
     ],
-    "textured_plate_temp": [
-        "60"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "60"
-    ],
-    "eng_plate_temp": [
-        "60"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "60"
-    ],
-    "cool_plate_temp": [
-        "45"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "45"
-    ],
     "renamed_from": "\"Generic BVOH @BBL A1\";\"Generic BVOH @BBL A1M\";\"Generic BVOH @BBL A2L\";\"Generic BVOH @BBL H2C\";\"Generic BVOH @BBL H2C 0.4 nozzle\";\"Generic BVOH @BBL H2D\";\"Generic BVOH @BBL H2DP\";\"Generic BVOH @BBL H2S 0.4 nozzle\";\"Generic BVOH @BBL P2S\";\"Generic BVOH @BBL X1C\";\"Generic BVOH @BBL X2D\";\"Generic BVOH @BBL X2D 0.4 nozzle\";\"Generic BVOH @FF C5\";\"Generic BVOH @FF C5P\";\"Generic BVOH @Hi-all\";\"Generic BVOH @K1 Max_CFS-C-all\";\"Generic BVOH @K1C-all\";\"Generic BVOH @K1C_CFS-C-all\";\"Generic BVOH @K1_CFS-C-all\";\"Generic BVOH @K2 Plus-all\";\"Generic BVOH @K2 Pro-all\";\"Generic BVOH @K2-all\";\"Generic BVOH @System\";\"Tiertime Generic BVOH\";\"Tiertime Generic BVOH@300HS\""
 }

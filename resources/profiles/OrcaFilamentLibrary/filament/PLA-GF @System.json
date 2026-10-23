@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "60"
     ],
-    "textured_plate_temp": [
-        "60"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "60"
-    ],
-    "eng_plate_temp": [
-        "60"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "60"
-    ],
-    "cool_plate_temp": [
-        "35"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "35"
-    ],
     "renamed_from": "\"Polymaker HT-PLA-GF @BBL A1\";\"Polymaker HT-PLA-GF @BBL A1 0.2 nozzle\";\"Polymaker HT-PLA-GF @BBL A1M\";\"Polymaker HT-PLA-GF @BBL A1M 0.2 nozzle\";\"Polymaker HT-PLA-GF @BBL P1P\";\"Polymaker HT-PLA-GF @BBL P1P 0.2 nozzle\";\"Polymaker HT-PLA-GF @BBL X1\";\"Polymaker HT-PLA-GF @BBL X1 0.2 nozzle\";\"Polymaker HT-PLA-GF @BBL X1C\";\"Polymaker HT-PLA-GF @BBL X1C 0.2 nozzle\";\"Polymaker HT-PLA-GF @Snapmaker U1\";\"Polymaker HT-PLA-GF @System\""
 }

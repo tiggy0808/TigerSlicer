@@ -4389,47 +4389,12 @@ void TabFilament::build()
         line.append_option(optgroup->get_option("nozzle_temperature", 0));
         optgroup->append_line(line);
 
+        // TigerSlicer: one bed temperature for every build plate (get_bed_temp_key()), like the nozzle.
         optgroup = page->new_optgroup(L("Bed temperature"), L"param_bed_temp");
-        line = { L("Cool Plate (SuperTack)"),
-                 L("Bed temperature when the Cool Plate SuperTack is installed. A value of 0 means the filament does not support printing on the Cool Plate SuperTack.") };
-        line.label_path = "material_temperatures#bed";
-        line.append_option(optgroup->get_option("supertack_plate_temp_initial_layer"));
-        line.append_option(optgroup->get_option("supertack_plate_temp"));
-        optgroup->append_line(line);
-
-        line = { L("Cool Plate"),
-                 L("This is the bed temperature when the Cool Plate is installed. A value of 0 means the filament does not support printing on the Cool Plate.") };
-        line.label_path = "material_temperatures#bed";
-        line.append_option(optgroup->get_option("cool_plate_temp_initial_layer"));
-        line.append_option(optgroup->get_option("cool_plate_temp"));
-        optgroup->append_line(line);
-
-        line = { L("Textured Cool Plate"),
-                 L("This is the bed temperature when the Textured Cool Plate is installed. A value of 0 means the filament does not support printing on the Textured Cool Plate.") };
-        line.label_path = "material_temperatures#bed";
-        line.append_option(optgroup->get_option("textured_cool_plate_temp_initial_layer"));
-        line.append_option(optgroup->get_option("textured_cool_plate_temp"));
-        optgroup->append_line(line);
-
-        line = { L("Engineering Plate"),
-                 L("This is the bed temperature when the engineering plate is installed. A value of 0 means the filament does not support printing on the Engineering Plate.") };
-        line.label_path = "material_temperatures#bed";
-        line.append_option(optgroup->get_option("eng_plate_temp_initial_layer"));
-        line.append_option(optgroup->get_option("eng_plate_temp"));
-        optgroup->append_line(line);
-
-        line = { L("Smooth PEI Plate / High Temp Plate"),
-                 L("This is the bed temperature when the Smooth PEI Plate/High Temperature Plate is installed. A value of 0 means the filament does not support printing on the Smooth PEI Plate/High Temp Plate.") };
+        line = { L("Bed"), L("Bed temperature when printing, whichever build plate is installed.") };
         line.label_path = "material_temperatures#bed";
         line.append_option(optgroup->get_option("hot_plate_temp_initial_layer"));
         line.append_option(optgroup->get_option("hot_plate_temp"));
-        optgroup->append_line(line);
-
-        line = { L("Textured PEI Plate"),
-                 L("This is the bed temperature when the Textured PEI Plate is installed. A value of 0 means the filament does not support printing on the Textured PEI Plate.") };
-        line.label_path = "material_temperatures#bed";
-        line.append_option(optgroup->get_option("textured_plate_temp_initial_layer"));
-        line.append_option(optgroup->get_option("textured_plate_temp"));
         optgroup->append_line(line);
 
         optgroup->m_on_change = [this](t_config_option_key opt_key, boost::any value)
@@ -4749,28 +4714,7 @@ void TabFilament::toggle_options()
         bool pa = m_config->opt_bool("enable_pressure_advance", 0);
         toggle_option("pressure_advance", pa);
 
-        //Orca: Enable the plates that should be visible when multi bed support is enabled or a BBL printer is selected; otherwise, enable only the plate visible for the selected bed type.
-        DynamicConfig& proj_cfg               = m_preset_bundle->project_config;
-        std::string    bed_temp_1st_layer_key = "";
-        if (proj_cfg.has("curr_bed_type"))
-        {
-            bed_temp_1st_layer_key = get_bed_temp_1st_layer_key(proj_cfg.opt_enum<BedType>("curr_bed_type"));
-        }
-
-        const std::vector<std::string> bed_temp_keys = {"supertack_plate_temp_initial_layer", "cool_plate_temp_initial_layer",
-                                                        "textured_cool_plate_temp_initial_layer", "eng_plate_temp_initial_layer",
-                                                        "textured_plate_temp_initial_layer", "hot_plate_temp_initial_layer"};
-
-        bool support_multi_bed_types = std::find(bed_temp_keys.begin(), bed_temp_keys.end(), bed_temp_1st_layer_key) ==
-                                           bed_temp_keys.end() ||
-                                       is_BBL_printer || printer_cfg.opt_bool("support_multi_bed_types");
-
-        for (const auto& key : bed_temp_keys)
-        {
-            toggle_line(key, support_multi_bed_types || bed_temp_1st_layer_key == key);
-        }
-
-
+        // TigerSlicer: there is one bed temperature line for every build plate, always shown.
 
         // Orca: adaptive pressure advance and calibration model
         // If PA is not enabled, disable adaptive pressure advance and hide the model section

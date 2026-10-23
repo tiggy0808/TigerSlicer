@@ -52,6 +52,18 @@ void ReplaceString(std::string &resource_str, const std::string &old_str, const 
 
 namespace Slic3r {
 
+void unify_bed_temperatures(DynamicPrintConfig &config)
+{
+    for (const std::string suffix : {"", "_initial_layer"}) {
+        const auto *bed = config.option<ConfigOptionInts>("hot_plate_temp" + suffix);
+        if (bed == nullptr)
+            continue;
+        for (const char *plate : {"supertack_plate_temp", "cool_plate_temp", "textured_cool_plate_temp", "eng_plate_temp", "textured_plate_temp"})
+            if (auto *opt = config.option<ConfigOptionInts>(plate + suffix))
+                opt->values = bed->values;
+    }
+}
+
 //! macro used to mark string used at localization,
 //! return same string
 #define L(s) (s)
@@ -1207,7 +1219,7 @@ void PrintConfigDef::init_fff_params()
 
     def = this->add("hot_plate_temp", coInts);
     def->label = L("Other layers");
-    def->tooltip = L("This is the bed temperature for layers except for the first one. A value of 0 means the filament does not support printing on the High Temp Plate.");
+    def->tooltip = L("Bed temperature for layers after the first one, whichever build plate is installed.");
     def->sidetext = L(u8"\u2103" /* °C */);	// degrees Celsius, CIS languages need translation
     def->full_label = L("Bed temperature");
     def->min = 0;
@@ -1262,7 +1274,7 @@ void PrintConfigDef::init_fff_params()
     def = this->add("hot_plate_temp_initial_layer", coInts);
     def->label = L("First layer");
     def->full_label = L("First layer bed temperature");
-    def->tooltip = L("This is the bed temperature of the first layer. A value of 0 means the filament does not support printing on the High Temp Plate.");
+    def->tooltip = L("Bed temperature for the first layer, whichever build plate is installed.");
     def->sidetext = L(u8"\u2103" /* °C */);	// degrees Celsius, CIS languages need translation
     def->max = 300;
     def->set_default_value(new ConfigOptionInts{ 45 });

@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "100"
     ],
-    "textured_plate_temp": [
-        "100"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "100"
-    ],
-    "eng_plate_temp": [
-        "100"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "100"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "renamed_from": "\"Bambu PPA-CF @BBL H2C\";\"Bambu PPA-CF @BBL H2C 0.4 nozzle\";\"Bambu PPA-CF @BBL H2D\";\"Bambu PPA-CF @BBL H2DP\";\"Bambu PPA-CF @BBL H2S\";\"Bambu PPA-CF @BBL P2S\";\"Bambu PPA-CF @BBL X1C\";\"Bambu PPA-CF @BBL X1E\";\"Bambu PPA-CF @BBL X2D\";\"Bambu PPA-CF @BBL X2D 0.4 nozzle\";\"Bambu PPA-CF @System\";\"DREMC PPA-CF @System\";\"Flashforge PPA-CF\";\"Flashforge PPA-CF @FF C5\";\"Flashforge PPA-CF @FF C5P\";\"Generic PPA-CF @BBL H2C\";\"Generic PPA-CF @BBL H2C 0.4 nozzle\";\"Generic PPA-CF @BBL H2D\";\"Generic PPA-CF @BBL H2DP\";\"Generic PPA-CF @BBL H2S 0.4 nozzle\";\"Generic PPA-CF @BBL P2S\";\"Generic PPA-CF @BBL X1C\";\"Generic PPA-CF @BBL X1E\";\"Generic PPA-CF @BBL X2D\";\"Generic PPA-CF @BBL X2D 0.4 nozzle\";\"Generic PPA-CF @System\";\"Tiertime Generic PPA-CF\";\"Tiertime Generic PPA-CF@300HS\""
 }

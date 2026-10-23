@@ -618,51 +618,22 @@ static std::string bed_type_to_gcode_string(const BedType type)
     return type_str;
 }
 
+// TigerSlicer: one bed temperature for every build plate, like the one nozzle temperature. The plate type
+// is still chosen (some printers' G-code names it), but it no longer picks the temperature: every plate uses
+// the "hot_plate_temp" pair, shown as "Bed temperature" in the filament settings. unify_bed_temperatures()
+// copies it to the other plates' keys for G-code that names them.
 static std::string get_bed_temp_key(const BedType type)
 {
-    if (type == btSuperTack)
-        return "supertack_plate_temp";
-
-    if (type == btPC)
-        return "cool_plate_temp";
-
-    if (type == btPCT)
-        return "textured_cool_plate_temp";
-
-    if (type == btEP)
-        return "eng_plate_temp";
-
-    if (type == btPEI)
-        return "hot_plate_temp";
-
-    if (type == btPTE)
-        return "textured_plate_temp";
-
-    return "";
+    return type > btDefault && type < btCount ? "hot_plate_temp" : "";
 }
 
 static std::string get_bed_temp_1st_layer_key(const BedType type)
 {
-    if (type == btSuperTack)
-        return "supertack_plate_temp_initial_layer";
-
-    if (type == btPC)
-        return "cool_plate_temp_initial_layer";
-
-    if (type == btPCT)
-        return "textured_cool_plate_temp_initial_layer";
-
-    if (type == btEP)
-        return "eng_plate_temp_initial_layer";
-
-    if (type == btPEI)
-        return "hot_plate_temp_initial_layer";
-
-    if (type == btPTE)
-        return "textured_plate_temp_initial_layer";
-
-    return "";
+    return type > btDefault && type < btCount ? "hot_plate_temp_initial_layer" : "";
 }
+
+class DynamicPrintConfig;
+void unify_bed_temperatures(DynamicPrintConfig &config);
 
 extern const std::vector<std::string> filament_extruder_override_keys;
 // Full override-key check incl. filament_retract_length_nc (defined outside the generator list).

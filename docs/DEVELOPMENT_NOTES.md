@@ -9,6 +9,26 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 
 ## Unreleased
 
+### One bed temperature for every build plate
+- `get_bed_temp_key()` / `get_bed_temp_1st_layer_key()` (PrintConfig.hpp) return the `hot_plate_temp`
+  pair for every plate type, so everything that looks up a plate's temperature (G-code, the bed checks,
+  calibration, arrange) gets the one value. `curr_bed_type` is still chosen and still reaches the
+  G-code (`bed_type_to_gcode_string`, start G-code conditionals).
+- `unify_bed_temperatures()` copies the `hot_plate_temp` pair over the other five plates' keys;
+  `PresetBundle::full_fff_config()` calls it, so custom G-code naming e.g. `[cool_plate_temp]` and the
+  config saved into G-code and 3MF agree. (No bundled printer's G-code names a plate other than
+  `hot_plate_temp`.)
+- Filament settings: the Bed temperature group has one "Bed" line (first layer, other layers) on the
+  `hot_plate_temp` keys; the per-plate lines and the code that showed only the current plate's line
+  are gone. The tooltips no longer say 0 means "not supported on this plate".
+- `scripts/tigerslicer_filaments.py` writes only the `hot_plate_temp` pair (the cool-plate column is
+  gone); the library's other plate keys now come from the base templates and are overwritten when
+  slicing.
+- Tests: fff_print `[BedTemperature]` slices on all six plate types with the other plates set to
+  31/33 °C and checks for `M190 S73` / `M140 S71` from the one setting; plus `unify_bed_temperatures()`.
+  macOS: fff_print 194 of 195 pass (the failure is the known compiler-dependent `[Regression]` hash
+  test), libslic3r 1,054 pass.
+
 ### Experimental features switch outside Preferences
 - `GUI_App::show_experimental_features()` / `set_show_experimental_features(bool)`: the one place that
   writes `show_experimental_features`, calls `update_mode()` and schedules a reslice. The Preferences

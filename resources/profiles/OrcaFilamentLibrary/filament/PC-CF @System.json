@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "110"
     ],
-    "textured_plate_temp": [
-        "110"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "110"
-    ],
-    "eng_plate_temp": [
-        "110"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "110"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "renamed_from": "\"Anycubic PC-CF @Anycubic Kobra S1 Max 0.4 nozzle\";\"Anycubic PC-CF @Anycubic Kobra S1 Max 0.6 nozzle\";\"Anycubic PC-CF @Anycubic Kobra S1 Max 0.8 nozzle\";\"Generic PC-CF @Elegoo\";\"Generic PCCF @E3NG v1.2S\";\"LHS PC CF\";\"Prusament PC-CF @CORE One\";\"Prusament PC-CF @CORE One 0.6\";\"Prusament PC-CF @CORE One 0.8\";\"Prusament PC-CF @XL\";\"Prusament PC-CF @XL 5T\""
 }

@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "80"
     ],
-    "textured_plate_temp": [
-        "80"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "80"
-    ],
-    "eng_plate_temp": [
-        "80"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "80"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "renamed_from": "\"Eryone PP\";\"Eryone PP @0.2 nozzle\";\"FILL3D PP @System\";\"FILL3D PPCF @System\";\"Generic PE @BBL A1\";\"Generic PE @BBL A1M\";\"Generic PE @BBL A2L\";\"Generic PE @BBL H2C\";\"Generic PE @BBL H2C 0.4 nozzle\";\"Generic PE @BBL H2D\";\"Generic PE @BBL H2DP\";\"Generic PE @BBL H2S 0.4 nozzle\";\"Generic PE @BBL P2S\";\"Generic PE @BBL X1C\";\"Generic PE @BBL X2D\";\"Generic PE @BBL X2D 0.4 nozzle\";\"Generic PE @System\";\"Generic PP @BBL A1\";\"Generic PP @BBL A1M\";\"Generic PP @BBL A2L\";\"Generic PP @BBL H2C\";\"Generic PP @BBL H2C 0.4 nozzle\";\"Generic PP @BBL H2D\";\"Generic PP @BBL H2DP\";\"Generic PP @BBL H2S 0.4 nozzle\";\"Generic PP @BBL P2S\";\"Generic PP @BBL X1C\";\"Generic PP @BBL X2D\";\"Generic PP @BBL X2D 0.4 nozzle\";\"Generic PP @K1 Max_CFS-C-all\";\"Generic PP @K1C-all\";\"Generic PP @K1C_CFS-C-all\";\"Generic PP @K1_CFS-C-all\";\"Generic PP @K2 Plus-all\";\"Generic PP @K2 Pro-all\";\"Generic PP @K2-all\";\"Generic PP @System\";\"Tiertime Generic PE\";\"Tiertime Generic PE@300HS\";\"Tiertime Generic PP\";\"Tiertime Generic PP@300HS\";\"Volumic PP Ultra\";\"Volumic PP Ultra (Performance)\";\"re3D rPP\";\"re3D rPP @0.8 nozzle\";\"re3D rPP @1.75 nozzle\""
 }

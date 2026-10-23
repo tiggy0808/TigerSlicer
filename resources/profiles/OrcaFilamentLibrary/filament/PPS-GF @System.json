@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "110"
     ],
-    "textured_plate_temp": [
-        "110"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "110"
-    ],
-    "eng_plate_temp": [
-        "110"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "110"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "renamed_from": "\"QIDI PPS-GF\";\"QIDI PPS-GF @Qidi Q1 Pro 0.4 nozzle\";\"QIDI PPS-GF @Qidi Q1 Pro 0.6 nozzle\";\"QIDI PPS-GF @Qidi Q1 Pro 0.8 nozzle\";\"QIDI PPS-GF @Qidi Q2 0.4 nozzle\";\"QIDI PPS-GF @Qidi Q2 0.6 nozzle\";\"QIDI PPS-GF @Qidi Q2 0.8 nozzle\";\"QIDI PPS-GF @Qidi Q2C 0.4 nozzle\";\"QIDI PPS-GF @Qidi Q2C 0.6 nozzle\";\"QIDI PPS-GF @Qidi Q2C 0.8 nozzle\";\"QIDI PPS-GF @Qidi X-Max 4 0.4 nozzle\";\"QIDI PPS-GF @Qidi X-Max 4 0.6 nozzle\";\"QIDI PPS-GF @Qidi X-Max 4 0.8 nozzle\";\"QIDI PPS-GF @Qidi X-Plus 4 0.4 nozzle\";\"QIDI PPS-GF @Qidi X-Plus 4 0.6 nozzle\";\"QIDI PPS-GF @Qidi X-Plus 4 0.8 nozzle\";\"QIDI PPS-GF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI PPS-GF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI PPS-GF @Qidi X-Plus 5 0.8 nozzle\""
 }

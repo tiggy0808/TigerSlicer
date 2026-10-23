@@ -538,3 +538,36 @@ TEST_CASE("Default settings print the same moves as before the small feature opt
         CHECK(hash == c.hash);
     }
 }
+
+// TigerSlicer: one bed temperature for every build plate. The plate type is still sent to the printer, but every
+// plate heats to the filament's "Bed temperature" (the hot_plate_temp pair), not to that plate's own setting.
+TEST_CASE("Every build plate heats to the filament's one bed temperature", "[Print][BedTemperature]")
+{
+    for (const BedType type : {btSuperTack, btPC, btEP, btPEI, btPTE, btPCT}) {
+        CHECK(get_bed_temp_key(type) == "hot_plate_temp");
+        CHECK(get_bed_temp_1st_layer_key(type) == "hot_plate_temp_initial_layer");
+    }
+    for (const char *plate : {"Supertack Plate", "Cool Plate", "Engineering Plate", "High Temp Plate", "Textured PEI Plate", "Textured Cool Plate"}) {
+        DynamicPrintConfig config = DynamicPrintConfig::full_print_config();
+        config.set_deserialize_strict({{"curr_bed_type", plate},
+                                       {"hot_plate_temp_initial_layer", "73"}, {"hot_plate_temp", "71"},
+                                       {"supertack_plate_temp_initial_layer", "33"}, {"supertack_plate_temp", "31"},
+                                       {"cool_plate_temp_initial_layer", "33"}, {"cool_plate_temp", "31"},
+                                       {"textured_cool_plate_temp_initial_layer", "33"}, {"textured_cool_plate_temp", "31"},
+                                       {"eng_plate_temp_initial_layer", "33"}, {"eng_plate_temp", "31"},
+                                       {"textured_plate_temp_initial_layer", "33"}, {"textured_plate_temp", "31"}});
+        const std::string gcode = slice({cube(20)}, config);
+        CAPTURE(plate);
+        CHECK(gcode.find("M190 S73") != std::string::npos);
+        CHECK(gcode.find("M140 S71") != std::string::npos);
+        CHECK(gcode.find("M190 S33") == std::string::npos);
+        CHECK(gcode.find("M140 S31") == std::string::npos);
+    }
+
+    // G-code that names a plate's temperature directly gets the same value.
+    DynamicPrintConfig config = DynamicPrintConfig::full_print_config();
+    config.set_deserialize_strict({{"hot_plate_temp_initial_layer", "73"}, {"hot_plate_temp", "71"}, {"cool_plate_temp", "31"}});
+    unify_bed_temperatures(config);
+    CHECK(config.option<ConfigOptionInts>("cool_plate_temp")->values == std::vector<int>{71});
+    CHECK(config.option<ConfigOptionInts>("textured_plate_temp_initial_layer")->values == std::vector<int>{73});
+}

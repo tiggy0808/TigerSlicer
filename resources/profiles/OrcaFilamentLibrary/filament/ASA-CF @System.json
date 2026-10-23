@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "100"
     ],
-    "textured_plate_temp": [
-        "100"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "100"
-    ],
-    "eng_plate_temp": [
-        "100"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "100"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "renamed_from": "\"Bambu ASA-CF @BBL A1\";\"Bambu ASA-CF @BBL A1 0.6 nozzle\";\"Bambu ASA-CF @BBL H2C\";\"Bambu ASA-CF @BBL H2C 0.4 nozzle\";\"Bambu ASA-CF @BBL H2D 0.4 nozzle\";\"Bambu ASA-CF @BBL H2D 0.6 nozzle\";\"Bambu ASA-CF @BBL H2DP 0.4 nozzle\";\"Bambu ASA-CF @BBL H2DP 0.6 nozzle\";\"Bambu ASA-CF @BBL H2S\";\"Bambu ASA-CF @BBL P1P\";\"Bambu ASA-CF @BBL P1P 0.6 nozzle\";\"Bambu ASA-CF @BBL P2S 0.4 nozzle\";\"Bambu ASA-CF @BBL P2S 0.6 nozzle\";\"Bambu ASA-CF @BBL X1C\";\"Bambu ASA-CF @BBL X1C 0.6 nozzle\";\"Bambu ASA-CF @BBL X2D\";\"Bambu ASA-CF @BBL X2D 0.4 nozzle\";\"Bambu ASA-CF @System\";\"Blocks Generic ASA-CF\";\"Creality Generic ASA-CF @Hi-all\";\"Elegoo ASA-CF @EC2\";\"Elegoo ASA-CF @ECC2\";\"Elegoo ASA-CF @System\";\"Eryone ASA-CF\";\"Eryone ASA-CF @0.2 nozzle\";\"Fiberon ASA-CF08 @Snapmaker U1\";\"Flashforge ASA-CF\";\"Flashforge ASA-CF @FF C5\";\"Flashforge ASA-CF @FF C5P\";\"Flashforge ASA-CF @FF G4\";\"Flashforge ASA-CF @FF G4P\";\"Generic ASA-CF @Elegoo Centauri\";\"Generic ASA-CF @K2 Plus-all\";\"QIDI ASA-CF @Qidi Q1 Pro 0.4 nozzle\";\"QIDI ASA-CF @Qidi Q1 Pro 0.6 nozzle\";\"QIDI ASA-CF @Qidi Q1 Pro 0.8 nozzle\";\"QIDI ASA-CF @Qidi Q2 0.4 nozzle\";\"QIDI ASA-CF @Qidi Q2 0.6 nozzle\";\"QIDI ASA-CF @Qidi Q2 0.8 nozzle\";\"QIDI ASA-CF @Qidi Q2C 0.4 nozzle\";\"QIDI ASA-CF @Qidi Q2C 0.6 nozzle\";\"QIDI ASA-CF @Qidi Q2C 0.8 nozzle\";\"QIDI ASA-CF @Qidi X-Max 3 0.4 nozzle\";\"QIDI ASA-CF @Qidi X-Max 3 0.6 nozzle\";\"QIDI ASA-CF @Qidi X-Max 3 0.8 nozzle\";\"QIDI ASA-CF @Qidi X-Max 4 0.4 nozzle\";\"QIDI ASA-CF @Qidi X-Max 4 0.6 nozzle\";\"QIDI ASA-CF @Qidi X-Max 4 0.8 nozzle\";\"QIDI ASA-CF @Qidi X-Plus 3 0.4 nozzle\";\"QIDI ASA-CF @Qidi X-Plus 3 0.6 nozzle\";\"QIDI ASA-CF @Qidi X-Plus 3 0.8 nozzle\";\"QIDI ASA-CF @Qidi X-Plus 4 0.4 nozzle\";\"QIDI ASA-CF @Qidi X-Plus 4 0.6 nozzle\";\"QIDI ASA-CF @Qidi X-Plus 4 0.8 nozzle\";\"QIDI ASA-CF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI ASA-CF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI ASA-CF @Qidi X-Plus 5 0.8 nozzle\";\"QIDI ASA-CF @Qidi X-Smart 3 0.4 nozzle\";\"QIDI ASA-CF @Qidi X-Smart 3 0.6 nozzle\";\"QIDI ASA-CF @Qidi X-Smart 3 0.8 nozzle\""
 }

@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "45"
     ],
-    "textured_plate_temp": [
-        "45"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "45"
-    ],
-    "eng_plate_temp": [
-        "45"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "45"
-    ],
-    "cool_plate_temp": [
-        "35"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "35"
-    ],
     "renamed_from": "\"BETA PEBA 90A @BBL A1\";\"BETA PEBA 90A @BBL A1M\";\"BETA PEBA 90A @BBL H2D\";\"BETA PEBA 90A @BBL P1P\";\"BETA PEBA 90A @BBL X1C\";\"BETA TPU 90A @BBL A1\";\"BETA TPU 90A @BBL A1M\";\"BETA TPU 90A @BBL H2D\";\"BETA TPU 90A @BBL P1P\";\"BETA TPU 90A @BBL X1C\";\"Bambu TPU 90A @BBL A1\";\"Bambu TPU 90A @BBL A1M\";\"Bambu TPU 90A @BBL A2L\";\"Bambu TPU 90A @BBL A2L 0.6 nozzle\";\"Bambu TPU 90A @BBL A2L 0.8 nozzle\";\"Bambu TPU 90A @BBL H2C\";\"Bambu TPU 90A @BBL H2C 0.4 nozzle\";\"Bambu TPU 90A @BBL H2D\";\"Bambu TPU 90A @BBL H2D 0.6 nozzle\";\"Bambu TPU 90A @BBL H2D 0.8 nozzle\";\"Bambu TPU 90A @BBL H2DP\";\"Bambu TPU 90A @BBL H2DP 0.6 nozzle\";\"Bambu TPU 90A @BBL H2DP 0.8 nozzle\";\"Bambu TPU 90A @BBL H2S\";\"Bambu TPU 90A @BBL H2S 0.6 nozzle\";\"Bambu TPU 90A @BBL H2S 0.8 nozzle\";\"Bambu TPU 90A @BBL P1P\";\"Bambu TPU 90A @BBL P2S\";\"Bambu TPU 90A @BBL P2S 0.6 nozzle\";\"Bambu TPU 90A @BBL P2S 0.8 nozzle\";\"Bambu TPU 90A @BBL X1C\";\"Bambu TPU 90A @BBL X2D\";\"Bambu TPU 90A @BBL X2D 0.4 nozzle\";\"Bambu TPU 90A @BBL X2D 0.8 nozzle\";\"Flashforge TPU-90A @FF C5\";\"Flashforge TPU-90A @FF C5P\";\"Generic TPU-90A @FF C5\";\"Generic TPU-90A @FF C5P\";\"Snapmaker TPU 90A @U1\";\"Snapmaker TPU 90A @U1 0.6 nozzle\";\"Snapmaker TPU 90A @U1 0.8 nozzle\""
 }

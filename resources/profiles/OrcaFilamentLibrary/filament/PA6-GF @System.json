@@ -58,23 +58,5 @@
     "hot_plate_temp_initial_layer": [
         "90"
     ],
-    "textured_plate_temp": [
-        "90"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "90"
-    ],
-    "eng_plate_temp": [
-        "90"
-    ],
-    "eng_plate_temp_initial_layer": [
-        "90"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "renamed_from": "\"Bambu PA6-GF @BBL A1\";\"Bambu PA6-GF @BBL H2C\";\"Bambu PA6-GF @BBL H2C 0.4 nozzle\";\"Bambu PA6-GF @BBL H2D\";\"Bambu PA6-GF @BBL H2DP\";\"Bambu PA6-GF @BBL H2S\";\"Bambu PA6-GF @BBL P1P\";\"Bambu PA6-GF @BBL P2S\";\"Bambu PA6-GF @BBL X1C\";\"Bambu PA6-GF @BBL X2D\";\"Bambu PA6-GF @BBL X2D 0.4 nozzle\";\"Bambu PA6-GF @System\";\"Eryone PA-GF\";\"Eryone PA-GF @0.2 nozzle\";\"Fiberon PA6-GF @BBL H2D\";\"Fiberon PA6-GF @BBL X1C\";\"Fiberon PA6-GF @System\";\"Fiberon PA6-GF25 @BBL X1\";\"FusRock Generic PAHT-GF\";\"Generic PA6-GF @K2 Plus-all\";\"QIDI PAHT-GF\";\"QIDI PAHT-GF @0.6 nozzle\";\"QIDI PAHT-GF @0.8 nozzle\";\"QIDI PAHT-GF @Qidi Q1 Pro 0.4 nozzle\";\"QIDI PAHT-GF @Qidi Q1 Pro 0.6 nozzle\";\"QIDI PAHT-GF @Qidi Q1 Pro 0.8 nozzle\";\"QIDI PAHT-GF @Qidi Q2 0.4 nozzle\";\"QIDI PAHT-GF @Qidi Q2 0.6 nozzle\";\"QIDI PAHT-GF @Qidi Q2 0.8 nozzle\";\"QIDI PAHT-GF @Qidi Q2C 0.4 nozzle\";\"QIDI PAHT-GF @Qidi Q2C 0.6 nozzle\";\"QIDI PAHT-GF @Qidi Q2C 0.8 nozzle\";\"QIDI PAHT-GF @Qidi X-Max 4 0.4 nozzle\";\"QIDI PAHT-GF @Qidi X-Max 4 0.6 nozzle\";\"QIDI PAHT-GF @Qidi X-Max 4 0.8 nozzle\";\"QIDI PAHT-GF @Qidi X-Plus 4 0.4 nozzle\";\"QIDI PAHT-GF @Qidi X-Plus 4 0.6 nozzle\";\"QIDI PAHT-GF @Qidi X-Plus 4 0.8 nozzle\";\"QIDI PAHT-GF @Qidi X-Plus 5 0.4 nozzle\";\"QIDI PAHT-GF @Qidi X-Plus 5 0.6 nozzle\";\"QIDI PAHT-GF @Qidi X-Plus 5 0.8 nozzle\""
 }
