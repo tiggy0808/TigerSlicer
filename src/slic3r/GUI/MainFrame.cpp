@@ -2469,7 +2469,9 @@ void MainFrame::update_side_button_style()
     m_slice_btn->SetExtraSize(wxSize(FromDIP(38), FromDIP(10)));
     m_slice_btn->SetMinSize(wxSize(-1, FromDIP(24)));
 
-    m_auto_slice_btn->SetTextLayout(SideButton::EHorizontalOrientation::HO_Left, FromDIP(15));
+    // A whole pill: unlike Slice plate it has no dropdown joined to its left edge.
+    m_auto_slice_btn->SetLayoutStyle(1);
+    m_auto_slice_btn->SetTextLayout(SideButton::EHorizontalOrientation::HO_Center);
     m_auto_slice_btn->SetCornerRadius(FromDIP(12));
     m_auto_slice_btn->SetExtraSize(wxSize(FromDIP(38), FromDIP(10)));
     m_auto_slice_btn->SetMinSize(wxSize(-1, FromDIP(24)));
