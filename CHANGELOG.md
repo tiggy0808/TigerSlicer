@@ -3,6 +3,33 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
+## Unreleased
+
+**New (experimental)**
+
+Small feature accuracy: settings for features narrower than the walls, such as the tips of gear and
+belt pulley teeth, and for gaps narrower than two lines. They are all experimental.
+- **Show experimental features** (Preferences > General) is off by default. While it is off, the
+  experimental settings are hidden and slicing ignores them, even when a preset or project sets them,
+  so nothing changes. When it is on, each one is marked "(Experimental)". A print that uses one says
+  so in a slicing notice and in the G-code header.
+- **Deviation** is a new preview view. For the top visible layer, it shows model area left unprinted
+  in red and extrusion outside the model in blue. The further off, the darker.
+- Slicing warns how many features are **below the printable width** for the nozzle. The width is set
+  by **Small feature minimum width**, 60% of the nozzle by default.
+- **Small feature policy** (Strength > Small features) prints what the walls leave out of a thin
+  feature. Each one gets a single line, run from the wall out to the feature's tip and back:
+  - **Drop** leaves the feature out, as before.
+  - **Inside the model** never makes the part bigger, but the feature may come out short.
+  - **Balanced** leaves the least area wrong.
+  - **Outside the model** never leaves the feature short: the line reaches 0.05 mm past the tip.
+
+  The lines print at their own speed (15 mm/s) and flow, and don't retract.
+- **Narrow gaps: Keep open** prints the walls beside a slot, vent or clearance narrower than two
+  lines thinner, so they don't spill into it and close it.
+- All of these can be set per object and per modifier. For example, use Outside on a gear's teeth
+  and Inside around its bore.
+
 ## 0.0.9 (2026-10-22)
 
 **New**
