@@ -63,8 +63,9 @@ std::vector<PrintedLayerDeviation> print_deviation(const Print &print);
 // sharp corner leaves, shorter than they are wide, are not features.
 ExPolygons features_below_width(const ExPolygons &slices, coord_t min_width);
 
-// Prints the thin parts of the region that its walls leave uncovered, by its small_feature_policy (experimental). Each
-// part gets one line along its middle, its width and free end set by the policy. A line that starts at a wall loop
+// Prints what the walls leave uncovered of the region's thin parts, narrower than two outer walls, by its
+// small_feature_policy (experimental). Each such part gets one line through its middle, its width and free end set by
+// the policy. A line that starts at a wall loop
 // becomes that loop's dead end, printed out and back as the loop passes it; any other is an open path of its own.
 // `slices` are the region's slices the walls were made from, and `fill_area` the area left for infill, which counts
 // as covered.

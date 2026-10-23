@@ -211,7 +211,7 @@ static std::optional<FeatureLine> center_line(const ExPolygon &uncovered, coord_
         const Vec2d a = inner.cast<double>(), b = end.cast<double>();
         const Vec2d past = b + (b - a).normalized() * double(max_width);
         Point       hit;
-        if (piece.contour.intersection(Line(inner, past.cast<coord_t>()), &hit))
+        if (piece.contour.intersection(Line(end, past.cast<coord_t>()), &hit))
             end = hit;
     };
     if (longest->endpoints.first)
@@ -359,8 +359,12 @@ void add_small_feature_lines(LayerRegion &layerm, const SurfaceCollection &slice
     const ExPolygons uncovered = opening_ex(diff_ex(model, union_(covered)), float(scale_(0.5 * kDeviationTolerance)));
     if (uncovered.empty())
         return;
-    // What the walls leave between each other inside the model is not a feature.
-    const ExPolygons within_outline = offset_ex(model, -float(scale_(kDeviationTolerance)));
+    // Only parts of the model narrower than two walls have features: an opening with mitered corners takes them away
+    // and gives back every corner, so neither the corner a wall rounds off nor a sliver the walls leave between each
+    // other is one.
+    const ExPolygons thin = diff_ex(model, opening_ex(model, float(scale_(ext_flow.width()))));
+    if (thin.empty())
+        return;
 
     std::vector<ExtrusionLoop *> loops;
     collect_loops(layerm.perimeters, loops);
@@ -369,7 +373,7 @@ void add_small_feature_lines(LayerRegion &layerm, const SurfaceCollection &slice
     const double              max_lead  = scaled<double>(ext_flow.width() + kDeviationTolerance);
 
     for (const ExPolygon &piece : uncovered) {
-        if (diff_ex(ExPolygons{piece}, within_outline).empty())
+        if (area(intersection_ex(ExPolygons{piece}, thin)) < 0.5 * piece.area())
             continue;
         // The wall loop nearest the part's middle.
         const Point    middle  = piece.contour.centroid();

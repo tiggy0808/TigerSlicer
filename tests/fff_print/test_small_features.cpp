@@ -364,6 +364,46 @@ TEST_CASE("Outside prints out to every tooth tip with either wall generator", "[
     CHECK(checked > 40);
 }
 
+TEST_CASE("Outside prints a free-standing wall thinner than a line", "[SmallFeatures]")
+{
+    // 0.25 mm thick: too thin for even one classic wall loop, so nothing else prints it.
+    Model model;
+    Print print;
+    init_print({make_cube(6, 0.25, 3)}, print, model,
+               {{"nozzle_diameter", "0.4"}, {"layer_height", 0.2}, {"initial_layer_print_height", 0.2}, {"wall_generator", "classic"},
+                {"small_feature_policy", "outside"}});
+    print.process();
+    size_t checked = 0;
+    for (const Layer *layer : print.objects().front()->layers()) {
+        CAPTURE(layer->print_z);
+        double unprinted = 0.;
+        for (const SmallFeatures::DeviationArea &area : SmallFeatures::layer_deviation(*layer).undershoot)
+            unprinted += unscale<double>(unscale<double>(area.shape.area()));
+        // Of its 1.5 mm2.
+        CHECK(unprinted < 0.05);
+        ++checked;
+    }
+    CHECK(checked == 15);
+}
+
+TEST_CASE("Small feature lines leave the corners of a block alone", "[SmallFeatures]")
+{
+    const std::string generator = GENERATE(std::string("classic"), std::string("arachne"));
+    CAPTURE(generator);
+    Model model;
+    Print print;
+    init_print({make_cube(20, 20, 5)}, print, model, {{"wall_generator", generator}, {"small_feature_policy", "outside"}});
+    print.process();
+    for (const Layer *layer : print.objects().front()->layers()) {
+        CAPTURE(layer->print_z);
+        // The walls round its corners off, but a 20 x 20 mm block has no part narrower than two walls.
+        CHECK(layer_dead_ends(*layer).empty());
+        for (const LayerRegion *region : layer->regions())
+            for (const ExtrusionEntity *entity : region->perimeters.entities)
+                CHECK(dynamic_cast<const ExtrusionPath *>(entity) == nullptr);
+    }
+}
+
 // FNV-1a over the G-code's moves only.
 static uint64_t moves_hash(const std::string &gcode)
 {
