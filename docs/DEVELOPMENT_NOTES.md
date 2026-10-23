@@ -7,12 +7,12 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 
 ---
 
-## Unreleased
+## 0.0.10 (2026-10-23)
 
 Theme: small feature accuracy, all of it experimental and off unless "Show experimental features" is
 on. With it off, default output is unchanged; the `[Regression]` test proves this on the moves.
 
-Commits, oldest first (all on `main`):
+Commits, oldest first (all on `main`; the release commit follows them):
 
 | Commit | Subject |
 |---|---|
