@@ -2519,6 +2519,7 @@ void GCodeProcessorResult::reset() {
 
     moves.clear();
     lines_ends.clear();
+    deviation.clear();
     printable_area = Pointfs();
     //BBS: add bed exclude area
     bed_exclude_area = Pointfs();

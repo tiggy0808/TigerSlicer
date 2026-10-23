@@ -7,6 +7,7 @@
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/CustomGCode.hpp"
 #include "libslic3r/MultiNozzleUtils.hpp"
+#include "libslic3r/Feature/SmallFeatures/SmallFeatures.hpp"
 
 #include <cstdint>
 #include <array>
@@ -316,6 +317,8 @@ class Print;
         std::unordered_map<SkipType, float> skippable_part_time;
 
         BedType bed_type = BedType::btCount;
+        // TigerSlicer: what the Deviation preview draws, with experimental features on only.
+        std::vector<SmallFeatures::PrintedLayerDeviation> deviation;
         void reset();
 
         //BBS: add mutex for protection of gcode result
@@ -363,6 +366,7 @@ class Print;
             // Keep the SKIPPABLE per-type time on a copied result.
             skippable_part_time = other.skippable_part_time;
             initial_layer_time = other.initial_layer_time;
+            deviation = other.deviation;
 #if ENABLE_GCODE_VIEWER_STATISTICS
             time = other.time;
 #endif

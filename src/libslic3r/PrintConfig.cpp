@@ -7444,6 +7444,21 @@ void PrintConfigDef::init_fff_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(false));
 
+    def               = this->add("small_feature_min_width", coFloatOrPercent);
+    def->label        = L("Small feature minimum width");
+    def->category     = L("Quality");
+    def->tooltip      = L("The narrowest line the nozzle can print. Slicing warns about features narrower than this, and "
+                          "the small feature policy prints no line narrower than this. A percentage is of the nozzle "
+                          "diameter. Lower lets thinner features print, but very thin lines may not extrude reliably; "
+                          "higher prints sturdier lines but drops, or widens, more small features.");
+    def->sidetext     = L("mm or %");
+    def->ratio_over   = "nozzle_diameter";
+    def->min          = 0;
+    def->max_literal  = 2;
+    def->mode         = comAdvanced;
+    def->experimental = true;
+    def->set_default_value(new ConfigOptionFloatOrPercent(60, true));
+
     def = this->add("change_filament_gcode", coString);
     def->label = L("Change filament G-code");
     def->tooltip = L("This G-code is inserted when filament is changed, including T commands to trigger tool change.");

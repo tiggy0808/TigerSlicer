@@ -3167,6 +3167,10 @@ std::string Print::export_gcode(const std::string& path_template, GCodeProcessor
     gcode.set_gcode_offset(origin(0), origin(1));
     gcode.do_export(this, path.c_str(), result, thumbnail_cb);
     gcode.export_layer_filaments(result);
+    // TigerSlicer: what the Deviation preview draws (experimental).
+    if (result != nullptr)
+        result->deviation = m_experimental_features_enabled ? SmallFeatures::print_deviation(*this)
+                                                            : std::vector<SmallFeatures::PrintedLayerDeviation>();
     //BBS
     if (result != nullptr) {
         result->conflict_result = m_conflict_result;

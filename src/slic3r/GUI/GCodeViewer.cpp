@@ -11,6 +11,7 @@
 #include "libslic3r/PresetBundle.hpp"
 //BBS: add convex hull logic for toolpath check
 #include "libslic3r/Geometry/ConvexHull.hpp"
+#include "libslic3r/Tesselate.hpp"
 
 #include "GUI_App.hpp"
 #include "MainFrame.hpp"
@@ -100,7 +101,41 @@ static std::string get_view_type_string(libvgcode::EViewType view_type)
 // ORCA: Add Pressure Advance visualization support
     else if (view_type == libvgcode::EViewType::PressureAdvance)
         return _u8L("Pressure Advance");
+    else if (view_type == libvgcode::EViewType::Deviation)
+        return _u8L("Deviation");
     return "";
+}
+
+// TigerSlicer: the Deviation view's colours, five shades of red for model area left unprinted and five of blue for
+// extrusion outside the model, lighter for small deviations. kDeviationLimits are the upper bounds (mm) of the
+// first four shades.
+static constexpr double kDeviationLimits[] = {0.05, 0.1, 0.2, 0.4};
+static constexpr size_t kDeviationShades   = 5;
+
+static size_t deviation_shade(double magnitude)
+{
+    size_t shade = 0;
+    while (shade + 1 < kDeviationShades && magnitude >= kDeviationLimits[shade])
+        ++shade;
+    return shade;
+}
+
+static ColorRGBA deviation_color(bool undershoot, size_t shade)
+{
+    const float pale = 0.75f * (1.f - float(shade + 1) / float(kDeviationShades));
+    return undershoot ? ColorRGBA{1.f, pale, pale, 1.f} : ColorRGBA{pale, pale, 1.f, 1.f};
+}
+
+static std::string deviation_shade_label(size_t shade)
+{
+    char buf[64];
+    if (shade == 0)
+        ::sprintf(buf, "< %.2f mm", kDeviationLimits[0]);
+    else if (shade + 1 == kDeviationShades)
+        ::sprintf(buf, ">= %.2f mm", kDeviationLimits[shade - 1]);
+    else
+        ::sprintf(buf, "%.2f - %.2f mm", kDeviationLimits[shade - 1], kDeviationLimits[shade]);
+    return buf;
 }
 
 // Find an index of a value in a sorted vector, which is in <z-eps, z+eps>.
@@ -1095,6 +1130,9 @@ void GCodeViewer::update_by_mode(ConfigOptionMode mode)
     view_type_items.push_back(libvgcode::EViewType::Temperature);
 // ORCA: Add Pressure Advance visualization support
     view_type_items.push_back(libvgcode::EViewType::PressureAdvance);
+    // TigerSlicer: how far the print strays from the model (experimental).
+    if (wxGetApp().app_config->get_bool("show_experimental_features"))
+        view_type_items.push_back(libvgcode::EViewType::Deviation);
     //if (mode == ConfigOptionMode::comDevelop) {
     //    view_type_items.push_back(EViewType::Tool);
     //}
@@ -1128,6 +1166,10 @@ void GCodeViewer::load_as_gcode(const GCodeProcessorResult& gcode_result, const 
                 const std::vector<BoundingBoxf3>& exclude_bounding_box, ConfigOptionMode mode, bool only_gcode)
 {
     m_loaded_as_preview = false;
+
+    // TigerSlicer: the Deviation view's data.
+    m_deviation = gcode_result.deviation;
+    m_deviation_models.clear();
 
     const bool current_top_layer_only = m_viewer.is_top_layer_only_view_range();
     const bool required_top_layer_only = get_app_config()->get_bool("seq_top_layer_only");
@@ -1576,6 +1618,8 @@ void GCodeViewer::reset()
     m_right_extruder_filament.clear();
     m_sequential_view.gcode_window.reset();
     m_contained_in_bed = true;
+    m_deviation.clear();
+    m_deviation_models.clear();
 }
 
 //BBS: GUI refactor: add canvas width and height
@@ -1588,13 +1632,20 @@ void GCodeViewer::render(int canvas_width, int canvas_height, int right_margin)
         return;
 
     render_toolpaths();
+    if (m_viewer.get_view_type() == libvgcode::EViewType::Deviation)
+        render_deviation();
 
     float legend_height = 0.0f;
     render_legend(legend_height, canvas_width, canvas_height, right_margin);
 
-    if (m_user_mode != wxGetApp().get_mode()) {
+    // TigerSlicer: the Deviation view comes and goes with the experimental features.
+    const bool show_experimental = wxGetApp().app_config->get_bool("show_experimental_features");
+    if (m_user_mode != wxGetApp().get_mode() || m_show_experimental != show_experimental) {
         update_by_mode(wxGetApp().get_mode());
-        m_user_mode = wxGetApp().get_mode();
+        m_user_mode         = wxGetApp().get_mode();
+        m_show_experimental = show_experimental;
+        if (!show_experimental && m_viewer.get_view_type() == libvgcode::EViewType::Deviation)
+            m_viewer.set_view_type(libvgcode::EViewType::FeatureType);
     }
 
     //BBS fixed bottom_margin for space to render horiz slider
@@ -2304,6 +2355,59 @@ void GCodeViewer::load_shells(const Print& print, bool initialized, bool force_p
     m_shells.previewing = true;
     BOOST_LOG_TRIVIAL(debug) << __FUNCTION__ << boost::format(": shell loaded, id change to %1%, modify_count %2%, object count %3%, glvolume count %4%")
         % m_shells.print_id % m_shells.print_modify_count % object_count %m_shells.volumes.volumes.size();
+}
+
+void GCodeViewer::render_deviation()
+{
+    if (m_deviation.empty())
+        return;
+    const double top_z = m_viewer.get_layer_z(m_viewer.get_layers_view_range()[1]);
+    const auto   it    = std::min_element(m_deviation.begin(), m_deviation.end(), [top_z](const auto &a, const auto &b) {
+        return std::abs(a.print_z - top_z) < std::abs(b.print_z - top_z);
+    });
+    if (std::abs(it->print_z - top_z) > 0.005)
+        return;
+
+    auto [entry, inserted] = m_deviation_models.try_emplace(size_t(it - m_deviation.begin()));
+    std::array<GLModel, 2 * kDeviationShades> &models = entry->second;
+    if (inserted) {
+        std::array<ExPolygons, 2 * kDeviationShades> shapes;
+        for (const SmallFeatures::DeviationArea &area : it->deviation.undershoot)
+            shapes[deviation_shade(area.magnitude)].push_back(area.shape);
+        for (const SmallFeatures::DeviationArea &area : it->deviation.overshoot)
+            shapes[kDeviationShades + deviation_shade(area.magnitude)].push_back(area.shape);
+        // Just above the layer's extrusions, so they don't hide it.
+        const double z = it->print_z + 0.01;
+        for (size_t i = 0; i < shapes.size(); ++i) {
+            if (shapes[i].empty())
+                continue;
+            const std::vector<Vec3d> triangles = triangulate_expolygons_3d(shapes[i], z);
+            GLModel::Geometry        geometry;
+            geometry.format = {GLModel::Geometry::EPrimitiveType::Triangles, GLModel::Geometry::EVertexLayout::P3};
+            geometry.reserve_vertices(triangles.size());
+            geometry.reserve_indices(triangles.size());
+            geometry.color = deviation_color(i < kDeviationShades, i % kDeviationShades);
+            for (unsigned int v = 0; v < triangles.size(); ++v) {
+                geometry.add_vertex((Vec3f) triangles[v].cast<float>());
+                if (v % 3 == 2)
+                    geometry.add_triangle(v - 2, v - 1, v);
+            }
+            if (!geometry.is_empty())
+                models[i].init_from(std::move(geometry));
+        }
+    }
+
+    GLShaderProgram *shader = wxGetApp().get_shader("flat");
+    if (shader == nullptr)
+        return;
+    shader->start_using();
+    const Camera &camera = wxGetApp().plater()->get_camera();
+    shader->set_uniform("view_model_matrix", camera.get_view_matrix());
+    shader->set_uniform("projection_matrix", camera.get_projection_matrix());
+    for (GLModel &model : models)
+        if (model.is_initialized())
+            model.render();
+    shader->stop_using();
 }
 
 void GCodeViewer::render_toolpaths()
@@ -3726,6 +3830,8 @@ void GCodeViewer::render_legend(float &legend_height, int canvas_width, int canv
         { imgui.title(_u8L("Layer Time")); break; }
     case libvgcode::EViewType::LayerTimeLogarithmic:
         { imgui.title(_u8L("Layer Time (log)")); break; }
+    case libvgcode::EViewType::Deviation:
+        { imgui.title(_u8L("Deviation from the model, top layer")); break; }
 
     case libvgcode::EViewType::Tool:
     {
@@ -3995,6 +4101,20 @@ void GCodeViewer::render_legend(float &legend_height, int canvas_width, int canv
     case libvgcode::EViewType::LayerTimeLogarithmic:     { append_range(m_viewer.get_color_range(libvgcode::EViewType::LayerTimeLogarithmic), true); break; }
     case libvgcode::EViewType::VolumetricFlowRate:       { append_range(m_viewer.get_color_range(libvgcode::EViewType::VolumetricFlowRate), 2); break; }
     case libvgcode::EViewType::ActualVolumetricFlowRate: { append_range(m_viewer.get_color_range(libvgcode::EViewType::ActualVolumetricFlowRate), 2); break; }
+    case libvgcode::EViewType::Deviation:
+    {
+        if (m_deviation.empty()) {
+            imgui.text(_u8L("Slice again to see the deviation."));
+            break;
+        }
+        imgui.text(_u8L("Model not printed (too short):"));
+        for (size_t shade = 0; shade < kDeviationShades; ++shade)
+            append_item(EItemType::Rect, deviation_color(true, shade), {{deviation_shade_label(shade), 0.f}}, false);
+        imgui.text(_u8L("Printed outside the model (too long):"));
+        for (size_t shade = 0; shade < kDeviationShades; ++shade)
+            append_item(EItemType::Rect, deviation_color(false, shade), {{deviation_shade_label(shade), 0.f}}, false);
+        break;
+    }
     case libvgcode::EViewType::Tool:
     {
         // shows only extruders actually used

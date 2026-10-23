@@ -528,6 +528,8 @@ public:
 
 private:
     void make_perimeters();
+    // TigerSlicer: one slicing warning for the features narrower than small_feature_min_width.
+    void warn_features_below_printable_width();
     void prepare_infill();
     void infill();
     void ironing();

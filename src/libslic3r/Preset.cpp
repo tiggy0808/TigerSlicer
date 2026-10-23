@@ -1027,6 +1027,7 @@ static std::vector<std::string> s_Preset_print_options{
     "ensure_vertical_shell_thickness",
     "reduce_crossing_wall",
     "detect_thin_wall",
+    "small_feature_min_width",
     "detect_overhang_wall",
     "overhang_reverse",
     "overhang_reverse_threshold",

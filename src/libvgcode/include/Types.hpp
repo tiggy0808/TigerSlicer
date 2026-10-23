@@ -99,6 +99,9 @@ enum class EViewType : uint8_t
     // ORCA: Add Jerk visualization support
     Jerk,
     Tool,
+    // TigerSlicer: the extrusions in grey, under the model area they miss (red) and overshoot (blue), drawn by the
+    // GUI. Last, so the other types keep their numbers.
+    Deviation,
     COUNT
 };
 

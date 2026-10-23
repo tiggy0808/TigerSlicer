@@ -1596,6 +1596,11 @@ Color ViewerImpl::get_vertex_color(const PathVertex& v) const
         assert(static_cast<size_t>(v.extruder_id) < m_tool_colors.size());
         return m_tool_colors[v.extruder_id];
     }
+    // TigerSlicer: neutral, so the deviation drawn over the toolpaths stands out.
+    case EViewType::Deviation:
+    {
+        return v.is_travel() ? get_option_color(move_type_to_option(v.type)) : Color{ 150, 150, 150 };
+    }
     case EViewType::Summary: // ORCA
     case EViewType::ColorPrint:
     {

@@ -2772,6 +2772,10 @@ void TabPrint::build()
         optgroup->append_single_option_line("brick_layers");
         optgroup->append_single_option_line("detect_thin_wall", "strength_settings_walls#detect-thin-wall");
 
+        // TigerSlicer: features narrower than an extrusion line (experimental).
+        optgroup = page->new_optgroup(L("Small features"), L"param_wall");
+        optgroup->append_single_option_line("small_feature_min_width");
+
         optgroup = page->new_optgroup(L("Top/bottom shells"), L"param_shell");
 
         optgroup->append_single_option_line("top_shell_layers", "strength_settings_top_bottom_shells#shell-layers");

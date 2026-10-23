@@ -27,6 +27,7 @@
 #include "format.hpp"
 #include "AABBTreeLines.hpp"
 #include "BrickLayers.hpp"
+#include "Feature/SmallFeatures/SmallFeatures.hpp"
 
 #include <cstddef>
 #include <float.h>
@@ -568,6 +569,10 @@ void PrintObject::make_perimeters()
     // walls of the layers above and below, so it runs once all walls exist.
     apply_brick_layers(*this);
     m_print->throw_if_canceled();
+
+    // TigerSlicer: features the nozzle can't print at all (experimental).
+    if (m_print->experimental_features_enabled())
+        this->warn_features_below_printable_width();
 
     this->set_done(posPerimeters);
 }
@@ -1324,6 +1329,28 @@ SupportLayerPtrs::iterator PrintObject::insert_support_layer(SupportLayerPtrs::i
 
 // Called by Print::apply().
 // This method only accepts PrintObjectConfig and PrintRegionConfig option keys.
+void PrintObject::warn_features_below_printable_width()
+{
+    if (this->num_printing_regions() == 0 || m_layers.empty())
+        return;
+    const PrintRegion &region    = this->printing_region(0);
+    const double       nozzle    = m_print->config().nozzle_diameter.get_at(region.extruder(frExternalPerimeter) - 1);
+    const double       min_width = region.config().small_feature_min_width.get_abs_value(nozzle);
+    if (min_width <= 0.)
+        return;
+    // Counted on the layer with the most of them, so a feature through many layers counts once.
+    std::vector<size_t> counts(m_layers.size(), 0);
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, m_layers.size()), [this, &counts, min_width](const tbb::blocked_range<size_t> &range) {
+        for (size_t i = range.begin(); i < range.end(); ++i)
+            counts[i] = SmallFeatures::features_below_width(m_layers[i]->lslices, scaled<coord_t>(min_width)).size();
+    });
+    const size_t most = *std::max_element(counts.begin(), counts.end());
+    if (most > 0)
+        this->active_step_add_warning(PrintStateBase::WarningLevel::NON_CRITICAL,
+                                      Slic3r::format(L("%1%: %2% features below printable width for a %3% mm nozzle (narrower than %4% mm)."),
+                                                     this->model_object()->name, most, nozzle, min_width));
+}
+
 bool PrintObject::invalidate_state_by_config_options(
     const ConfigOptionResolver &old_config, const ConfigOptionResolver &new_config, const std::vector<t_config_option_key> &opt_keys)
 {
@@ -1625,6 +1652,7 @@ bool PrintObject::invalidate_state_by_config_options(
             || opt_key == "wall_direction"
             || opt_key == "enable_overhang_speed"
             || opt_key == "detect_thin_wall"
+            || opt_key == "small_feature_min_width"
             || opt_key == "precise_outer_wall") {
             steps.emplace_back(posPerimeters);
             steps.emplace_back(posSupportMaterial);

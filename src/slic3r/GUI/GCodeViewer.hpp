@@ -207,6 +207,11 @@ private:
 
     ConfigOptionMode m_user_mode;
     bool m_fold = {false};
+    // TigerSlicer: the Deviation view (experimental). The data comes with the G-code result; each height's
+    // areas become models, one per colour, when it is first drawn.
+    std::vector<SmallFeatures::PrintedLayerDeviation> m_deviation;
+    std::map<size_t, std::array<GLModel, 10>>       m_deviation_models;
+    bool                                             m_show_experimental{ false };
 
     size_t m_extruders_count;
     std::vector<float> m_filament_diameters;
@@ -364,6 +369,8 @@ private:
     //BBS: always load shell at preview
     //void load_shells(const Print& print);
     void render_toolpaths();
+    // TigerSlicer: the Deviation view's areas at the top visible layer.
+    void render_deviation();
     void render_shells(int canvas_width, int canvas_height);
 
     //BBS: GUI refactor: add canvas size
