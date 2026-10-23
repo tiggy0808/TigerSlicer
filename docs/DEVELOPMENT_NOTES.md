@@ -189,6 +189,17 @@ Commits, oldest first (all on `main`; the release commit follows them):
 - Installed over the 0.0.8 files on the maintainer's PC with the Setup.exe. The uninstall entry (which still said 0.0.6) now reads
   0.0.9, and the installed `TigerSlicer.dll` hash matches the build.
 
+### Verification (macOS)
+- Built from tag `v0.0.9` (`01e59c542`) on macOS 15.6.1 (Apple Silicon) with Apple clang 17.0.0
+  (clang-1700.3.19.1) and cargo 1.97.1: `./build_release_macos.sh -a arm64 -x -s` (dependencies
+  unchanged since 0.0.7), after deleting `build/arm64/OrcaSlicer`. Bundle `com.tigerslicer.TigerSlicer`,
+  version 0.0.9.
+- `TigerSlicer-0.0.9-macos-arm64.dmg`: 291,051,315 bytes, sha256 `176de7efdb0d56f1130322e105ae275c587b598fe93321d4953cbdac0bb56b15`; packaged as in
+  [BUILDING.md](BUILDING.md) and uploaded to the release afterwards (digest checked).
+- The app copied out of the mounted dmg and started with a throwaway `--datadir` logs
+  "Current OrcaSlicer Version 0.0.9 build 01e59c542". No crash log. `[error]` lines: the missing
+  3Dconnexion driver and "Unable to create exclude triangles" (twice), both on every launch.
+
 ---
 
 ## 0.0.8 (2026-10-21)
@@ -392,6 +403,17 @@ Commits, oldest first (all on `main`; the release commit follows them):
   - No crash log, and no errors that the 0.0.6 runs of that folder don't also log:
     `calc_exclude_triangles` and an unsupported printer type.
   - This run was log-only, without clicking through.
+
+### Verification (macOS)
+- Built from tag `v0.0.8` (`9ad906c5a`) on macOS 15.6.1 (Apple Silicon) with Apple clang 17.0.0
+  (clang-1700.3.19.1) and cargo 1.97.1: `./build_release_macos.sh -a arm64 -x -s` (dependencies
+  unchanged since 0.0.7), after deleting `build/arm64/OrcaSlicer`. Bundle `com.tigerslicer.TigerSlicer`,
+  version 0.0.8.
+- `TigerSlicer-0.0.8-macos-arm64.dmg`: 291,977,838 bytes, sha256 `b5dc55389e214a74f5cd41c4308a71a3f3f2419580f44daee17aada72905246f`; packaged as in
+  [BUILDING.md](BUILDING.md) and uploaded to the release afterwards (digest checked).
+- The app copied out of the mounted dmg and started with a throwaway `--datadir` logs
+  "Current OrcaSlicer Version 0.0.8 build 9ad906c5a". No crash log. `[error]` lines: the missing
+  3Dconnexion driver and "Unable to create exclude triangles" (twice), both on every launch.
 
 ---
 
