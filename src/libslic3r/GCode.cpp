@@ -6881,6 +6881,67 @@ static std::unique_ptr<EdgeGrid::Grid> calculate_layer_edge_grid(const Layer& la
     return out;
 }
 
+// TigerSlicer: `paths` (a loop from its seam) with each dead end spliced in where the paths pass its first point, within
+// 0.05 mm: the line out, then the same line back without extruding. `dead_end` marks the spliced paths. Dead ends the
+// paths miss (the seam gap clipped their point off) are added to `missed`.
+static ExtrusionPaths splice_dead_ends(const ExtrusionPaths &paths, const ExtrusionPaths &dead_ends, std::vector<bool> &dead_end,
+                                       ExtrusionPaths &missed)
+{
+    ExtrusionPaths out = paths;
+    dead_end.assign(out.size(), false);
+    for (const ExtrusionPath &line : dead_ends) {
+        const Point attach    = line.first_point();
+        size_t      best_path = out.size();
+        double      best      = scaled<double>(0.05);
+        for (size_t i = 0; i < out.size(); ++i) {
+            if (dead_end[i] || out[i].polyline.points.size() < 2)
+                continue;
+            const Points points = to_points(out[i].polyline.points);
+            for (size_t j = 0; j + 1 < points.size(); ++j)
+                if (const double d = Line(points[j], points[j + 1]).distance_to(attach); d < best) {
+                    best      = d;
+                    best_path = i;
+                }
+        }
+        if (best_path == out.size()) {
+            missed.push_back(line);
+            continue;
+        }
+        Point     split = attach;
+        Polyline3 before, after;
+        out[best_path].polyline.split_at(split, &before, &after);
+        // The line starts exactly where the loop is split, at the loop's height there.
+        const coord_t z        = before.points.empty() ? 0 : before.points.back().z();
+        ExtrusionPath line_out = line;
+        line_out.polyline.points.front() = Point3(split.x(), split.y(), z);
+        for (Point3 &p : line_out.polyline.points)
+            p.z() = z;
+        ExtrusionPath line_back = line_out;
+        line_back.reverse();
+        line_back.set_force_no_extrusion(true);
+        line_back.mm3_per_mm = 0;
+
+        ExtrusionPaths    pieces;
+        std::vector<bool> flags;
+        if (before.points.size() >= 2) {
+            pieces.emplace_back(before, out[best_path]);
+            flags.push_back(false);
+        }
+        pieces.push_back(std::move(line_out));
+        pieces.push_back(std::move(line_back));
+        flags.insert(flags.end(), {true, true});
+        if (after.points.size() >= 2) {
+            pieces.emplace_back(after, out[best_path]);
+            flags.push_back(false);
+        }
+        out.erase(out.begin() + best_path);
+        out.insert(out.begin() + best_path, pieces.begin(), pieces.end());
+        dead_end.erase(dead_end.begin() + best_path);
+        dead_end.insert(dead_end.begin() + best_path, flags.begin(), flags.end());
+    }
+    return out;
+}
+
 std::string GCode::extrude_loop(const ExtrusionLoop&        loop_ref,
                                 const std::string&          description,
                                 double                      speed,
@@ -7054,9 +7115,24 @@ std::string GCode::extrude_loop(const ExtrusionLoop&        loop_ref,
         m_multi_flow_segment_path_average_mm3_per_mm = weighted_sum_mm3_per_mm / total_multipath_length;
     // Orca: end of multipath average mm3_per_mm value calculation
     
+    // TigerSlicer: the loop's dead ends (small feature lines), out and back where the loop passes them. A sloped seam
+    // leaves no room for them, and the seam gap may clip their point off: those print after the loop.
+    std::vector<bool> dead_end;
+    ExtrusionPaths    left_dead_ends;
+    ExtrusionPaths    spliced;
+    if (!loop.dead_ends.empty()) {
+        if (enable_seam_slope)
+            left_dead_ends = loop.dead_ends;
+        else
+            spliced = splice_dead_ends(paths, loop.dead_ends, dead_end, left_dead_ends);
+    }
+
     if (!enable_seam_slope) {
-        for (const ExtrusionPath& path : paths) {
-            gcode += this->_extrude(path, description, speed_for_path(path));
+        const ExtrusionPaths &emitted = spliced.empty() ? paths : spliced;
+        for (size_t i = 0; i < emitted.size(); ++i) {
+            const ExtrusionPath &path = emitted[i];
+            const bool thin = !dead_end.empty() && dead_end[i];
+            gcode += this->_extrude(path, description, thin ? m_config.thin_wall_speed.value : speed_for_path(path));
             // Orca: Adaptive PA - dont adapt PA after the first multipath extrusion is completed
             // as we have already set the PA value to the average flow over the totality of the path
             // in the first extrude move
@@ -7170,6 +7246,19 @@ std::string GCode::extrude_loop(const ExtrusionLoop&        loop_ref,
         pt.rotate(angle, Point(center3.x(), center3.y()));
         // generate the travel move
         gcode += m_writer.extrude_to_xy(this->point_to_gcode(pt), 0, "move inwards before travel", true);
+    }
+
+    // TigerSlicer: dead ends the loop could not take, each out and back on its own. The loop's wipe path no longer
+    // starts where the nozzle is.
+    if (!left_dead_ends.empty())
+        m_wipe.reset_path();
+    for (const ExtrusionPath &line : left_dead_ends) {
+        gcode += this->_extrude(line, description, m_config.thin_wall_speed.value);
+        ExtrusionPath line_back = line;
+        line_back.reverse();
+        line_back.set_force_no_extrusion(true);
+        line_back.mm3_per_mm = 0;
+        gcode += this->_extrude(line_back, description, m_config.thin_wall_speed.value);
     }
 
     return gcode;

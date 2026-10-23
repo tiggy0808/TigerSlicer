@@ -403,6 +403,10 @@ CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(SupportType)
 static t_config_enum_values s_keys_map_FinSupportFallback{{"none", fsfNone}, {"tree", fsfTree}, {"normal", fsfNormal}};
 CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(FinSupportFallback)
 
+static t_config_enum_values s_keys_map_SmallFeaturePolicy{
+    {"drop", sfpDrop}, {"inside", sfpInside}, {"balanced", sfpBalanced}, {"outside", sfpOutside}};
+CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(SmallFeaturePolicy)
+
 static t_config_enum_values s_keys_map_SeamPosition {
     { "nearest",        spNearest },
     { "aligned",        spAligned },
@@ -7458,6 +7462,59 @@ void PrintConfigDef::init_fff_params()
     def->mode         = comAdvanced;
     def->experimental = true;
     def->set_default_value(new ConfigOptionFloatOrPercent(60, true));
+
+    def                = this->add("small_feature_policy", coEnum);
+    def->label         = L("Small feature policy");
+    def->category      = L("Quality");
+    def->tooltip       = L("What to do with a feature narrower than the walls, such as the tip of a gear tooth, which the "
+                           "walls leave unprinted. Drop: leave it out, as the wall generator does now. Inside: print a "
+                           "line along it that never crosses the model's edge, so the part is never too big but the "
+                           "feature may come out short or thin. Balanced: print the line that leaves the least area too "
+                           "short or too long. Outside: print a line that reaches past the edge by the tip overshoot, so "
+                           "the feature is never short but may come out slightly too big. Lines that start at a wall are "
+                           "printed out and back from it, without retracting.");
+    def->enum_keys_map = &ConfigOptionEnum<SmallFeaturePolicy>::get_enum_values();
+    def->enum_values   = {"drop", "inside", "balanced", "outside"};
+    def->enum_labels   = {L("Drop (current behaviour)"), L("Inside the model"), L("Balanced"), L("Outside the model (never short)")};
+    def->mode          = comAdvanced;
+    def->experimental  = true;
+    def->set_default_value(new ConfigOptionEnum<SmallFeaturePolicy>(sfpDrop));
+
+    def               = this->add("tip_overshoot", coFloat);
+    def->label        = L("Tip overshoot");
+    def->category     = L("Quality");
+    def->tooltip      = L("With the Outside small feature policy, how far the end of a line reaches past the model's "
+                          "edge. More makes sure a thin tip is printed to its full length; less keeps it from growing "
+                          "a blob past the edge.");
+    def->sidetext     = L("mm");
+    def->min          = 0;
+    def->max          = 0.5;
+    def->mode         = comAdvanced;
+    def->experimental = true;
+    def->set_default_value(new ConfigOptionFloat(0.05));
+
+    def               = this->add("thin_wall_speed", coFloat);
+    def->label        = L("Small feature speed");
+    def->category     = L("Speed");
+    def->tooltip      = L("Speed of the lines the small feature policy prints into thin features, and of the move back "
+                          "along them. Slower lets a thin line stick and keep its shape; faster saves a little time on "
+                          "parts with many small features.");
+    def->sidetext     = L("mm/s");
+    def->min          = 1;
+    def->mode         = comAdvanced;
+    def->experimental = true;
+    def->set_default_value(new ConfigOptionFloat(15));
+
+    def               = this->add("thin_wall_flow_ratio", coFloat);
+    def->label        = L("Small feature flow ratio");
+    def->category     = L("Quality");
+    def->tooltip      = L("Flow of the small feature lines, on top of the flow for their actual width. More gives a "
+                          "fuller, sturdier line that may bulge; less gives a crisper line that may come out too thin.");
+    def->min          = 0.5;
+    def->max          = 2;
+    def->mode         = comAdvanced;
+    def->experimental = true;
+    def->set_default_value(new ConfigOptionFloat(1.));
 
     def = this->add("change_filament_gcode", coString);
     def->label = L("Change filament G-code");

@@ -358,6 +358,8 @@ void ExtrusionLoop::polygons_covered_by_width(Polygons &out, const float scaled_
 {
     for (const ExtrusionPath &path : this->paths)
         path.polygons_covered_by_width(out, scaled_epsilon);
+    for (const ExtrusionPath &path : this->dead_ends)
+        path.polygons_covered_by_width(out, scaled_epsilon);
 }
 
 void ExtrusionLoop::polygons_covered_by_spacing(Polygons &out, const float scaled_epsilon) const

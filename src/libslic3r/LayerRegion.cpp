@@ -9,6 +9,7 @@
 #include "BoundingBox.hpp"
 #include "SVG.hpp"
 #include "Algorithm/RegionExpansion.hpp"
+#include "Feature/SmallFeatures/SmallFeatures.hpp"
 
 #include <string>
 #include <map>
@@ -139,6 +140,10 @@ void LayerRegion::make_perimeters(const SurfaceCollection &slices, const LayerRe
         g.process_arachne();
     else
         g.process_classic();
+
+    // TigerSlicer: lines for the thin features the walls leave out (small_feature_policy, experimental).
+    if (!spiral_mode)
+        SmallFeatures::add_small_feature_lines(*this, slices, fill_surfaces != nullptr ? to_expolygons(fill_surfaces->surfaces) : ExPolygons());
 }
 
 #if 1

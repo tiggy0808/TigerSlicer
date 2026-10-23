@@ -470,6 +470,10 @@ class ExtrusionLoop : public ExtrusionEntity
 {
 public:
     ExtrusionPaths paths;
+    // TigerSlicer: lines into features narrower than the wall (small_feature_policy) that start on this loop. When
+    // the loop passes a line's first point, the line is printed out and the nozzle comes back along it without
+    // extruding. Not part of the loop's outline: seams and wipes ignore them.
+    ExtrusionPaths dead_ends;
 
     ExtrusionLoop(ExtrusionLoopRole role = elrDefault) : m_loop_role(role) {}
     ExtrusionLoop(const ExtrusionPaths &paths, ExtrusionLoopRole role = elrDefault) : paths(paths), m_loop_role(role) {}

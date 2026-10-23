@@ -136,3 +136,257 @@ TEST_CASE("Slicing warns about features below the printable width", "[SmallFeatu
         CHECK(state.warnings.empty());
     }
 }
+
+// The reference pulley sliced with its settings and `extra` on top.
+static std::unique_ptr<Print> slice_pulley(std::initializer_list<ConfigBase::SetDeserializeItem> extra, Model &model)
+{
+    DynamicPrintConfig config = pulley_config();
+    config.set_deserialize_strict(extra);
+    auto print = std::make_unique<Print>();
+    init_print({pulley_mesh()}, *print, model, config);
+    print->process();
+    return print;
+}
+
+// The dead ends (small feature lines started on a wall loop) of the layer.
+static ExtrusionPaths layer_dead_ends(const Layer &layer)
+{
+    ExtrusionPaths out;
+    std::function<void(const ExtrusionEntity &)> visit = [&out, &visit](const ExtrusionEntity &entity) {
+        if (const auto *collection = dynamic_cast<const ExtrusionEntityCollection *>(&entity))
+            for (const ExtrusionEntity *child : collection->entities)
+                visit(*child);
+        else if (const auto *loop = dynamic_cast<const ExtrusionLoop *>(&entity))
+            append(out, loop->dead_ends);
+    };
+    for (const LayerRegion *region : layer.regions())
+        visit(region->perimeters);
+    return out;
+}
+
+// The tooth-tip lines of the hand-made reference: per layer height, the radius of each line's end around the
+// pulley's center (the mean of its 22 ends).
+static std::map<double, std::vector<double>> reference_tip_radii()
+{
+    std::map<double, std::vector<Vec2d>> ends;
+    std::ifstream                        in(kSmallFeatures + "22T_pulley_PLA_spiketeeth.gcode");
+    std::string                          line;
+    double                               z         = 0.;
+    bool                                 next_tip  = false;
+    while (std::getline(in, line)) {
+        if (line.rfind(";Z:", 0) == 0)
+            z = std::stod(line.substr(3));
+        else if (line.rfind("; tooth spike", 0) == 0)
+            next_tip = true;
+        else if (next_tip && line.rfind("G1 X", 0) == 0) {
+            std::istringstream words(line);
+            std::string        word;
+            Vec2d              p = Vec2d::Zero();
+            while (words >> word) {
+                if (word[0] == 'X')
+                    p.x() = std::stod(word.substr(1));
+                else if (word[0] == 'Y')
+                    p.y() = std::stod(word.substr(1));
+            }
+            ends[z].push_back(p);
+            next_tip = false;
+        }
+    }
+    std::map<double, std::vector<double>> radii;
+    for (const auto &[height, points] : ends) {
+        Vec2d center = Vec2d::Zero();
+        for (const Vec2d &p : points)
+            center += p / double(points.size());
+        for (const Vec2d &p : points)
+            radii[height].push_back((p - center).norm());
+    }
+    return radii;
+}
+
+TEST_CASE("Outside prints one line out to each tooth tip, as the hand-made reference does", "[SmallFeatures]")
+{
+    const auto reference = reference_tip_radii();
+    REQUIRE(!reference.empty());
+    double reference_radius = 0.;
+    size_t reference_count  = 0;
+    for (const auto &[height, radii] : reference) {
+        CHECK(radii.size() == 22);
+        for (double r : radii)
+            reference_radius += r;
+        reference_count += radii.size();
+    }
+    reference_radius /= double(reference_count);
+    // The reference ends its 0.30 mm lines at r = 6.649, their bead 0.05 mm past the 6.749 mm tip.
+    CHECK_THAT(reference_radius, Catch::Matchers::WithinAbs(6.649, 0.01));
+
+    Model model;
+    const auto print = slice_pulley({{"small_feature_policy", "outside"}}, model);
+    size_t checked = 0;
+    for (const Layer *layer : print->objects().front()->layers()) {
+        if (layer->print_z < 1.2 || layer->print_z > 7.9)
+            continue;
+        CAPTURE(layer->print_z);
+        const Point          center = get_extents(layer->lslices).center();
+        const ExtrusionPaths lines  = layer_dead_ends(*layer);
+        CHECK(lines.size() == 22);
+        for (const ExtrusionPath &line : lines) {
+            const Vec2d start = relative_mm(line.first_point(), center);
+            const Vec2d end   = relative_mm(line.last_point(), center);
+            CAPTURE(line.width, start.norm(), end.norm());
+            // From the cusp where the wall turns, out to the tip.
+            CHECK_THAT(start.norm(), Catch::Matchers::WithinAbs(6.32, 0.05));
+            CHECK_THAT(end.norm(), Catch::Matchers::WithinAbs(reference_radius, 0.02));
+            // Its bead reaches the default 0.05 mm tip overshoot past the tip.
+            CHECK_THAT(end.norm() + 0.5 * line.width, Catch::Matchers::WithinAbs(6.749 + 0.05, 0.02));
+            // Straight out along the tooth.
+            const double angle_error = std::abs(std::atan2(start.x() * end.y() - start.y() * end.x(), start.dot(end)));
+            CHECK(angle_error < 0.5 * M_PI / 180.);
+        }
+        ++checked;
+    }
+    CHECK(checked > 40);
+}
+
+TEST_CASE("Outside lines go out and back from the wall at the small feature speed, without retracting", "[SmallFeatures]")
+{
+    Model model;
+    // Without the cooling slowdown, which scales every speed on these small layers.
+    const auto print = slice_pulley({{"small_feature_policy", "outside"}, {"thin_wall_speed", 15}, {"slow_down_for_layer_cooling", "0"}}, model);
+    const PrintObject &object = *print->objects().front();
+    const Layer       &middle = *object.layers()[object.layers().size() / 2];
+    const Vec2d        center = (get_extents(middle.lslices).center() + object.instances().front().shift).cast<double>() * SCALING_FACTOR;
+    auto radius = [&center](double x, double y) { return (Vec2d(x, y) - center).norm(); };
+
+    // On the tooth layers, each extrusion at the small feature speed is a line out to a tooth tip, followed by the
+    // move back to the wall at the same speed, without extruding, and with no retraction in between.
+    const double line_speed   = 15. * 60.;
+    size_t       out_and_back = 0;
+    bool         at_tip       = false;
+    GCodeReader  reader;
+    reader.parse_buffer(gcode(*print), [&](GCodeReader &self, const GCodeReader::GCodeLine &line) {
+        if (!line.cmd_is("G1") && !line.cmd_is("G0"))
+            return;
+        if (line.dist_XY(self) <= 0) {
+            if (line.retracting(self))
+                CHECK_FALSE(at_tip);
+            return;
+        }
+        const double r = radius(line.new_X(self), line.new_Y(self));
+        if (at_tip) {
+            CAPTURE(line.raw(), r);
+            CHECK_FALSE(line.extruding(self));
+            CHECK_THAT(line.new_F(self), Catch::Matchers::WithinAbs(line_speed, 1.));
+            CHECK_THAT(r, Catch::Matchers::WithinAbs(6.32, 0.05));
+            ++out_and_back;
+            at_tip = false;
+        } else if (self.z() > 1.2 && self.z() < 7.9 && line.extruding(self) && std::abs(line.new_F(self) - line_speed) < 1.) {
+            CAPTURE(line.raw(), r);
+            CHECK(r > 6.55);
+            at_tip = true;
+        }
+    });
+    // 22 teeth on each of the tooth layers.
+    CHECK(out_and_back >= 22 * 40);
+}
+
+TEST_CASE("Inside lines never cross the model's edge", "[SmallFeatures]")
+{
+    Model      model;
+    const auto print   = slice_pulley({{"small_feature_policy", "inside"}}, model);
+    size_t     checked = 0;
+    for (const Layer *layer : print->objects().front()->layers()) {
+        if (layer->print_z < 1.2 || layer->print_z > 7.9)
+            continue;
+        CAPTURE(layer->print_z);
+        CHECK(!layer_dead_ends(*layer).empty());
+        const Point center = get_extents(layer->lslices).center();
+        for (const SmallFeatures::DeviationArea &area : SmallFeatures::layer_deviation(*layer).overshoot) {
+            // No extrusion outside the model around the teeth.
+            const double r = relative_mm(area.shape.contour.centroid(), center).norm();
+            CAPTURE(r, area.magnitude);
+            CHECK((r < 6.2 || r > 6.9));
+        }
+        ++checked;
+    }
+    CHECK(checked > 40);
+}
+
+// The direction of each tooth tip from the pulley's center: the middle of the outline points at the tip radius.
+static std::vector<Vec2d> tip_directions(const Layer &layer, const Point &center)
+{
+    std::vector<Vec2d> sums;
+    for (const ExPolygon &slice : layer.lslices)
+        for (const Point &p : slice.contour.points) {
+            const Vec2d at = relative_mm(p, center);
+            if (at.norm() < 6.749 - 0.005)
+                continue;
+            const Vec2d direction = at.normalized();
+            auto        tooth = std::find_if(sums.begin(), sums.end(), [&direction](const Vec2d &sum) { return sum.normalized().dot(direction) > std::cos(0.1); });
+            if (tooth == sums.end())
+                sums.push_back(direction);
+            else
+                *tooth += direction;
+        }
+    for (Vec2d &sum : sums)
+        sum.normalize();
+    return sums;
+}
+
+TEST_CASE("Outside prints out to every tooth tip with either wall generator", "[SmallFeatures]")
+{
+    const std::string generator = GENERATE(std::string("classic"), std::string("arachne"));
+    CAPTURE(generator);
+    Model      model;
+    const auto print = slice_pulley({{"small_feature_policy", "outside"}, {"wall_generator", generator}}, model);
+    size_t     checked = 0;
+    for (const Layer *layer : print->objects().front()->layers()) {
+        if (layer->print_z < 1.2 || layer->print_z > 7.9)
+            continue;
+        CAPTURE(layer->print_z);
+        const Point    center  = get_extents(layer->lslices).center();
+        const Polygons covered = SmallFeatures::printed_coverage(*layer);
+        // The middle of each 0.27 mm wide flat tip, at r = 6.749, is printed to within the deviation tolerance: by a
+        // small feature line or, where Arachne carries its own bead out that far, by the wall.
+        const std::vector<Vec2d> tips = tip_directions(*layer, center);
+        CHECK(tips.size() == 22);
+        for (const Vec2d &direction : tips)
+            CHECK(contains(covered, Point(center + (direction * scaled<double>(6.749 - SmallFeatures::kDeviationTolerance)).cast<coord_t>())));
+        // What is left at the tips is their square corners, which a round bead end fills only when it spills well
+        // down the tooth's sides.
+        for (const SmallFeatures::DeviationArea &area : SmallFeatures::layer_deviation(*layer).undershoot) {
+            const double r = relative_mm(area.shape.contour.centroid(), center).norm();
+            CAPTURE(r, area.magnitude);
+            if (r > 6.3 && r < 6.8)
+                CHECK(area.magnitude < 0.03);
+        }
+        ++checked;
+    }
+    CHECK(checked > 40);
+}
+
+// FNV-1a over the G-code's moves only.
+static uint64_t moves_hash(const std::string &gcode)
+{
+    uint64_t           hash = 1469598103934665603ull;
+    std::istringstream in(gcode);
+    std::string        line;
+    while (std::getline(in, line))
+        if (line.rfind("G0 ", 0) == 0 || line.rfind("G1 ", 0) == 0 || line.rfind("G2 ", 0) == 0 || line.rfind("G3 ", 0) == 0)
+            for (const unsigned char c : line.substr(0, line.find(';'))) {
+                hash ^= c;
+                hash *= 1099511628211ull;
+            }
+    return hash;
+}
+
+TEST_CASE("Drop prints exactly what the walls print without the small feature options", "[SmallFeatures]")
+{
+    Model      model_default, model_drop;
+    const auto by_default = slice_pulley({}, model_default);
+    // The other small feature settings do nothing while the policy is Drop.
+    const auto with_drop = slice_pulley(
+        {{"small_feature_policy", "drop"}, {"tip_overshoot", 0.2}, {"thin_wall_speed", 30}, {"thin_wall_flow_ratio", 1.3}}, model_drop);
+    CHECK(moves_hash(gcode(*with_drop)) == moves_hash(gcode(*by_default)));
+    for (const Layer *layer : with_drop->objects().front()->layers())
+        CHECK(layer_dead_ends(*layer).empty());
+}

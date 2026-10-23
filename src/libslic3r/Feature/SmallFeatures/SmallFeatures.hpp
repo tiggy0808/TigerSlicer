@@ -10,8 +10,10 @@
 namespace Slic3r {
 
 class Layer;
+class LayerRegion;
 class Polyline3;
 class Print;
+class SurfaceCollection;
 
 namespace SmallFeatures {
 
@@ -60,6 +62,13 @@ std::vector<PrintedLayerDeviation> print_deviation(const Print &print);
 // The parts of `slices` narrower than `min_width` (scaled), one ExPolygon per feature. The slivers that rounding a
 // sharp corner leaves, shorter than they are wide, are not features.
 ExPolygons features_below_width(const ExPolygons &slices, coord_t min_width);
+
+// Prints the thin parts of the region that its walls leave uncovered, by its small_feature_policy (experimental). Each
+// part gets one line along its middle, its width and free end set by the policy. A line that starts at a wall loop
+// becomes that loop's dead end, printed out and back as the loop passes it; any other is an open path of its own.
+// `slices` are the region's slices the walls were made from, and `fill_area` the area left for infill, which counts
+// as covered.
+void add_small_feature_lines(LayerRegion &layerm, const SurfaceCollection &slices, const ExPolygons &fill_area);
 
 } // namespace SmallFeatures
 } // namespace Slic3r

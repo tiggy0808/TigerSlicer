@@ -286,6 +286,8 @@ enum SupportType {
     stFinsManual
 };
 enum FinSupportFallback { fsfNone, fsfTree, fsfNormal };
+// TigerSlicer: how a feature narrower than the walls is printed (experimental).
+enum SmallFeaturePolicy { sfpDrop, sfpInside, sfpBalanced, sfpOutside };
 
 inline bool is_tree(SupportType stype)
 {
@@ -694,6 +696,7 @@ CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SupportMaterialStyle)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SupportMaterialInterfacePattern)
 // BBS
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SupportType)
+CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SmallFeaturePolicy)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SeamPosition)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SeamScarfType)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SLADisplayOrientation)
@@ -1417,6 +1420,10 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionBool, detect_thin_wall))
     // TigerSlicer: small feature accuracy (experimental).
     ((ConfigOptionFloatOrPercent, small_feature_min_width))
+    ((ConfigOptionEnum<SmallFeaturePolicy>, small_feature_policy))
+    ((ConfigOptionFloat, tip_overshoot))
+    ((ConfigOptionFloat, thin_wall_speed))
+    ((ConfigOptionFloat, thin_wall_flow_ratio))
     ((ConfigOptionFloatOrPercent, top_surface_line_width))
     ((ConfigOptionInt, top_shell_layers))
     ((ConfigOptionFloat, top_shell_thickness))

@@ -2774,7 +2774,11 @@ void TabPrint::build()
 
         // TigerSlicer: features narrower than an extrusion line (experimental).
         optgroup = page->new_optgroup(L("Small features"), L"param_wall");
+        optgroup->append_single_option_line("small_feature_policy");
         optgroup->append_single_option_line("small_feature_min_width");
+        optgroup->append_single_option_line("tip_overshoot");
+        optgroup->append_single_option_line("thin_wall_speed");
+        optgroup->append_single_option_line("thin_wall_flow_ratio");
 
         optgroup = page->new_optgroup(L("Top/bottom shells"), L"param_shell");
 

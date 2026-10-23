@@ -1052,6 +1052,12 @@ void ConfigManipulation::toggle_print_fff_options(DynamicPrintConfig *config, in
     for (auto el : {"flush_into_infill", "flush_into_support", "flush_into_objects"})
         toggle_field(el, have_prime_tower);
 
+    // TigerSlicer: the small feature lines' settings, with a policy that prints them.
+    const auto small_feature_policy = config->option<ConfigOptionEnum<SmallFeaturePolicy>>("small_feature_policy")->value;
+    toggle_line("tip_overshoot", small_feature_policy == sfpOutside);
+    for (auto el : {"thin_wall_speed", "thin_wall_flow_ratio"})
+        toggle_line(el, small_feature_policy != sfpDrop);
+
     bool have_avoid_crossing_perimeters = config->opt_bool("reduce_crossing_wall");
     toggle_line("max_travel_detour_distance", have_avoid_crossing_perimeters);
 

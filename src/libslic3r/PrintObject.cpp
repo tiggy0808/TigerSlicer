@@ -1653,6 +1653,9 @@ bool PrintObject::invalidate_state_by_config_options(
             || opt_key == "enable_overhang_speed"
             || opt_key == "detect_thin_wall"
             || opt_key == "small_feature_min_width"
+            || opt_key == "small_feature_policy"
+            || opt_key == "tip_overshoot"
+            || opt_key == "thin_wall_flow_ratio"
             || opt_key == "precise_outer_wall") {
             steps.emplace_back(posPerimeters);
             steps.emplace_back(posSupportMaterial);
@@ -1730,7 +1733,8 @@ bool PrintObject::invalidate_state_by_config_options(
             || opt_key == "slow_down_layers"
             || opt_key == "reduce_crossing_wall"
             || opt_key == "max_travel_detour_distance"
-            || opt_key == "reduce_infill_retraction") {
+            || opt_key == "reduce_infill_retraction"
+            || opt_key == "thin_wall_speed") {
             invalidated |= m_print->invalidate_step(psGCodeExport);
         } else if (
                opt_key == "flush_into_infill"
