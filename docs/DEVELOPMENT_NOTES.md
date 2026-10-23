@@ -198,6 +198,21 @@ Commits, oldest first (all on `main`; the release commit follows them):
     overshoot, with no red. Red is left only on slivers between wall loops inside the model.
   - Not checked in the app: the object list's settings menu and modifiers, which are covered by tests
     only.
+- Release build from `790cb6bee`, with a clean `build\OrcaSlicer`: no errors.
+  - It installed the same 9,317 files as 0.0.9, which ships 9,318 with `uninstall.ps1`.
+  - Packaged with the `%TEMP%	srel010` kit: copied from tsrel009 with only the version and paths
+    changed.
+- Release assets:
+  - `TigerSlicer-0.0.10-win64-Setup.exe`, 229,535,744 B, sha256 `9766646f…f881cc`.
+  - `TigerSlicer-0.0.10-win64.zip`, 235,916,518 B, sha256 `d16d8e34…3380c7`.
+  - Both digests were checked on GitHub after upload.
+- Smoke test: the Setup.exe test install (`TIGERSLICER_INSTALL_DIR`) on a copy of a real data folder.
+  - Its `TigerSlicer.dll` matches the build.
+  - Its log reads "Version 0.0.10 build 790cb6bee2".
+  - It ran for 45 s with no crash log and no "can not find parent". The only errors are ones 0.0.9 also
+    logs on that folder: `calc_exclude_triangles` and an unsupported printer type.
+  - This run was log-only. The GUI was checked on the dev build of the same code, as above.
+- Shipped Windows-only. The notes point Mac users to 0.0.9.
 
 ---
 
