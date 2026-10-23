@@ -3273,6 +3273,13 @@ void MainFrame::init_menubar_as_editor()
             this, [this]() { return is_prepare_or_preview_tab(); },
             [this]() { return wxGetApp().show_3d_navigator(); }, this);
 
+        // TigerSlicer: the same switch as Preferences > General > Show experimental features.
+        viewMenu->AppendSeparator();
+        append_menu_check_item(viewMenu, wxID_ANY, _L("Show Experimental Features"),
+            _L("Show settings that are still being tested, marked \"Experimental\". When this is off, they are hidden and slicing uses their default values."),
+            [](wxCommandEvent &) { wxGetApp().set_show_experimental_features(!wxGetApp().show_experimental_features()); },
+            this, []() { return true; }, []() { return wxGetApp().show_experimental_features(); }, this);
+
         append_menu_check_item(viewMenu, wxID_ANY, _L("Show Gridlines"), _L("Show Gridlines on plate"),
             [this](wxCommandEvent&) {
                 wxGetApp().toggle_show_plate_gridlines();

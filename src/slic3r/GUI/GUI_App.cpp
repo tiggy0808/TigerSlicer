@@ -8329,6 +8329,19 @@ void GUI_App::save_mode(const /*ConfigOptionMode*/int mode)
 }
 
 // Update view mode according to selected menu
+bool GUI_App::show_experimental_features() const
+{
+    return app_config->get_bool("show_experimental_features");
+}
+
+void GUI_App::set_show_experimental_features(bool show)
+{
+    app_config->set_bool("show_experimental_features", show);
+    update_mode();
+    if (plater_ != nullptr)
+        plater_->schedule_background_process();
+}
+
 void GUI_App::update_mode()
 {
     sidebar().update_mode();

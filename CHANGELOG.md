@@ -3,6 +3,13 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
+## Unreleased
+
+**Changed**
+- Experimental features can be turned on and off where you'd look for them: the flask button next
+  to the Simple/Advanced switch at the top of the process settings (pink when they are on), and
+  **View > Show Experimental Features**. The setting in Preferences > General still works too.
+
 ## 0.0.10 (2026-10-23)
 
 **New (experimental)**

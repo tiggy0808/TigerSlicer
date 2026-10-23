@@ -278,6 +278,14 @@ ParamsPanel::ParamsPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
             m_mode_view->SelectAndNotify((selection + 1) % 3);
         });
         m_mode_icon->SetToolTip(_L("Cycle settings visibility"));
+
+        // TigerSlicer: experimental settings on/off, where people look for more settings.
+        m_experimental_btn = new ScalableButton(m_top_panel, wxID_ANY, "experimental_off");
+        m_experimental_btn->Bind(wxEVT_BUTTON, [](wxCommandEvent &) {
+            wxGetApp().set_show_experimental_features(!wxGetApp().show_experimental_features());
+        });
+        update_experimental_button();
+
         m_mode_view = new ModeSwitchButton(m_top_panel);
         bool isDevMode = wxGetApp().get_mode() == comDevelop;
         m_mode_view->SetSelection(mode_to_selection(isDevMode ? comExpert : wxGetApp().get_saved_mode()));
@@ -418,6 +426,7 @@ void ParamsPanel::create_layout()
         m_mode_sizer->Add(m_tips_arrow  , 0, wxALIGN_CENTER | wxLEFT , FromDIP(SidebarProps::ElementSpacing()));
         m_mode_sizer->AddSpacer(FromDIP(SidebarProps::IconSpacing())); // ensure there is spacing after control when sidebar has less width
         m_mode_sizer->AddStretchSpacer();
+        m_mode_sizer->Add(m_experimental_btn, 0, wxALIGN_CENTER | wxRIGHT, FromDIP(SidebarProps::WideSpacing()));
         m_mode_sizer->Add(m_mode_icon   , 0, wxALIGN_CENTER | wxRIGHT, FromDIP(SidebarProps::ElementSpacing()));
         m_mode_sizer->Add(m_mode_view   , 0, wxALIGN_CENTER | wxRIGHT, FromDIP(SidebarProps::WideSpacing()));
         m_mode_sizer->Add(m_setting_btn , 0, wxALIGN_CENTER | wxRIGHT, FromDIP(SidebarProps::WideSpacing()));
@@ -703,6 +712,19 @@ void ParamsPanel::update_mode()
     };
     sync_mode_icon(m_mode_icon);
     sync_mode_icon(m_current_tab ? dynamic_cast<Tab*>(m_current_tab)->m_mode_icon : nullptr);
+    update_experimental_button();
+}
+
+void ParamsPanel::update_experimental_button()
+{
+    if (m_experimental_btn == nullptr)
+        return;
+    const bool show = wxGetApp().show_experimental_features();
+    m_experimental_btn->SetBitmap_(show ? "experimental" : "experimental_off");
+    m_experimental_btn->SetToolTip(show ? _L("Experimental features are on: settings marked \"Experimental\" are shown and used. "
+                                            "Click to turn them off.")
+                                        : _L("Show experimental features: settings that are still being tested, marked "
+                                             "\"Experimental\". Click to turn them on."));
 }
 
 void ParamsPanel::msw_rescale()
@@ -718,6 +740,7 @@ void ParamsPanel::msw_rescale()
     if (m_mode_region)
         ((SwitchButton* )m_mode_region)->Rescale();
     if (m_mode_icon) m_mode_icon->msw_rescale();
+    if (m_experimental_btn) m_experimental_btn->msw_rescale();
     if (m_mode_view)
     {
         m_mode_view->Rescale();

@@ -86,6 +86,7 @@ class ParamsPanel : public wxPanel
         ScalableButton *m_tips_arrow{nullptr};
         bool m_tips_arror_blink{false};
         ScalableButton* m_mode_icon { nullptr }; // ORCA
+        ScalableButton* m_experimental_btn { nullptr }; // TigerSlicer: shows or hides experimental settings
         ModeSwitchButton* m_mode_view { nullptr };
         //wxBitmapButton* m_search_button { nullptr };
         wxStaticLine* m_staticline_print { nullptr };
@@ -155,6 +156,7 @@ class ParamsPanel : public wxPanel
         void set_active_tab(wxPanel*tab);
         bool is_active_and_shown_tab(wxPanel*tab);
         void update_mode();
+        void update_experimental_button();
         void msw_rescale();
         void switch_to_global();
         void switch_to_object(bool with_tips = false);

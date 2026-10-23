@@ -7,6 +7,23 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 
 ---
 
+## Unreleased
+
+### Experimental features switch outside Preferences
+- `GUI_App::show_experimental_features()` / `set_show_experimental_features(bool)`: the one place that
+  writes `show_experimental_features`, calls `update_mode()` and schedules a reslice. The Preferences
+  checkbox now calls it too.
+- `ParamsPanel`: `m_experimental_btn`, a `ScalableButton` before the mode icon in the process header,
+  `experimental.svg` (pink flask) when on and `experimental_off.svg` (empty flask) when off.
+  `update_experimental_button()` sets the icon and tooltip; `update_mode()` calls it, so the button
+  follows every other way of changing the setting.
+- View menu: "Show Experimental Features", a check item after "Show 3D Navigator", checked from the
+  config on every menu update.
+- Verified on macOS: build, and background launches with the setting off and on (no new `[error]`
+  lines, no crash). The button and menu item were not looked at on screen.
+
+---
+
 ## 0.0.10 (2026-10-23)
 
 Theme: small feature accuracy, all of it experimental and off unless "Show experimental features" is

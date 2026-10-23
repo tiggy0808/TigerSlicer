@@ -596,6 +596,9 @@ public:
     std::string     get_mode_str();
     void            save_mode(const /*ConfigOptionMode*/int mode) ;
     void            update_mode();
+    // TigerSlicer: show or hide the experimental settings and reslice with or without them.
+    bool            show_experimental_features() const;
+    void            set_show_experimental_features(bool show);
     void            update_internal_development();
     void            show_ip_address_enter_dialog(wxString title = wxEmptyString);
     void            show_ip_address_enter_dialog_handler(wxCommandEvent &evt);

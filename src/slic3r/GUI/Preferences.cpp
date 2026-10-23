@@ -1055,9 +1055,7 @@ wxBoxSizer *PreferencesDialog::create_item_checkbox(wxString title, wxString too
         }
         // TigerSlicer: show or hide the experimental settings and reslice with or without them.
         else if (param == "show_experimental_features") {
-            wxGetApp().update_mode();
-            if (Plater *plater = wxGetApp().plater())
-                plater->schedule_background_process();
+            wxGetApp().set_show_experimental_features(app_config->get_bool(param));
         }
         // ORCA: apply the preview dimming change immediately to the currently loaded preview
         else if (param == "preview_dim_previous_layers") {
