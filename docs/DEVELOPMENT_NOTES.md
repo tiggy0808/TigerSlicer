@@ -52,6 +52,39 @@ Commits, oldest first (all on `main`; the release commit follows them):
 - Verified on macOS: build, and background launches with the setting off and on (no new `[error]`
   lines, no crash). The button and menu item were not looked at on screen.
 
+### Verification (Windows)
+- Release build from the release commit (`5682da746`, tag `v0.0.11`), with a clean `build\OrcaSlicer`
+  and `BUILD_TESTS` off: no errors.
+  - It installed 9,319 files: the files of the shipped 0.0.10 zip, without its `uninstall.ps1`, plus
+    `resources/images/experimental.svg` and `experimental_off.svg`.
+  - Packaged with the `%TEMP%\tsrel011` kit: copied from tsrel010 with only the version and paths
+    changed.
+- Release assets:
+  - `TigerSlicer-0.0.11-win64-Setup.exe`, 229,531,648 B, sha256 `4ed9d528…5ba562`.
+  - `TigerSlicer-0.0.11-win64.zip`, 235,916,527 B, sha256 `80fd3b04…b40ed5`.
+  - Both digests were checked on GitHub after upload.
+- Tests (MSVC), fff_print:
+  - `[BedTemperature]` passes: 1 case, 38 assertions.
+  - `[Print]` passes: 19 cases, 114 assertions. That includes the `[Regression]` hash test, whose
+    hashes are MSVC's.
+- The Setup.exe test install (`TIGERSLICER_INSTALL_DIR`) has 9,320 files. Its `TigerSlicer.exe` and
+  `TigerSlicer.dll` match the build.
+- Smoke test of the build (the same binaries), with a new, empty data folder:
+  - The first-run wizard, with only Klipper chosen and no plug-in, ends on Generic Klipper Printer
+    (0.4 mm nozzle, PLA, 0.20mm Standard @MyKlipper).
+  - The flask button turned experimental features on (pink), and View > Show Experimental Features
+    was then checked.
+  - Unchecking the menu item turned the flask grey, and Preferences > General then showed the box
+    clear. Ticking it there turned the flask pink and checked the menu item again.
+  - PLA's filament settings show one "Bed" line: first layer 60 °C, other layers 60 °C.
+  - A 20 mm cube, sliced and exported, has `M190 S60` in the start G-code,
+    `PRINT_START ... BED=60`, and `M140 S60` for the other layers. Every plate key in the config
+    block is 60.
+  - The log reads "Version 0.0.11 build 5682da7460".
+  - Quit from the File menu, without saving the cube project: the log ends with the normal exit,
+    and there is no crash log. The only `[error]` lines are four `calc_exclude_triangles`, which
+    earlier releases log too.
+
 ### Verification (macOS)
 - Release build on macOS 15.6.1 (Apple Silicon), Apple clang 17.0.0, from the release commit:
   `./build_release_macos.sh -a arm64 -x -s` with `BUILD_TESTS` off.
