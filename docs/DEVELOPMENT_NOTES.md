@@ -7,6 +7,164 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 
 ---
 
+## 0.0.9 (2026-10-22)
+
+Theme: fin supports that hold a tilted part the way support fins should, and more settings per model.
+
+Commits, oldest first (all on `main`; the release commit follows them):
+
+| Commit | Subject |
+|---|---|
+| `de875917b` | docs: Windows verification for 0.0.8 |
+| `9e477a03e` | feat: set more process settings per model |
+| `a9a9e8fa4` | feat: Fins (manual), fins along the lean, and fin spacing in mm or % |
+| `02aab9934` | fix: the Auto slice button is a whole pill |
+
+### Fins (manual)
+- `SupportType` gains `stFinsManual`, saved as `fins(manual)` and appended after `stFins`. `fins`
+  stays the key of Fins (auto), so existing presets and projects load as before. `is_fins()` covers
+  both. Every former `== stFins` check now uses it: `ModelArrange`, `Print::validate`,
+  `PrintObject::_generate_support_material`, `SupportParameters` and `ConfigManipulation`.
+- `fin_fallback_support_type()` (`PrintConfig.hpp`) gives the supplemental supports' type. They are
+  `stTree`/`stNormal` (manual) with Fins (manual), so they only support enforced overhangs. It is
+  used by the generator and by the GUI's field toggles.
+- `generate_fin_support()`, when manual:
+  - The enforcers are `slice_support_enforcers()` plus the painted ENFORCER facets. With none it
+    returns at once.
+  - Each layer's fin region is intersected with the union of the enforcers at or above it, which is
+    their projection to the bed.
+  - The uncovered overhangs handed to the supplemental supports are only the enforced ones.
+  - Lean side only is skipped (and hidden in the GUI), because the painted area picks the side.
+- Fix, seen in the app with Fins (manual) and painted enforcers:
+  - Tree support (`TreeSupport3D::generate_overhangs`) subtracts blockers from its overhangs, then
+    adds the enforced overhangs back. Normal support also lets enforcers win.
+  - So the fin columns, which reach the supplemental generator as blockers, did not stop it on
+    enforced areas, and trees grew where the fins were. The same happened with Fins (auto) and
+    painted enforcers.
+  - While `m_fin_support_reserved` is set, `PrintObject::slice_support_enforcers()` (moved out of
+    line) and the ENFORCER branch of `project_and_append_custom_facets()` now subtract the reserved
+    columns.
+- Tests (`[Fins]` in `test_support_material.cpp`):
+  - An enforcer volume over one side of the support table, with no supplemental supports and with
+    tree.
+  - A painted underside face of the tipped cube, with none and with tree (the latter failed
+    before the fix).
+  - No enforcer gives no support.
+  - Fins (auto) ignores enforcers.
+
+### Fins run the way the part leans
+- Seen in the app on a hex bar tilted along its length: the fins stood across the bar, two short
+  walls side by side, instead of one wall down its length. `fin_angle()` ran the fins across the
+  long axis of the fin regions. That suits a block tipped onto an edge, whose regions are long along
+  the edge, but the shadow of a long tilted part is long along the lean, so the fins came out across
+  it, where a fin is weakest against tipping.
+- `fin_angle()` now runs the fins along the lean, from the center of the bed contact to the center
+  of mass (`object_lean()`, shared with `keep_lean_side()`).
+  - This applies only when the part would tip over: its center of mass is outside the convex hull of
+    its bed contact (`FinLean::tips_over`), and at least `kMinLean` (0.5 mm) from the contact's center.
+  - A part that stands on its own keeps the long-axis rule. That covers a big part slightly off
+    center and a block tipped exactly onto an edge, which are unchanged.
+- The strip grid used to be anchored at the origin, so where the fins fell across a part was luck.
+  `fin_strips_offset()` puts one strip through the area centroid of the lowest fin region (which
+  holds every column), and the rest every pitch either side. A part narrower than two pitches gets
+  one fin down its middle, where a round or tilted part hangs lowest. (Choosing between one fin in
+  the middle and two either side by the region's width was tried first. It gave the 14 mm pulley two
+  fins under its sloping sides, because the shadow of a round part is as wide as the part.) Cross
+  fins are placed the same way.
+- With tree or normal supports filling in (the default), the pulley's one fin was still cut into
+  pieces. The columns kept free for them (the "uncovered" overhangs) took any layer reaching more
+  than half a support line past the one below. On a part tilted 40 degrees every slope does that
+  (0.24 mm per 0.2 mm layer), the roof of its bore included, so columns were cut through the fin
+  for overhangs the tree support, at a 30 degree threshold, then did not support at all.
+  `overhang_threshold_offset()` now uses the supplemental supports' own lower layer offset: the
+  threshold angle (+1 degree, as they do), or the threshold overlap when the angle is 0.
+  - Half a line is kept wherever tree and normal supports ignore the threshold: in Fins (manual), on
+    enforced overhangs (enforcers are now read in auto mode too, when there are supplemental
+    supports), and in the first `enforce_support_layers` layers.
+  - Without the enforced case, a painted enforcer inside the part (the roof of a bore) was dropped:
+    the reserved fin columns covered it, and `slice_support_enforcers()` subtracts them.
+- The per-island fallback fin (a column the grid misses) is now also added when a grid fin only
+  grazes the column, narrower than `min_width`, since `opening()` would remove that graze.
+- A column kept for an overhang inside the part still runs straight down to the bed, through the
+  part and any fin under it, because `m_fin_support_reserved` is one set of polygons for every
+  layer. Stopping it at the part would need that set per layer.
+- Tests:
+  - A 50 x 8 x 8 mm bar tilted 35 degrees along its length, along X and turned 30 degrees, gets one
+    fin, along the bar and through its center line.
+  - The same bar with a 4 x 4 mm bore, tilted 35 degrees, with tree fallback at a 30 degree
+    threshold, keeps one whole fin above its end face (two pieces before the threshold change).
+  - With the bore's roof painted as an enforcer and normal fallback, there is support inside the bore.
+
+### More settings per object
+- The Objects view (`TabPrintObject`) shows every print option that is in `PrintObjectConfig` or
+  `PrintRegionConfig`. About 300 of the ~390 process options already were. Of the rest, these move
+  from `PrintConfig` to `PrintObjectConfig`:
+  - `initial_layer_speed` and `initial_layer_infill_speed`
+  - `initial_layer_line_width`
+  - `slow_down_layers`
+  - `reduce_crossing_wall` and `max_travel_detour_distance`
+  - `reduce_infill_retraction`
+- Everything else in `PrintConfig`/`GCodeConfig` is shared by the whole plate, so it stays global:
+  - Print sequence and order, first layer height, skirt and draft shield.
+  - Prime/wipe tower, spiral vase, timelapse, travel speeds, pressure equalizer, arc fitting.
+  - G-code output: labels, comments, filename, post-processing, notes.
+- How each moved option reaches the object:
+  - The G-code options (speeds, slow layers, avoid crossing walls, infill retraction) are read from
+    `GCode::m_config`, which already applies each object's config before printing it.
+  - First layer width: `PrintRegion::flow()`, `support_material_1st_layer_flow()`, `ToolOrdering` and the
+    G-code header read the object's config. The skirt and the brim (`Print::skirt_flow()`,
+    `brim_flow()`, `object_skirt_offset()`) are shared, so they use `m_default_object_config`.
+  - The wipe towers take the global first layer speed: `WipeTower::set_first_layer_speed()`, and a
+    `default_object_config` argument to `WipeTower2`'s constructor.
+- `GCode::process_layer()` now applies an object's config before its skirt group and brim, not after.
+  Before, the per-object skirt and brim printed with whatever the previous object left in `m_config`.
+  That was already wrong for `support_speed`, which the brim uses.
+- Invalidation moved from `Print::invalidate_state_by_config_options()` to `PrintObject`'s with the same
+  steps:
+  - `initial_layer_line_width`: perimeters, infill, support and skirt/brim.
+  - The two speeds: wipe tower, skirt/brim and G-code.
+  - The rest: G-code export only.
+- Changing the global first layer width or speed when every object overrides it changes no object's config,
+  so no object diff invalidates anything. But the skirt, brim and wipe tower use the global value, so
+  `Print::apply()` invalidates `psSkirtBrim` and `psWipeTower` whenever either is in `object_diff`. Any
+  global change already invalidates G-code export.
+- The combined skirt goes round every object. It now prints with the default object config, applied just
+  for it: first layer speed and slow layers are global.
+  - Before, it took them from `layer.object()`, or on later extruders from whichever object was printed
+    last.
+  - A brim or skirt group shared by several objects takes the first-printed object's settings.
+- `Print::validate()` checks each object's `initial_layer_line_width` against the first layer height and
+  the nozzle, like `line_width`. `PrintConfigDef::validate()` only sees the global value.
+- `print_flow_ratio` is a region option. An object's walls, infill and surfaces use its value. Its
+  support, brim and skirt print with the default region config, so they use the global one (1 unless
+  changed).
+- `print_flow_ratio` (a `PrintRegionConfig` multiplier on the filament flow ratio, hidden in the
+  global tab) is added to the Objects view's Frequent page. Its tooltip now says what it is.
+- Tests (`[PrintObject]`):
+  - The moved options are object options, and plate-wide ones are still `PrintConfig`.
+  - Two cubes side by side, one overridden: per-object first layer speed and slow layers in the
+    G-code, and the per-object first layer width in `PrintRegion::flow()`.
+  - Both cubes overridden: changing the global first layer width invalidates and redoes the skirt.
+- Reviewed. No critical or high findings. The two medium ones are fixed above: the stale
+  skirt/brim/wipe tower, and the combined skirt's settings. Range check and the flow ratio note
+  came from the low ones.
+
+### Fin and tine spacing in mm or %
+- `support_fin_spacing` and `support_fin_tine_spacing` are `coFloatOrPercent` ("mm or %", like
+  `support_threshold_overlap`). A number without % still reads as mm, so presets and 3MF projects
+  that saved 8 or 5 load unchanged.
+- Fin spacing as a percentage is a density: `fin_pitch()` sets the center-to-center distance to
+  thickness / density, using the thickness after rounding to whole loops. 100% is solid.
+- Tine spacing as a percentage is the share of the fin's height in tine rows: `tine_row_spacing()`
+  returns `layer_height` / density, so 4% at 0.2 mm layers is a row every 5 mm. Thinner layers give
+  more, thinner tines, for about the same bonded area.
+- Defaults: 15% (about 10 mm apart for 1.6 mm fins, 9.5 mm for the 1.43 mm they round to with a
+  0.4 mm line) and 4%. `max_literal` 50 keeps mm values up to 50 from asking "is it % or mm?".
+- Test: 30% gives about twice the fin area of 15% on the support table, and 4% tines at 0.2 mm
+  layers are the same rows as 5 mm.
+
+---
+
 ## 0.0.8 (2026-10-21)
 
 Theme: one calibration builder instead of the separate calibration tests, and independent tool layer

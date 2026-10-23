@@ -3,6 +3,45 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
+## 0.0.9 (2026-10-22)
+
+**New**
+- **Fins (manual)**, next to the existing fins, now called **Fins (auto)**. Like Normal and Tree
+  (manual), it puts fins only where you ask for support: under areas painted with the support
+  painting tool, or under support enforcer volumes. Its supplemental tree or normal supports are
+  manual too.
+
+**Changed**
+- **More settings per model.** Select a model and switch the process settings from Global to Objects to
+  change these for that model only:
+  - First layer speed, first layer infill speed and first layer line width.
+  - Number of slow layers.
+  - Avoid crossing walls and its maximum detour length.
+  - Reduce infill retraction.
+
+  Almost every other process setting could already be set per model. Settings that only make sense for
+  the whole plate stay global: print sequence, first layer height, skirt, prime tower, spiral vase,
+  travel speed and G-code output.
+- **Flow ratio per model** is on the first page of the Objects view. It multiplies the filament's flow
+  ratio for that model's walls, infill and surfaces, so one model can print with more or less filament
+  without changing the filament profile. Its supports, brim and skirt keep the global flow.
+- Fins run the way the part leans. A long part tilted along its length now gets one fin down its
+  length, instead of a row of short fins standing across it. The fins are also centered under the
+  part, so a narrow part gets one fin down its middle.
+- **Fin spacing** and **Tine spacing** take mm or %, like infill density.
+  - Fin spacing as a percentage is the share of the area under the part that the fins fill.
+  - Tine spacing as a percentage is the share of each fin's height that is tines.
+  - The new defaults, 15% and 4%, are about the old 8 mm and 5 mm.
+  - Presets and projects saved with mm values keep them.
+- The Auto slice button is a whole rounded button. Its left edge was squared off like the Slice
+  plate button's, which joins a dropdown.
+
+**Fixed**
+- With fins and supplemental tree or normal supports, painted support enforcers grew those
+  supports inside the fins.
+- On tilted parts, fins were cut into pieces to leave room for tree or normal supports on slopes
+  those supports then did not support, because they are steeper than the threshold angle.
+
 ## 0.0.8 (2026-10-21)
 
 **New**
