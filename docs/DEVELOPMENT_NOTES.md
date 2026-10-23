@@ -163,6 +163,32 @@ Commits, oldest first (all on `main`; the release commit follows them):
 - Test: 30% gives about twice the fin area of 15% on the support table, and 4% tines at 0.2 mm
   layers are the same rows as 5 mm.
 
+### Verification (Windows)
+- Tests before the release commit: libslic3r 1,053 cases, fff_print 178 (all `[Fins]` and
+  `[PrintObject]` cases included), all passing.
+  - "Grid copies print with their own value" (`test_calibration_builder.cpp`, from 0.0.8) failed 1 run
+    in 5 when run alone during this work, with no fin code involved: `extruded.size()` was 1, not 2.
+    It is not fixed. It uses `init_print` with arrange on an infinite bed.
+- Fins in the app were checked by slicing the reported part (a 34 mm hex pulley with a bore, tilted
+  40 degrees) in a throwaway test and drawing the fins:
+  - Before, the bed view showed two short fins across the part, plus trees.
+  - Now there is one fin down its length, in one piece with tree fallback on, and with tines along the
+    sloped edge.
+- Release build from `01e59c542`, with a clean `build\OrcaSlicer`: no errors.
+  - Packaged with the `%TEMP%\tsrel009` kit (from tsrel008, only the version and paths changed).
+  - 9,318 files.
+- Release assets:
+  - `TigerSlicer-0.0.9-win64-Setup.exe`, 229,474,304 B, sha256 `32076354…0750e3`.
+  - `TigerSlicer-0.0.9-win64.zip`, 235,858,345 B, sha256 `eef28026…758670`.
+  - Both digests were checked on GitHub after upload.
+- Smoke test: the Setup.exe test install (`TIGERSLICER_INSTALL_DIR`) on a copy of a real data folder.
+  - Its log reads "Version 0.0.9 build 01e59c542".
+  - It ran for 45 s with no crash log. The only errors are ones 0.0.8 also logs on that folder:
+    `calc_exclude_triangles` and an unsupported printer type.
+  - This run was log-only, without clicking through.
+- Installed over the 0.0.8 files on the maintainer's PC with the Setup.exe. The uninstall entry (which still said 0.0.6) now reads
+  0.0.9, and the installed `TigerSlicer.dll` hash matches the build.
+
 ---
 
 ## 0.0.8 (2026-10-21)
