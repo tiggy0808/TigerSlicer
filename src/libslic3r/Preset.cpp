@@ -1028,6 +1028,7 @@ static std::vector<std::string> s_Preset_print_options{
     "reduce_crossing_wall",
     "detect_thin_wall",
     "small_feature_min_width", "small_feature_policy", "tip_overshoot", "thin_wall_speed", "thin_wall_flow_ratio",
+    "narrow_gap_policy",
     "detect_overhang_wall",
     "overhang_reverse",
     "overhang_reverse_threshold",

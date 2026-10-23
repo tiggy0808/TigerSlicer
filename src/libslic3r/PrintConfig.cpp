@@ -407,6 +407,9 @@ static t_config_enum_values s_keys_map_SmallFeaturePolicy{
     {"drop", sfpDrop}, {"inside", sfpInside}, {"balanced", sfpBalanced}, {"outside", sfpOutside}};
 CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(SmallFeaturePolicy)
 
+static t_config_enum_values s_keys_map_NarrowGapPolicy{{"allow_fill", ngpAllowFill}, {"keep_open", ngpKeepOpen}};
+CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(NarrowGapPolicy)
+
 static t_config_enum_values s_keys_map_SeamPosition {
     { "nearest",        spNearest },
     { "aligned",        spAligned },
@@ -7515,6 +7518,21 @@ void PrintConfigDef::init_fff_params()
     def->mode         = comAdvanced;
     def->experimental = true;
     def->set_default_value(new ConfigOptionFloat(1.));
+
+    def                = this->add("narrow_gap_policy", coEnum);
+    def->label         = L("Narrow gaps");
+    def->category      = L("Quality");
+    def->tooltip       = L("What the walls do beside a gap in the model narrower than two lines, such as a slot, a vent or "
+                           "the clearance of a fit. Keep open: print the walls beside it narrower, down to the small "
+                           "feature minimum width, so none spills into the gap and it keeps its size; those walls come "
+                           "out thinner and weaker, and a wall that can't be narrowed enough still spills a little. Allow "
+                           "filling: walls keep their width even where it spills into the gap, which can close it.");
+    def->enum_keys_map = &ConfigOptionEnum<NarrowGapPolicy>::get_enum_values();
+    def->enum_values   = {"allow_fill", "keep_open"};
+    def->enum_labels   = {L("Allow filling (current behaviour)"), L("Keep open")};
+    def->mode          = comAdvanced;
+    def->experimental  = true;
+    def->set_default_value(new ConfigOptionEnum<NarrowGapPolicy>(ngpAllowFill));
 
     def = this->add("change_filament_gcode", coString);
     def->label = L("Change filament G-code");

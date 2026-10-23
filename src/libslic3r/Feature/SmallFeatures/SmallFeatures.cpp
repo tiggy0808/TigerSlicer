@@ -1,5 +1,6 @@
 #include "SmallFeatures.hpp"
 
+#include "libslic3r/AABBTreeLines.hpp"
 #include "libslic3r/ClipperUtils.hpp"
 #include "libslic3r/Exception.hpp"
 #include "libslic3r/ExtrusionEntity.hpp"
@@ -425,6 +426,150 @@ void add_small_feature_lines(LayerRegion &layerm, const SurfaceCollection &slice
     }
     if (!standalone.empty())
         layerm.perimeters.append(standalone);
+}
+
+namespace {
+
+// Where the narrow gaps of a layer are, and how narrow a bead beside them gets.
+struct GapFit
+{
+    AABBTreeLines::LinesDistancer<Line> gaps;
+    // Scaled: the narrowest a bead gets, and the spill into a gap that is left alone.
+    double min_width;
+    double tolerance;
+};
+
+} // namespace
+
+// The distance (scaled) from `segment` to the gaps' outlines, or 0 when it crosses into a gap.
+static double gap_distance(GapFit &fit, const Line &segment, double reach)
+{
+    const Point  middle = (segment.a + segment.b) / 2;
+    const double half   = 0.5 * segment.length();
+    if (fit.gaps.distance_from_lines<true>(middle) < 0.)
+        return 0.;
+    double nearest = std::numeric_limits<double>::max();
+    for (size_t index : fit.gaps.all_lines_in_radius(middle, half + reach)) {
+        const Line &edge = fit.gaps.get_line(index);
+        if (segment.intersection(edge, nullptr))
+            return 0.;
+        nearest = std::min({nearest, segment.distance_to(edge.a), segment.distance_to(edge.b), edge.distance_to(segment.a),
+                            edge.distance_to(segment.b)});
+    }
+    return nearest;
+}
+
+// The path narrowed beside the gaps, in pieces of constant width on the same points: a bead no wider than twice its
+// distance from the gaps can't reach into them. Stretches near a gap are looked at every 50 um.
+static ExtrusionPaths fit_path(const ExtrusionPath &path, GapFit &fit)
+{
+    const Points points = path.polyline.to_polyline().points;
+    const double width  = scaled<double>(path.width);
+    if (points.size() < 2 || path.mm3_per_mm <= 0.)
+        return {path};
+
+    // Each stretch's end and width, from the path's start.
+    std::vector<std::pair<Point, double>> stretches;
+    bool                                  narrowed = false;
+    const double                          step     = scaled<double>(0.05);
+    for (size_t i = 1; i < points.size(); ++i) {
+        const Vec2d  a = points[i - 1].cast<double>(), b = points[i].cast<double>();
+        const double length = (b - a).norm();
+        const bool   by_gap = fit.gaps.distance_from_lines<false>(points[i - 1] + (points[i] - points[i - 1]) / 2) < 0.5 * (width + length);
+        const int    steps  = by_gap ? std::max(1, int(std::ceil(length / step))) : 1;
+        Point        from   = points[i - 1];
+        for (int j = 1; j <= steps; ++j) {
+            const Point  to       = j == steps ? points[i] : Point((a + (b - a) * (double(j) / steps)).cast<coord_t>());
+            const double distance = by_gap ? gap_distance(fit, Line(from, to), 0.5 * width) : std::numeric_limits<double>::max();
+            double       fitted   = width;
+            if (distance < 0.5 * width - fit.tolerance) {
+                // Rounded down to 5 um, so that pieces don't split on noise.
+                const double grain = scaled<double>(0.005);
+                fitted             = std::clamp(std::floor(2. * distance / grain) * grain, std::min(fit.min_width, width), width);
+                narrowed |= fitted < width;
+            }
+            stretches.emplace_back(to, fitted);
+            from = to;
+        }
+    }
+    if (!narrowed)
+        return {path};
+
+    // The flow of a bead `w` wide (mm), as Flow::mm3_per_mm() has it.
+    const double height = path.height;
+    auto         flow   = [height](double w) { return height * (w - height * (1. - 0.25 * PI)); };
+    ExtrusionPaths out;
+    Polyline       piece(Points{points.front()});
+    for (size_t i = 0; i < stretches.size(); ++i) {
+        piece.points.push_back(stretches[i].first);
+        if (i + 1 < stretches.size() && stretches[i + 1].second == stretches[i].second)
+            continue;
+        piece.simplify(scaled<double>(0.001));
+        ExtrusionPath fitted = path;
+        fitted.polyline      = Polyline3(piece);
+        fitted.width         = float(unscale<double>(stretches[i].second));
+        if (const double flow_0 = flow(path.width); flow_0 > 0.)
+            fitted.mm3_per_mm = path.mm3_per_mm * std::max(0., flow(fitted.width)) / flow_0;
+        out.push_back(std::move(fitted));
+        piece.points = {stretches[i].first};
+    }
+    return out;
+}
+
+static ExtrusionPaths fit_paths(const ExtrusionPaths &paths, GapFit &fit)
+{
+    ExtrusionPaths out;
+    for (const ExtrusionPath &path : paths)
+        append(out, fit_path(path, fit));
+    return out;
+}
+
+static void fit_collection(ExtrusionEntityCollection &collection, GapFit &fit)
+{
+    for (ExtrusionEntity *&entity : collection.entities) {
+        if (auto *child = dynamic_cast<ExtrusionEntityCollection *>(entity)) {
+            fit_collection(*child, fit);
+        } else if (auto *loop = dynamic_cast<ExtrusionLoop *>(entity)) {
+            loop->paths = fit_paths(loop->paths, fit);
+            // A dead end stays one line, as narrow as its narrowest piece.
+            for (ExtrusionPath &dead_end : loop->dead_ends) {
+                const ExtrusionPaths pieces    = fit_path(dead_end, fit);
+                const ExtrusionPath &narrowest = *std::min_element(pieces.begin(), pieces.end(),
+                                                                  [](const ExtrusionPath &a, const ExtrusionPath &b) { return a.width < b.width; });
+                dead_end.width      = narrowest.width;
+                dead_end.mm3_per_mm = narrowest.mm3_per_mm;
+            }
+        } else if (auto *multi = dynamic_cast<ExtrusionMultiPath *>(entity)) {
+            multi->paths = fit_paths(multi->paths, fit);
+        } else if (auto *path = dynamic_cast<ExtrusionPath *>(entity)) {
+            ExtrusionPaths pieces = fit_path(*path, fit);
+            if (pieces.size() == 1) {
+                *path = std::move(pieces.front());
+            } else {
+                ExtrusionEntity *multi = new ExtrusionMultiPath(pieces);
+                delete entity;
+                entity = multi;
+            }
+        }
+    }
+}
+
+void keep_narrow_gaps_open(LayerRegion &layerm, const ExPolygons &layer_slices)
+{
+    const PrintRegionConfig &config = layerm.region().config();
+    if (config.narrow_gap_policy.value != ngpKeepOpen)
+        return;
+    const Flow   ext_flow = layerm.flow(frExternalPerimeter);
+    const double line     = std::max(ext_flow.width(), layerm.flow(frPerimeter).width());
+    // The gaps narrower than two lines: what closing the slices by a line fills.
+    const ExPolygons gaps = diff_ex(closing_ex(layer_slices, float(scale_(line))), layer_slices);
+    if (gaps.empty())
+        return;
+    GapFit fit{AABBTreeLines::LinesDistancer<Line>(to_lines(gaps)),
+               scaled<double>(config.small_feature_min_width.get_abs_value(ext_flow.nozzle_diameter())),
+               scaled<double>(0.5 * kDeviationTolerance)};
+    fit_collection(layerm.perimeters, fit);
+    fit_collection(layerm.thin_fills, fit);
 }
 
 } // namespace Slic3r::SmallFeatures

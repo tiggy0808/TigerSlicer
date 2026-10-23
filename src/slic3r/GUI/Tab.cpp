@@ -2779,6 +2779,7 @@ void TabPrint::build()
         optgroup->append_single_option_line("tip_overshoot");
         optgroup->append_single_option_line("thin_wall_speed");
         optgroup->append_single_option_line("thin_wall_flow_ratio");
+        optgroup->append_single_option_line("narrow_gap_policy");
 
         optgroup = page->new_optgroup(L("Top/bottom shells"), L"param_shell");
 

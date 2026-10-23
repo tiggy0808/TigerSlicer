@@ -1656,6 +1656,7 @@ bool PrintObject::invalidate_state_by_config_options(
             || opt_key == "small_feature_policy"
             || opt_key == "tip_overshoot"
             || opt_key == "thin_wall_flow_ratio"
+            || opt_key == "narrow_gap_policy"
             || opt_key == "precise_outer_wall") {
             steps.emplace_back(posPerimeters);
             steps.emplace_back(posSupportMaterial);

@@ -1,6 +1,7 @@
 #include <catch2/catch_all.hpp>
 
 #include "libslic3r/libslic3r.h"
+#include "libslic3r/ClipperUtils.hpp"
 #include "libslic3r/Feature/SmallFeatures/SmallFeatures.hpp"
 #include "libslic3r/Layer.hpp"
 #include "libslic3r/Model.hpp"
@@ -429,4 +430,102 @@ TEST_CASE("Drop prints exactly what the walls print without the small feature op
     CHECK(moves_hash(gcode(*with_drop)) == moves_hash(gcode(*by_default)));
     for (const Layer *layer : with_drop->objects().front()->layers())
         CHECK(layer_dead_ends(*layer).empty());
+}
+
+// An 18 x 8 x 3 mm block with three slots cut 5.9 mm into one long side, 0.3, 0.5 and 0.8 mm wide (all narrower than
+// two 0.42 mm lines), and 0.25 mm fins between them, thinner than one line. In mm from the block's corner.
+static const BoundingBoxf kSlots[] = {{{8.00, 2.1}, {8.30, 8.}}, {{8.55, 2.1}, {9.05, 8.}}, {{9.30, 2.1}, {10.10, 8.}}};
+static const BoundingBoxf kFins[]  = {{{8.30, 2.1}, {8.55, 8.}}, {{9.05, 2.1}, {9.30, 8.}}};
+
+static std::unique_ptr<Print> slice_slotted_block(std::initializer_list<ConfigBase::SetDeserializeItem> extra, Model &model)
+{
+    TriangleMesh block = make_cube(18, 2.1, 3);
+    auto add = [&block](double x0, double x1) {
+        TriangleMesh part = make_cube(x1 - x0, 6, 3);
+        part.translate(float(x0), 2.f, 0.f);
+        block.merge(part);
+    };
+    add(0., 8.);
+    add(8.30, 8.55);
+    add(9.05, 9.30);
+    add(10.10, 18.);
+    DynamicPrintConfig config = DynamicPrintConfig::full_print_config();
+    config.set_deserialize_strict({{"nozzle_diameter", "0.4"}, {"layer_height", 0.2}, {"initial_layer_print_height", 0.2}});
+    config.set_deserialize_strict(extra);
+    auto print = std::make_unique<Print>();
+    init_print({block}, *print, model, config);
+    print->process();
+    return print;
+}
+
+// The boxes (mm, from the block's corner) as polygons on the layer.
+static Polygons on_layer(const Layer &layer, std::initializer_list<BoundingBoxf> boxes)
+{
+    const Point corner = get_extents(layer.lslices).min;
+    Polygons    out;
+    for (const BoundingBoxf &box : boxes)
+        out.push_back(BoundingBox((corner + scaled(box.min)).cast<coord_t>(), (corner + scaled(box.max)).cast<coord_t>()).polygon());
+    return out;
+}
+
+// The area (mm2) of the deviation areas inside `where`.
+static double area_inside(const std::vector<SmallFeatures::DeviationArea> &areas, const Polygons &where)
+{
+    ExPolygons shapes;
+    for (const SmallFeatures::DeviationArea &area : areas)
+        shapes.push_back(area.shape);
+    return unscale<double>(unscale<double>(area(intersection_ex(shapes, where))));
+}
+
+TEST_CASE("Arachne's beads in thin fins spill into the narrow slots beside them by default", "[SmallFeatures]")
+{
+    Model      model;
+    const auto print = slice_slotted_block({{"wall_generator", "arachne"}}, model);
+    double     spilled = 0.;
+    for (const Layer *layer : print->objects().front()->layers())
+        if (layer->print_z > 0.5)
+            spilled += area_inside(SmallFeatures::layer_deviation(*layer).overshoot,
+                                   on_layer(*layer, {kSlots[0], kSlots[1], kSlots[2]}));
+    // Arachne prints a 0.25 mm fin no narrower than its minimum bead width, 85% of the nozzle: 0.34 mm.
+    CHECK(spilled > 0.1);
+}
+
+TEST_CASE("Keeping narrow gaps open leaves every slot open and still prints the fins", "[SmallFeatures]")
+{
+    // Arachne gives each fin a bead of its own; classic walls skip a fin narrower than a line, and the outside small
+    // feature policy prints it.
+    const std::string generator = GENERATE(std::string("arachne"), std::string("classic"));
+    CAPTURE(generator);
+    Model      model;
+    const auto print = slice_slotted_block({{"wall_generator", generator}, {"small_feature_policy", "outside"}, {"narrow_gap_policy", "keep_open"}},
+                                           model);
+    size_t checked = 0;
+    for (const Layer *layer : print->objects().front()->layers()) {
+        if (layer->print_z < 0.5)
+            continue;
+        CAPTURE(layer->print_z);
+        const SmallFeatures::LayerDeviation deviation = SmallFeatures::layer_deviation(*layer);
+        for (const BoundingBoxf &slot : kSlots) {
+            CAPTURE(slot.size().x());
+            CHECK_THAT(area_inside(deviation.overshoot, on_layer(*layer, {slot})), Catch::Matchers::WithinAbs(0., 1e-4));
+        }
+        // The fins, 0.25 mm and above the 0.24 mm small feature minimum width, are printed whole.
+        for (const BoundingBoxf &fin : kFins)
+            CHECK(area_inside(deviation.undershoot, on_layer(*layer, {fin})) < 0.05);
+        // Narrowed walls still join up.
+        std::function<void(const ExtrusionEntity &)> joined = [&joined](const ExtrusionEntity &entity) {
+            if (const auto *collection = dynamic_cast<const ExtrusionEntityCollection *>(&entity))
+                for (const ExtrusionEntity *child : collection->entities)
+                    joined(*child);
+            else if (const auto *loop = dynamic_cast<const ExtrusionLoop *>(&entity))
+                for (size_t i = 0; i < loop->paths.size(); ++i)
+                    CHECK(loop->paths[i].first_point() == loop->paths[(i + loop->paths.size() - 1) % loop->paths.size()].last_point());
+        };
+        for (const LayerRegion *region : layer->regions())
+            joined(region->perimeters);
+        ++checked;
+    }
+    CHECK(checked > 10);
+    // And it exports.
+    CHECK(!gcode(*print).empty());
 }

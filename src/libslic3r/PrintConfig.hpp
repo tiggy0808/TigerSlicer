@@ -288,6 +288,8 @@ enum SupportType {
 enum FinSupportFallback { fsfNone, fsfTree, fsfNormal };
 // TigerSlicer: how a feature narrower than the walls is printed (experimental).
 enum SmallFeaturePolicy { sfpDrop, sfpInside, sfpBalanced, sfpOutside };
+// TigerSlicer: whether walls may spill into a gap narrower than two lines (experimental).
+enum NarrowGapPolicy { ngpAllowFill, ngpKeepOpen };
 
 inline bool is_tree(SupportType stype)
 {
@@ -697,6 +699,7 @@ CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SupportMaterialInterfacePattern)
 // BBS
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SupportType)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SmallFeaturePolicy)
+CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(NarrowGapPolicy)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SeamPosition)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SeamScarfType)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SLADisplayOrientation)
@@ -1424,6 +1427,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat, tip_overshoot))
     ((ConfigOptionFloat, thin_wall_speed))
     ((ConfigOptionFloat, thin_wall_flow_ratio))
+    ((ConfigOptionEnum<NarrowGapPolicy>, narrow_gap_policy))
     ((ConfigOptionFloatOrPercent, top_surface_line_width))
     ((ConfigOptionInt, top_shell_layers))
     ((ConfigOptionFloat, top_shell_thickness))

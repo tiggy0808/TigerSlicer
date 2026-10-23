@@ -71,6 +71,11 @@ ExPolygons features_below_width(const ExPolygons &slices, coord_t min_width);
 // as covered.
 void add_small_feature_lines(LayerRegion &layerm, const SurfaceCollection &slices, const ExPolygons &fill_area);
 
+// Narrows the region's walls where they spill into a gap of the layer narrower than two lines, so that the gap keeps
+// its size (narrow_gap_policy keep_open, experimental). A bead gets no wider than twice its distance from the gaps, and
+// no narrower than small_feature_min_width. `layer_slices` are all of the layer's slices.
+void keep_narrow_gaps_open(LayerRegion &layerm, const ExPolygons &layer_slices);
+
 } // namespace SmallFeatures
 } // namespace Slic3r
 

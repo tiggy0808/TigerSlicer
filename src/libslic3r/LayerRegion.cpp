@@ -141,9 +141,12 @@ void LayerRegion::make_perimeters(const SurfaceCollection &slices, const LayerRe
     else
         g.process_classic();
 
-    // TigerSlicer: lines for the thin features the walls leave out (small_feature_policy, experimental).
-    if (!spiral_mode)
+    // TigerSlicer: lines for the thin features the walls leave out (small_feature_policy), and walls kept out of
+    // narrow gaps (narrow_gap_policy). Both experimental.
+    if (!spiral_mode) {
         SmallFeatures::add_small_feature_lines(*this, slices, fill_surfaces != nullptr ? to_expolygons(fill_surfaces->surfaces) : ExPolygons());
+        SmallFeatures::keep_narrow_gaps_open(*this, this->layer()->lslices);
+    }
 }
 
 #if 1
