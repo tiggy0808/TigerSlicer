@@ -97,6 +97,23 @@ bool is_filament_extruder_override_key(const std::string &opt_key)
            opt_key == "filament_retract_length_nc";
 }
 
+std::vector<std::string> experimental_options_used(const ConfigBase &config, const ConfigDef &def)
+{
+    std::vector<std::string> used;
+    for (const auto &[key, opt_def] : def.options)
+        if (opt_def.experimental && opt_def.default_value)
+            if (const ConfigOption *opt = config.option(key); opt != nullptr && !(*opt == *opt_def.default_value))
+                used.push_back(key);
+    return used;
+}
+
+void reset_experimental_options(DynamicPrintConfig &config, const ConfigDef &def)
+{
+    for (const auto &[key, opt_def] : def.options)
+        if (opt_def.experimental && opt_def.default_value && config.has(key))
+            config.set_key_value(key, opt_def.default_value->clone());
+}
+
 size_t get_extruder_index(const GCodeConfig& config, unsigned int filament_id)
 {
     if (filament_id < config.filament_map.size()) {

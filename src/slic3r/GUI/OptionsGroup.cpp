@@ -182,8 +182,10 @@ void OptionsGroup::remove_option_if(std::function<bool(std::string const&)> cons
         l.undo_to_sys = true;
     }
     for (int i = m_lines.size() - 1; i >= 0; --i) {
-        if (m_lines[i].get_options().empty())
+        if (m_lines[i].get_options().empty()) {
             m_options_mode.erase(m_options_mode.begin() + i);
+            m_options_experimental.erase(m_options_experimental.begin() + i);
+        }
     }
     m_lines.erase(std::remove_if(m_lines.begin(), m_lines.end(), [](auto& l) { return l.get_options().empty(); }), m_lines.end());
     // TODO: remove items from g->m_options;
@@ -252,8 +254,10 @@ void OptionsGroup::append_line(const Line& line)
         m_options.emplace(opt.opt_id, opt);
 
     // add mode value for current line to m_options_mode
-    if (!option_set.empty())
+    if (!option_set.empty()) {
         m_options_mode.push_back(option_set[0].opt.mode);
+        m_options_experimental.push_back(option_set[0].opt.experimental);
+    }
 }
 
 // BBS: get line for opt_key
@@ -615,7 +619,7 @@ Line OptionsGroup::create_single_option_line(const Option& option, const std::st
 {
     wxString tooltip = _(get_formatted_tooltip_text(option.opt, option.opt_id));
 
-    Line retval{_(option.opt.label), tooltip};
+    Line retval{option_label(option.opt), tooltip};
     retval.label_path = path;
     retval.append_option(option);
 
@@ -873,11 +877,11 @@ bool ConfigOptionsGroup::is_visible(ConfigOptionMode mode)
     if (m_options_mode.empty())
         return true;
     if (m_options_mode.size() == 1)
-        return m_options_mode[0] <= mode;
+        return m_options_mode[0] <= mode && experimental_option_shown(m_options_experimental[0]);
 
     size_t hidden_row_cnt = 0;
-    for (auto opt_mode : m_options_mode)
-        if (opt_mode > mode)
+    for (size_t i = 0; i < m_options_mode.size(); ++i)
+        if (m_options_mode[i] > mode || !experimental_option_shown(m_options_experimental[i]))
             hidden_row_cnt++;
 
     return hidden_row_cnt != m_options_mode.size();
@@ -896,7 +900,7 @@ bool ConfigOptionsGroup::update_visibility(ConfigOptionMode mode)
 
     int opt_mode_size = m_options_mode.size();
     if (m_grid_sizer->GetEffectiveRowsCount() != opt_mode_size && opt_mode_size == 1)
-        return m_options_mode[0] <= mode;
+        return m_options_mode[0] <= mode && experimental_option_shown(m_options_experimental[0]);
 
     Show(true);
 
@@ -905,8 +909,8 @@ bool ConfigOptionsGroup::update_visibility(ConfigOptionMode mode)
     const int cols      = m_grid_sizer->GetCols();
     Line* line          = &m_lines.front();
     size_t line_opt_end = line->get_options().size();
-    for (auto opt_mode : m_options_mode) {
-        const bool show = opt_mode <= mode && line->toggle_visible;
+    for (size_t row = 0; row < m_options_mode.size(); ++row) {
+        const bool show = m_options_mode[row] <= mode && experimental_option_shown(m_options_experimental[row]) && line->toggle_visible;
         if (--line_opt_end == 0) {
             ++line;
             line_opt_end = line->get_options().size();

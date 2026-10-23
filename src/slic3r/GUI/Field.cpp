@@ -107,6 +107,16 @@ ThumbnailErrors validate_thumbnails_string(wxString& str, const wxString& def_ex
     return errors;
 }
 
+bool experimental_option_shown(bool experimental)
+{
+    return !experimental || wxGetApp().app_config->get_bool("show_experimental_features");
+}
+
+wxString option_label(const ConfigOptionDef& opt)
+{
+    return opt.experimental ? _(opt.label) + " (" + _L("Experimental") + ")" : _(opt.label);
+}
+
 // Orca
 wxString get_formatted_tooltip_text(const ConfigOptionDef& opt, const t_config_option_key& id)
 {
@@ -129,6 +139,11 @@ wxString get_formatted_tooltip_text(const ConfigOptionDef& opt, const t_config_o
 
         boost::erase_tail(opt_key, opt_key.size() - hash_pos);
     }
+
+    // TigerSlicer: the Experimental badge's explanation.
+    if (opt.experimental)
+        tooltip += (tooltip.empty() ? "" : "\n\n") +
+                   _(L("Experimental: this setting may print differently than expected and may change in a later version."));
 
     tooltip += (tooltip.empty() ? "" : "\n\n") + _(L("parameter name")) + ": " + parameter_name;
 

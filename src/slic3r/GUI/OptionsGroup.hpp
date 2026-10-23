@@ -215,6 +215,8 @@ protected:
 	std::map<t_config_option_key, Option>	m_options;
     wxWindow*				m_parent {nullptr};
     std::vector<ConfigOptionMode>           m_options_mode;
+    // TigerSlicer: whether each line's option is experimental, parallel to m_options_mode.
+    std::vector<bool>                       m_options_experimental;
     std::vector<wxWindow*>                  m_extra_column_item_ptrs;
 
     std::vector<Line>                       m_lines;

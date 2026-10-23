@@ -828,3 +828,35 @@ SCENARIO("ConfigOptionVector::set_to_index throws on incompatible type", "[Confi
         }
     }
 }
+
+// TigerSlicer: a config definition with one plain and one experimental option.
+struct ExperimentalTestDef : ConfigDef
+{
+    ExperimentalTestDef()
+    {
+        ConfigOptionDef *def = this->add("plain_option", coFloat);
+        def->set_default_value(new ConfigOptionFloat(1.));
+        def               = this->add("experimental_option", coFloat);
+        def->experimental = true;
+        def->set_default_value(new ConfigOptionFloat(2.));
+    }
+};
+
+TEST_CASE("Experimental options are listed when they differ from their default, and reset to it", "[Config]")
+{
+    const ExperimentalTestDef def;
+    DynamicPrintConfig config;
+    config.set_key_value("plain_option", new ConfigOptionFloat(5.));
+    config.set_key_value("experimental_option", new ConfigOptionFloat(2.));
+    // At its default, an experimental option is not in use.
+    CHECK(experimental_options_used(config, def).empty());
+
+    config.set_key_value("experimental_option", new ConfigOptionFloat(3.));
+    CHECK(experimental_options_used(config, def) == std::vector<std::string>{"experimental_option"});
+
+    reset_experimental_options(config, def);
+    CHECK_THAT(config.opt_float("experimental_option"), Catch::Matchers::WithinAbs(2., 1e-9));
+    // Other options keep their value.
+    CHECK_THAT(config.opt_float("plain_option"), Catch::Matchers::WithinAbs(5., 1e-9));
+    CHECK(experimental_options_used(config, def).empty());
+}

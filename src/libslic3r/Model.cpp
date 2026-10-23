@@ -3737,6 +3737,51 @@ bool model_brim_points_data_changed(const ModelObject& mo, const ModelObject& mo
     return false;
 }
 
+static bool is_experimental_option(const std::string &key)
+{
+    const ConfigOptionDef *def = print_config_def.get(key);
+    return def != nullptr && def->experimental;
+}
+
+static bool has_experimental_options(const ModelConfig &config)
+{
+    const t_config_option_keys keys = config.keys();
+    return std::any_of(keys.begin(), keys.end(), is_experimental_option);
+}
+
+static void remove_experimental_options(ModelConfig &config)
+{
+    for (const std::string &key : config.keys())
+        if (is_experimental_option(key))
+            config.erase(key);
+}
+
+bool model_has_experimental_options(const Model &model)
+{
+    for (const ModelObject *object : model.objects) {
+        if (has_experimental_options(object->config))
+            return true;
+        for (const ModelVolume *volume : object->volumes)
+            if (has_experimental_options(volume->config))
+                return true;
+        for (const auto &[range, config] : object->layer_config_ranges)
+            if (has_experimental_options(config))
+                return true;
+    }
+    return false;
+}
+
+void remove_experimental_options(Model &model)
+{
+    for (ModelObject *object : model.objects) {
+        remove_experimental_options(object->config);
+        for (ModelVolume *volume : object->volumes)
+            remove_experimental_options(volume->config);
+        for (auto &[range, config] : object->layer_config_ranges)
+            remove_experimental_options(config);
+    }
+}
+
 bool model_has_multi_part_objects(const Model &model)
 {
     for (const ModelObject *model_object : model.objects)

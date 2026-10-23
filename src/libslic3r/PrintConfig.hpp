@@ -2571,6 +2571,12 @@ static bool has_zero_flush_volume_for_used_filaments(const std::vector<T> &fv_ma
 
 size_t get_extruder_index(const GCodeConfig& config, unsigned int filament_id);
 
+// TigerSlicer: experimental options (ConfigOptionDef::experimental).
+// The experimental options of `def` that `config` sets to something other than their default, sorted.
+std::vector<std::string> experimental_options_used(const ConfigBase &config, const ConfigDef &def = print_config_def);
+// Sets every experimental option of `def` present in `config` back to its default.
+void reset_experimental_options(DynamicPrintConfig &config, const ConfigDef &def = print_config_def);
+
 } // namespace Slic3r
 
 // Serialization through the Cereal library

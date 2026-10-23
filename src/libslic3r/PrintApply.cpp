@@ -12,6 +12,7 @@ using Slic3r::FullSpectrum::expand_virtual_extruders_1based;
 
 #include <boost/log/trivial.hpp>
 #include <cfloat>
+#include <optional>
 
 namespace Slic3r {
 
@@ -1193,8 +1194,19 @@ static PrintObjectRegions* generate_print_object_regions(
     return out.release();
 }
 
-Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_config, bool extruder_applied)
+Print::ApplyStatus Print::apply(const Model &model_in, DynamicPrintConfig new_full_config, bool extruder_applied)
 {
+    // TigerSlicer: with experimental features off, slice with every experimental option at its default.
+    std::optional<Model> model_without_experimental;
+    if (! m_experimental_features_requested) {
+        reset_experimental_options(new_full_config);
+        if (model_has_experimental_options(model_in)) {
+            model_without_experimental.emplace(model_in);
+            remove_experimental_options(*model_without_experimental);
+        }
+    }
+    const Model &model = model_without_experimental ? *model_without_experimental : model_in;
+
 #ifdef _DEBUG
     check_model_ids_validity(model);
 #endif /* _DEBUG */
@@ -1447,6 +1459,13 @@ Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_
     // The following call may stop the background processing.
     if (! print_diff.empty())
         update_apply_status(this->invalidate_state_by_config_options(new_full_config, print_diff));
+    // TigerSlicer: warnings for experimental features come and go with the experimental features.
+    if (m_experimental_features_enabled != m_experimental_features_requested) {
+        m_experimental_features_enabled = m_experimental_features_requested;
+        update_apply_status(this->invalidate_all_steps());
+        for (PrintObject *object : m_objects)
+            update_apply_status(object->invalidate_all_steps());
+    }
 
     // Apply variables to placeholder parser. The placeholder parser is used by G-code export,
     // which should be stopped if print_diff is not empty.

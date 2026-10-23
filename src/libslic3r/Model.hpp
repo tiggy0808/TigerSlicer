@@ -1782,6 +1782,10 @@ bool model_brim_points_data_changed(const ModelObject& mo, const ModelObject& mo
 // If the model has multi-part objects, then it is currently not supported by the SLA mode.
 // Either the model cannot be loaded, or a SLA printer has to be activated.
 bool model_has_multi_part_objects(const Model &model);
+// TigerSlicer: whether an object, part or layer range setting of the model sets an experimental option
+// (ConfigOptionDef::experimental), and removing those settings.
+bool model_has_experimental_options(const Model &model);
+void remove_experimental_options(Model &model);
 // If the model has advanced features, then it cannot be processed in simple mode.
 bool model_has_advanced_features(const Model &model);
 

@@ -960,6 +960,13 @@ public:
     std::vector<ObjectID> print_object_ids() const override;
 
     ApplyStatus         apply(const Model &model, DynamicPrintConfig config, bool extruder_applied = false) override;
+    // TigerSlicer: with experimental features off (the GUI's "Show experimental features" preference), the next
+    // apply() slices with every experimental option at its default, and experimental-only warnings are skipped.
+    // On by default, as for the command line and the tests.
+    void                set_experimental_features_enabled(bool enabled) { m_experimental_features_requested = enabled; }
+    bool                experimental_features_enabled() const { return m_experimental_features_enabled; }
+    // The experimental options this print uses with a value other than their default, sorted.
+    std::vector<std::string> experimental_options_used() const;
 
     void                process(long long *time_cost_with_cache = nullptr, bool use_cache = false) override;
     // Exports G-code into a file name based on the path_template, returns the file path of the generated G-code file.
@@ -1325,7 +1332,10 @@ private:
     PrintRegionConfig                       m_default_region_config;
     PrintObjectPtrs                         m_objects;
     PrintRegionPtrs                         m_print_regions;
-    
+    // TigerSlicer: see set_experimental_features_enabled().
+    bool                                    m_experimental_features_requested = true;
+    bool                                    m_experimental_features_enabled   = true;
+
     //SoftFever
     bool m_isBBLPrinter = false;
 

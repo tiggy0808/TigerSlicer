@@ -426,6 +426,10 @@ void AppConfig::set_defaults()
     }
 
     // Orca
+    // TigerSlicer: experimental options stay hidden, and at their defaults, until this is turned on.
+    if (get("show_experimental_features").empty())
+        set_bool("show_experimental_features", false);
+
     if(get("show_splash_screen").empty()) {
         set_bool("show_splash_screen", true);
     }

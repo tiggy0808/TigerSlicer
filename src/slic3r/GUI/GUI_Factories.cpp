@@ -198,6 +198,11 @@ std::vector<std::string> SettingsFactory::get_options(const bool is_part)
         std::vector<std::string> obj_options = obj_config.keys();
         options.insert(options.end(), obj_options.begin(), obj_options.end());
     }
+    // TigerSlicer: experimental options only with "Show experimental features" on.
+    options.erase(std::remove_if(options.begin(), options.end(), [](const std::string &key) {
+        const ConfigOptionDef *def = print_config_def.get(key);
+        return def != nullptr && !experimental_option_shown(def->experimental);
+    }), options.end());
     return options;
 }
 

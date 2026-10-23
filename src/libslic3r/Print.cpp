@@ -606,6 +606,17 @@ double Print::max_allowed_layer_height() const
     return nozzle_diameter_max;
 }
 
+std::vector<std::string> Print::experimental_options_used() const
+{
+    std::vector<std::string> used = Slic3r::experimental_options_used(m_config);
+    for (const PrintObject *object : m_objects)
+        append(used, Slic3r::experimental_options_used(object->config()));
+    for (const PrintRegion *region : m_print_regions)
+        append(used, Slic3r::experimental_options_used(region->config()));
+    sort_remove_duplicates(used);
+    return used;
+}
+
 std::vector<ObjectID> Print::print_object_ids() const
 {
     std::vector<ObjectID> out;

@@ -47,6 +47,11 @@ wxString double_to_string(double const value, const int max_precision = 4);
 wxString get_thumbnail_string(const Vec2d& value);
 wxString get_thumbnails_string(const std::vector<Vec2d>& values);
 wxString get_formatted_tooltip_text(const ConfigOptionDef& opt, const t_config_option_key& id);
+// TigerSlicer: an experimental option (ConfigOptionDef::experimental) shows only with "Show experimental
+// features" on in the preferences.
+bool experimental_option_shown(bool experimental);
+// The option's label, with an "(Experimental)" badge for an experimental option.
+wxString option_label(const ConfigOptionDef& opt);
 
 class UndoValueUIManager
 {

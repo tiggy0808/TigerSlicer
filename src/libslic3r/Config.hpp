@@ -2543,6 +2543,9 @@ public:
     // To check if it's not a typo and a % is missing
     double                              max_literal = 1;
     ConfigOptionMode                    mode = comSimple;
+    // TigerSlicer: an experimental option. Unless "Show experimental features" is on in the preferences,
+    // the GUI hides it and slicing uses its default value.
+    bool                                experimental = false;
     // Legacy names for this configuration option.
     // Used when parsing legacy configuration file.
     std::vector<t_config_option_key>    aliases;

@@ -1053,6 +1053,12 @@ wxBoxSizer *PreferencesDialog::create_item_checkbox(wxString title, wxString too
                 wxGetApp().mainframe->m_webview->SendCloudProvidersInfo();
             }
         }
+        // TigerSlicer: show or hide the experimental settings and reslice with or without them.
+        else if (param == "show_experimental_features") {
+            wxGetApp().update_mode();
+            if (Plater *plater = wxGetApp().plater())
+                plater->schedule_background_process();
+        }
         // ORCA: apply the preview dimming change immediately to the currently loaded preview
         else if (param == "preview_dim_previous_layers") {
             if (m_dim_previous_layers_brightness_input)
@@ -1733,6 +1739,14 @@ void PreferencesDialog::create_items()
 
     auto item_multi_machine    = create_item_checkbox(_L("Multi device management"), _L("With this option enabled, you can send a task to multiple devices at the same time and manage multiple devices."), "enable_multi_machine", _L("(Requires restart)"));
     g_sizer->Add(item_multi_machine);
+
+    // TigerSlicer: options marked experimental are hidden, and sliced with their defaults, until this is on.
+    auto item_experimental = create_item_checkbox(_L("Show experimental features"),
+                                                  _L("Shows settings that are still experimental, marked \"Experimental\". They may print "
+                                                     "differently than expected and may change in a later version. When this is off, they "
+                                                     "are hidden and slicing uses their default values."),
+                                                  "show_experimental_features");
+    g_sizer->Add(item_experimental);
 
 #if 0
     g_sizer->Add(create_item_title(_L("Filament Grouping")), 1, wxEXPAND);

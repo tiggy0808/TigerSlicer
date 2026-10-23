@@ -731,6 +731,9 @@ Print::ApplyStatus BackgroundSlicingProcess::apply(const Model& model, const Dyn
     // TODO: add partplate config
     DynamicPrintConfig new_config = config;
     new_config.apply(*m_current_plate->config());
+    // TigerSlicer: without "Show experimental features", slice with the experimental options at their defaults.
+    if (m_fff_print != nullptr)
+        m_fff_print->set_experimental_features_enabled(GUI::wxGetApp().app_config->get_bool("show_experimental_features"));
     Print::ApplyStatus invalidated = m_print->apply(model, new_config);
 
     // Orca: prevent resetting under gcode viewer mode

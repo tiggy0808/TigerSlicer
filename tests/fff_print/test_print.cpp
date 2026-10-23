@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iterator>
+#include <sstream>
 
 using namespace Slic3r;
 using namespace Slic3r::Test;
@@ -454,5 +455,86 @@ TEST_CASE("Sequential printing publishes the nozzle group result", "[Print][Mult
             { "machine_start_gcode", "{if nozzle_diameter_at_nozzle_id[0] > 0}; SEQ-ND-OK\n{endif}" },
         });
         CHECK(gcode.find("; SEQ-ND-OK") != std::string::npos);
+    }
+}
+
+// TigerSlicer: marks a real option experimental for the duration of a test.
+struct MarkExperimental
+{
+    ConfigOptionDef *def;
+    explicit MarkExperimental(const char *key) : def(const_cast<ConfigOptionDef *>(print_config_def.get(key))) { def->experimental = true; }
+    ~MarkExperimental() { def->experimental = false; }
+};
+
+static int default_wall_loops() { return print_config_def.get("wall_loops")->get_default_value<ConfigOptionInt>()->value; }
+
+TEST_CASE("Experimental options in use are named in the G-code header", "[Print]")
+{
+    const MarkExperimental experimental("wall_loops");
+    Print print;
+    Model model;
+    init_print({cube(20)}, print, model, {{"wall_loops", default_wall_loops() + 1}});
+    CHECK(print.experimental_options_used() == std::vector<std::string>{"wall_loops"});
+    CHECK(gcode(print).find("; experimental_features_used = wall_loops\n") != std::string::npos);
+}
+
+TEST_CASE("Without experimental features, experimental options slice at their defaults", "[Print]")
+{
+    const MarkExperimental experimental("wall_loops");
+    DynamicPrintConfig config = DynamicPrintConfig::full_print_config();
+    config.set_key_value("wall_loops", new ConfigOptionInt(default_wall_loops() + 1));
+    const std::vector<std::vector<ConfigBase::SetDeserializeItem>> per_object{{{"wall_loops", default_wall_loops() + 2}}};
+    Print print;
+    Model model;
+    print.set_experimental_features_enabled(false);
+    init_print(std::vector<TriangleMesh>{cube(20)}, print, model, config, &per_object);
+    // Neither the global value nor the object's own setting is used.
+    for (const PrintRegion &region : print.objects().front()->all_regions())
+        CHECK(region.config().wall_loops.value == default_wall_loops());
+    CHECK(print.experimental_options_used().empty());
+    CHECK(gcode(print).find("experimental_features_used") == std::string::npos);
+    // The model keeps the object's setting, for when experimental features are turned on.
+    CHECK(model.objects.front()->config.has("wall_loops"));
+}
+
+// FNV-1a over the G-code's moves only: no comments, timestamps or config dump.
+static uint64_t motion_hash(const std::string &gcode)
+{
+    uint64_t           hash = 1469598103934665603ull;
+    std::istringstream in(gcode);
+    std::string        line;
+    while (std::getline(in, line)) {
+        if (line.rfind("G0 ", 0) != 0 && line.rfind("G1 ", 0) != 0 && line.rfind("G2 ", 0) != 0 && line.rfind("G3 ", 0) != 0)
+            continue;
+        line = line.substr(0, line.find(';'));
+        while (!line.empty() && (line.back() == ' ' || line.back() == '\r'))
+            line.pop_back();
+        for (const unsigned char c : line + "\n") {
+            hash ^= c;
+            hash *= 1099511628211ull;
+        }
+    }
+    return hash;
+}
+
+// TigerSlicer: the small feature options are experimental and off by default. Recorded before they existed,
+// these hashes prove that default settings still print exactly the same moves.
+TEST_CASE("Default settings print the same moves as before the small feature options", "[Print][Regression]")
+{
+    struct Case { TestMesh mesh; const char *wall_generator; uint64_t hash; };
+    const Case cases[] = {
+        {TestMesh::gt2_teeth, "classic", 0x852075eb30be0bfull},
+        {TestMesh::gt2_teeth, "arachne", 0x5f2453c42d03062cull},
+        {TestMesh::overhang, "classic", 0x669633e37724df68ull},
+        {TestMesh::overhang, "arachne", 0x77df36c73bbcf48dull},
+        {TestMesh::cube_with_hole, "classic", 0x892cfda0616ff612ull},
+        {TestMesh::cube_with_hole, "arachne", 0x534acbda2a5e6393ull},
+    };
+    for (const Case &c : cases) {
+        DynamicPrintConfig config = DynamicPrintConfig::full_print_config();
+        config.set_deserialize_strict("wall_generator", c.wall_generator);
+        const uint64_t hash = motion_hash(slice({c.mesh}, config));
+        CAPTURE(mesh_names.at(c.mesh), c.wall_generator, hash);
+        CHECK(hash == c.hash);
     }
 }
