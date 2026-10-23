@@ -214,6 +214,39 @@ Commits, oldest first (all on `main`; the release commit follows them):
   - This run was log-only. The GUI was checked on the dev build of the same code, as above.
 - Shipped Windows-only. The notes point Mac users to 0.0.9.
 
+### Verification (macOS)
+- Built from tag `v0.0.10` (`790cb6bee`) on macOS 15.6.1 (Apple Silicon) with Apple clang 17.0.0
+  (clang-1700.3.19.1) and cargo 1.97.1: `./build_release_macos.sh -a arm64 -x -s` (dependencies
+  unchanged since 0.0.7), after deleting `build/arm64/OrcaSlicer`, with `BUILD_TESTS` off. Clang
+  compiled `Feature/SmallFeatures` and the libvgcode Deviation view without changes. Bundle
+  `com.tigerslicer.TigerSlicer`, version 0.0.10.
+- `TigerSlicer-0.0.10-macos-arm64.dmg`: 292,995,919 bytes, sha256
+  `aa21f07606a9b580b6e209e1745921f14ad80080c84d653d09acc7b3d9f7ec8c`; packaged as in
+  [BUILDING.md](BUILDING.md) and uploaded to the release afterwards (digest checked).
+- The app copied out of the mounted dmg and started with a throwaway `--datadir` logs
+  "Current OrcaSlicer Version 0.0.10 build 790cb6bee". No crash log. `[error]` lines are the same as
+  0.0.9's: the missing 3Dconnexion driver and "Unable to create exclude triangles" (twice). The
+  Preferences switch and the Small features group were not checked by hand (no access to the window
+  from the build machine).
+- Tests (built from the tag with `BUILD_TESTS` on): libslic3r 1,054 cases pass; fff_print
+  `[SmallFeatures]` 13 cases pass (18,978 assertions); `[Print]` 17 of 18 pass. The failing case is
+  "Default settings print the same moves as before the small feature options" `[Regression]`: all six
+  hashes differ from the stored ones on macOS. Built on macOS at `39f94c5dd`, which has the same test
+  and hashes but none of the small feature code, the test gives the same six hashes as `v0.0.10`:
+
+  | Mesh | Walls | macOS hash |
+  |---|---|---|
+  | gt2_teeth | classic | `0xe9464f6fc4ba073c` |
+  | gt2_teeth | arachne | `0xb8802272c06a4761` |
+  | overhang | classic | `0x56f88ec6dc0eb6dc` |
+  | overhang | arachne | `0xc5d6a48e2c6b8f73` |
+  | cube_with_hole | classic | `0xf0a9332a354e9f24` |
+  | cube_with_hole | arachne | `0x0b6a5898c900e2a5` |
+
+  So default moves are unchanged on macOS too; the stored hashes are MSVC's, and clang's
+  floating-point results (fused multiply-add on arm64) differ in the last digits. The test needs a
+  hash per compiler (or a tolerance) to pass on both.
+
 ---
 
 ## 0.0.9 (2026-10-22)
