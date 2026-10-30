@@ -18,6 +18,7 @@
 #include "PartPlate.hpp"
 #include "Gizmos/GLGizmoEmboss.hpp"
 #include "Gizmos/GLGizmoSVG.hpp"
+#include "SketchDialog.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include "slic3r/GUI/Tab.hpp"
@@ -614,6 +615,7 @@ wxMenu* MenuFactory::append_submenu_add_generic(wxMenu* menu, ModelVolumeType ty
 
     append_menu_item_add_text(sub_menu, type);
     append_menu_item_add_svg(sub_menu, type);
+    append_menu_item_add_sketch(sub_menu, type);
 
     return sub_menu;
 }
@@ -743,6 +745,18 @@ void MenuFactory::append_menu_item_add_text(wxMenu* menu, ModelVolumeType type, 
 
 void MenuFactory::append_menu_item_add_svg(wxMenu *menu, ModelVolumeType type, bool is_submenu_item /* = true*/){
     append_menu_itemm_add_(_L("SVG"), GLGizmosManager::Svg, menu, type, is_submenu_item);
+}
+
+// TigerSlicer: draw closed shapes and extrude them into a new object, a part, or a cut.
+void MenuFactory::append_menu_item_add_sketch(wxMenu *menu, ModelVolumeType type)
+{
+    if (type != ModelVolumeType::INVALID && type != ModelVolumeType::MODEL_PART && type != ModelVolumeType::NEGATIVE_VOLUME)
+        return;
+    append_menu_item(menu, wxID_ANY, _L("Sketch..."), _L("Draw shapes and extrude them"),
+        [type](wxCommandEvent &) {
+            GLCanvas3D *canvas = plater()->canvas3D();
+            open_sketch_tool(type, canvas->get_popup_menu_position());
+        }, "menu_obj_svg", menu);
 }
 
 void MenuFactory::append_menu_items_add_volume(wxMenu* menu)

@@ -3,6 +3,18 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
+## Unreleased
+
+**New**
+- **Sketch.** Draw shapes and extrude them, right in the slicer: **Edit > Sketch...**, or right-click the
+  bed (Add Primitive > Sketch...) or an object (Add part / Negative part > Sketch...).
+  - Draw rectangles (with rounded corners if you like), circles, polygons and free outlines on a 1 mm
+    grid, and type exact sizes and positions for the selected shape. A shape inside another one cuts a
+    hole in it.
+  - Pick a depth and whether it becomes a new object, is added to the selected object, or cuts into it.
+  - It isn't parametric: once extruded it's an ordinary part. You can still drag it on the surface,
+    resize it and change its depth, as with an SVG.
+
 ## 0.0.11 (2026-10-23)
 
 **Changed**

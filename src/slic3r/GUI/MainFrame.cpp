@@ -1,4 +1,5 @@
 #include "MainFrame.hpp"
+#include "SketchDialog.hpp"
 #include "CalibrationBuilderDialog.hpp"
 #include "PrinterConnectionsPanel.hpp"
 
@@ -3171,6 +3172,12 @@ void MainFrame::init_menubar_as_editor()
         editMenu->AppendSeparator();
 
 #endif
+
+        // TigerSlicer: draw shapes and extrude them into a new object, or a part of / a cut into the selected one.
+        append_menu_item(editMenu, wxID_ANY, _L("Sketch..."), _L("Draw shapes and extrude them into a new object, a part or a cut"),
+            [](wxCommandEvent &) { open_sketch_tool(ModelVolumeType::INVALID, std::nullopt); },
+            "menu_obj_svg", nullptr, [this]() { return m_plater != nullptr; }, this);
+        editMenu->AppendSeparator();
 
         // BBS Select All
         append_menu_item(editMenu, wxID_ANY, _L("Select All") + sep + ctrl_t + "A",

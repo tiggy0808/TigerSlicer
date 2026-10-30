@@ -225,6 +225,17 @@ bool GLGizmoSVG::create_volume(std::string_view svg_file, const Vec2d &mouse_pos
     return start_create_volume(input, std::move(base), mouse_pos);
 }
 
+bool GLGizmoSVG::create_volume_from_sketch(std::string_view svg_file, ModelVolumeType volume_type, double depth,
+                                           const std::optional<Vec2d> &mouse_pos)
+{
+    CreateVolumeParams input = create_input(m_parent, m_raycast_manager, volume_type);
+    DataBasePtr base = create_emboss_data_base(m_job_cancel, volume_type, svg_file);
+    if (!base) return false; // Uninterpretable svg
+    base->shape.projection.depth = std::clamp(depth, limits.depth.min, limits.depth.max);
+    return mouse_pos.has_value() ? start_create_volume(input, std::move(base), *mouse_pos) :
+                                   start_create_volume_without_position(input, std::move(base));
+}
+
 bool GLGizmoSVG::is_svg(const ModelVolume &volume) {
     return volume.emboss_shape.has_value() && volume.emboss_shape->svg_file.has_value();
 }
