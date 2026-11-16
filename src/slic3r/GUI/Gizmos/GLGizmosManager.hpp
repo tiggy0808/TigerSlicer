@@ -90,6 +90,9 @@ public:
         Assembly,
         Simplify,
         BrimEars,
+        // TigerSlicer: screw holes, and fillets and chamfers on edges.
+        Hole,
+        EdgeBlend,
         //SlaSupports,
         // BBS
         //FaceRecognition,

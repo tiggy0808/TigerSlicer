@@ -275,6 +275,10 @@ set(lisbslic3r_sources    # --- TigerSlicer ------------------------------------
     Feature/FuzzySkin/FuzzySkin.hpp
     Feature/NonPlanar/NonPlanar.cpp
     Feature/NonPlanar/NonPlanar.hpp
+    Feature/ModelTools/EdgeBlend.cpp
+    Feature/ModelTools/EdgeBlend.hpp
+    Feature/ModelTools/ScrewHole.cpp
+    Feature/ModelTools/ScrewHole.hpp
     Feature/SmallFeatures/SmallFeatures.cpp
     Feature/SmallFeatures/SmallFeatures.hpp
     Feature/Interlocking/InterlockingGenerator.cpp

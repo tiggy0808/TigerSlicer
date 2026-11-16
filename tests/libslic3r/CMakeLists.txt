@@ -37,6 +37,7 @@ add_executable(${_TEST_NAME}_tests
 	test_print_history.cpp
 	test_print_job_queue.cpp
 	test_print_manifest.cpp
+	test_model_tools.cpp
 	test_printer_capability_match.cpp
 	test_printer_capability_registry.cpp
 	test_printer_maintenance.cpp

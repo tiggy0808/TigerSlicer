@@ -27,6 +27,8 @@
 #include "slic3r/GUI/Gizmos/GLGizmoSVG.hpp"
 #include "slic3r/GUI/Gizmos/GLGizmoMeshBoolean.hpp"
 #include "slic3r/GUI/Gizmos/GLGizmoAssembly.hpp"
+#include "slic3r/GUI/Gizmos/GLGizmoEdgeBlend.hpp"
+#include "slic3r/GUI/Gizmos/GLGizmoHole.hpp"
 
 #include "libslic3r/format.hpp"
 #include "libslic3r/Model.hpp"
@@ -176,6 +178,12 @@ void GLGizmosManager::switch_gizmos_icon_filename()
         case (EType::BrimEars):
             gizmo->set_icon_filename(m_is_dark ? "toolbar_brimears_dark.svg" : "toolbar_brimears.svg");
             break;
+        case (EType::Hole):
+            gizmo->set_icon_filename(m_is_dark ? "toolbar_hole_dark.svg" : "toolbar_hole.svg");
+            break;
+        case (EType::EdgeBlend):
+            gizmo->set_icon_filename(m_is_dark ? "toolbar_edge_blend_dark.svg" : "toolbar_edge_blend.svg");
+            break;
         }
 
     }
@@ -219,6 +227,8 @@ bool GLGizmosManager::init()
     m_gizmos.emplace_back(new GLGizmoAssembly(m_parent, m_is_dark ? "toolbar_assembly_dark.svg" : "toolbar_assembly.svg", EType::Assembly));
     m_gizmos.emplace_back(new GLGizmoSimplify(m_parent, "reduce_triangles.svg", EType::Simplify));
     m_gizmos.emplace_back(new GLGizmoBrimEars(m_parent, m_is_dark ? "toolbar_brimears_dark.svg" : "toolbar_brimears.svg", EType::BrimEars));
+    m_gizmos.emplace_back(new GLGizmoHole(m_parent, m_is_dark ? "toolbar_hole_dark.svg" : "toolbar_hole.svg", EType::Hole));
+    m_gizmos.emplace_back(new GLGizmoEdgeBlend(m_parent, m_is_dark ? "toolbar_edge_blend_dark.svg" : "toolbar_edge_blend.svg", EType::EdgeBlend));
     //m_gizmos.emplace_back(new GLGizmoSlaSupports(m_parent, "sla_supports.svg", sprite_id++));
     //m_gizmos.emplace_back(new GLGizmoFaceDetector(m_parent, "face recognition.svg", sprite_id++));
     //m_gizmos.emplace_back(new GLGizmoHollow(m_parent, "hollow.svg", sprite_id++));
@@ -1486,6 +1496,10 @@ std::string get_name_from_gizmo_etype(GLGizmosManager::EType type)
         return "Color Painting";
     case GLGizmosManager::EType::FuzzySkin:
         return "Fuzzy Skin Painting";
+    case GLGizmosManager::EType::Hole:
+        return "Screw Hole";
+    case GLGizmosManager::EType::EdgeBlend:
+        return "Fillet and Chamfer";
     default:
         return "";
     }
