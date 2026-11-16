@@ -3159,6 +3159,21 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
 
     file.write_format("; EXECUTABLE_BLOCK_START\n");
 
+    // TigerSlicer: the "; printing object ... id:N copy M" labels use these ids whether or not objects can be
+    // excluded, so number the objects and instances here too (set_object_info() numbers them the same way).
+    // They were left unset without exclude_object, so two objects could share a label.
+    {
+        size_t object_id = 0, unique_id = 0;
+        for (PrintObject *object : print.objects()) {
+            object->set_id(object_id++);
+            size_t instance_id = 0;
+            for (PrintInstance &instance : object->instances()) {
+                instance.unique_id = unique_id++;
+                instance.id        = instance_id++;
+            }
+        }
+    }
+
     // SoftFever
     if( m_enable_exclude_object)
         file.write(set_object_info(&print));
