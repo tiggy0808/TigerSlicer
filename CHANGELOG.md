@@ -5,6 +5,26 @@ Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOP
 
 ## Unreleased
 
+**New**
+- **Screw holes** (Screw hole, in the toolbar over the 3D view). Click a model to drill a round hole
+  square to its surface, for M2 to M8 screws:
+  - **Screw threads into it**: a pilot hole (ISO tap drill size) that the screw cuts its own thread into.
+  - **Screw passes through**: a clearance hole (ISO 273 normal fit) that the screw slides through.
+  - All the way through the part, or to a depth you set. You can change the diameter too.
+  - Each hole is a negative part, so you can move, resize or delete it in the object list.
+- **Fillet and chamfer** (in the toolbar). Click a model's sharp edges, then round them (fillet, by
+  radius) or bevel them (chamfer, by the distance along each face).
+  - Outside edges are cut away with a negative part and inside corners filled with a part. The model
+    itself isn't changed, and each fillet or chamfer can be deleted in the object list. Cuts show once
+    you slice.
+  - Works on straight edges and on the rims of round holes and bosses. Edges whose faces meet at less
+    than 20° or more than 160° can't be rounded, nor can a rim smaller than the radius. Where picked
+    edges meet at a corner, the corner stays sharp.
+
+**Fixed**
+- With "Exclude objects" off, objects were numbered at random in the G-code's `; printing object`
+  labels, so two objects could get the same label.
+
 **New (experimental)**
 - **Non-planar** (Quality > Non-planar) replaces the Z contouring checkbox with three choices:
   - **Off**: flat layers, as before.

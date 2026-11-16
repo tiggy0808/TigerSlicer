@@ -14,6 +14,69 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
   and Add part / Negative part items), then reverted whole before any release: CAD in the slicer is kept to
   the hole and edge tools below.
 
+### Screw hole and fillet/chamfer tools
+- **Approach.** Neither tool edits a mesh. Each adds volumes to the object (`add_tool_volumes()` in
+  `GUI/Gizmos/GLGizmoModelTools`): the mesh is built in world coordinates of the selected instance, mapped
+  to object coordinates by the inverse instance matrix (`its_transform(..., fix_left_handed = true)` keeps
+  mirrored instances outward-facing), added with `ModelObject::add_volume()` (which centers it), named,
+  `extruder` 0 for negative volumes and the object's extruder for parts. One `Plater::TakeSnapshot`, then
+  `ObjectList::reorder_volumes_and_get_selection(obj_idx)`, which lists the volumes and reloads the scene,
+  and `notify_instance_updated(obj_idx)` for the plates. An instance-mode selection takes the new volumes in (`Selection::instances_changed`), so the gizmo stays
+  open. Slicing does the rest: negative volumes are subtracted, parts unioned.
+- **Picking.** `SurfacePicker` keeps one `MeshRaycaster` per model part of the selected instance, rebuilt
+  only when the object, instance matrix, part meshes or part matrices change. `pick()` returns the hit
+  closest to the camera with the world normal (inverse-transpose). Both gizmos need only
+  `CommonGizmosDataID::SelectionInfo` and are activable on a single full instance. They are appended at
+  the end of `GLGizmosManager::EType` (`Hole`, `EdgeBlend`), with icons `toolbar_hole*.svg` and
+  `toolbar_edge_blend*.svg`. No keyboard shortcuts.
+- **Screw hole** (`GLGizmoHole`, geometry in `libslic3r/Feature/ModelTools/ScrewHole`). M2-M8 table:
+  pilot = ISO tap drill (M3 2.5), clearance = ISO 273 normal (M3 3.4). `hole_mesh()` is a 64-sided
+  circumscribed cylinder (flats on the circle) from 0.5 mm over the surface to the depth under it, along
+  the hit normal. "All the way through" uses `SurfacePicker::depth_through()`: the farthest
+  `AABBMesh::query_ray_hits()` exit along -normal over all parts, plus 1 mm. The volume is named
+  "M3 through hole" etc., with the diameter added when it was typed in.
+- **Fillet/chamfer** (`GLGizmoEdgeBlend`, geometry in `libslic3r/Feature/ModelTools/EdgeBlend`).
+  - `sharp_edges()`: edges whose face normals differ by more than 30°, from `its_face_neighbors()`
+    (needs consistent orientation; open edges and degenerate faces skipped). Convex if the right face's
+    centroid lies under the left face's plane. Chained through vertices with exactly two sharp edges of
+    the same convexity that turn by at most 45°; what remains after walking from the other vertices is
+    closed loops. Each segment records the face holding it in the chain's direction (`face_left`).
+  - `edge_blend_mesh()`: per chain vertex, a profile in the plane square to the tangent: the faces'
+    in-surface directions `ul = nl x t`, `ur = t x nr`, angle between them 20°-160°. Fillet: 20-segment
+    arc of radius r tangent to both faces at `r / tan(a/2)`; chamfer: the chord between points `size`
+    along each face. The profile is closed 0.2 mm past the faces (outward for a convex edge, into the
+    material for a concave one), with the corner at `p + 0.2 (nl + nr) / (1 + nl.nr)`. Profiles are
+    mitered at turns (stretched by `1/cos(turn/2)` along the turn), swept into rings, capped with fans from
+    the edge point (star-shaped profile) on open chains, and flipped if the volume comes out negative.
+    Open convex chains reach 0.05 mm past their ends; concave ones stop at the ends. At a turn, a profile
+    reaching more than 0.9 of the local curve radius (`segment / (2 sin(turn/2))`) toward the centre gives
+    an empty mesh, so a fillet wider than a small rim is refused instead of folding over itself. Corners
+    where chains meet are not blended (each chain ends square), and the radius is not checked against
+    the width of the faces.
+  - The gizmo computes chains on each part's mesh in world coordinates, so radii are true mm under
+    instance scaling. Hover: nearest chain segment to the hit point, accepted within 12 px on screen; off
+    the model, the nearest segment on screen if `SurfacePicker::is_visible()` (a ray from the camera to it
+    meets no part first), so outline edges can be picked from just outside.
+    Picked chains are drawn as tubes 2.5 px thick, with a see-through preview of the cut (pink) and fill
+    (green). Convex chains become negative volumes, concave ones parts, named "Fillet 2 mm" etc.
+  - Previews and edge tubes are blue (hover yellow, fills green), to stand out on pink and most filament
+    colors. `GLModel::init_from()` silently ignores an already-initialized model in release builds, so
+    both tools `reset()` their preview models before rebuilding them.
+- **Tests.** `tests/libslic3r/test_model_tools.cpp` (`[ModelTools]`): sizes, hole mesh closed and wide
+  enough, 12 edges on a cube, two closed rims on a cylinder, one concave edge in an L prism, and the volume
+  a fillet or chamfer removes (CGAL difference against the analytic value: cube edge, cylinder rim by
+  Pappus) or adds (L corner), no blend for nearly flat faces or a fillet too big for a 3 mm boss. `tests/fff_print/test_model_tools.cpp`:
+  a cube sliced with a fillet cutter steps back along the circle near the top, and with an M3 hole has a
+  hole of the right area in every layer.
+
+### Object label ids
+- `PrintObject::m_id` was never initialized and only set by `GCode::set_object_info()`, which runs only
+  with exclude_object. The `; printing object <name> id:N copy M` labels (`gcode_label_objects`) printed
+  it anyway, so ids were garbage and could collide. That made the `[CalibrationBuilder]` test "Layers
+  above the tower print without its overrides" fail about two runs in three (the cube's tally took the
+  tower's plastic too, halving the ratio). `m_id` now starts at 0, and `_do_export()` numbers objects
+  and instances before the exclude-object block, the same way `set_object_info()` does.
+
 ### Non-planar top layers
 - **Setting.** `non_planar_mode` (enum `NonPlanarMode`: `off` / `z_contouring` / `on`, region config,
   default `off`) replaces upstream's `zaa_enabled`. `handle_legacy()` maps `zaa_enabled` 1/true to
