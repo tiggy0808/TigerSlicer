@@ -7,7 +7,22 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 
 ---
 
-## Unreleased
+## 0.0.12 (2026-11-15)
+
+Theme: a screw hole tool and a fillet/chamfer tool (the only CAD in the slicer: the Sketch tool was
+removed before release), non-planar top layers (experimental), and the object label id fix. Developed
+and verified on Windows.
+
+Commits, oldest first (all on `main`; the release commit follows them):
+
+| Commit | Subject |
+|---|---|
+| `3295b1d06` | feat: Sketch - draw shapes and extrude them into a new object, a part or a cut |
+| `f3d8a08ff` | feat: non-planar top layers (Off / Z contouring only / On) |
+| `a38576924` | chore: remove the Sketch tool |
+| `0428fa3b8` | fix: number objects in G-code labels without exclude objects |
+| `48cf88b9c` | feat: screw hole and fillet/chamfer tools |
+| `58e33bcbf` | docs: hole and fillet/chamfer tools and the object label fix |
 
 ### Sketch (removed before release)
 - Added in 3295b1d06 (Sketch window, `libslic3r/Sketch`, `GLGizmoSVG::create_volume_from_sketch`, Edit menu

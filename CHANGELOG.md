@@ -3,7 +3,7 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
-## Unreleased
+## 0.0.12 (2026-11-15)
 
 **New**
 - **Screw holes** (Screw hole, in the toolbar over the 3D view). Click a model to drill a round hole
