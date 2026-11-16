@@ -64,7 +64,7 @@ struct LayerWalls
 bool region_uses_brick_layers(const PrintRegionConfig &config)
 {
     // Z contouring sets wall Z and flow itself, which lifted walls would break.
-    if (!config.brick_layers.value || config.zaa_enabled.value)
+    if (!config.brick_layers.value || config.non_planar_mode.value != npmOff)
         return false;
     // Lifted walls go last in their extruder's pass over an island. If another
     // filament prints the outer wall or the infill, that pass may come later

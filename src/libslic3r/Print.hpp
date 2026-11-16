@@ -4,6 +4,7 @@
 #include "PrintBase.hpp"
 #include "MultiRateLayerSchedule.hpp"
 #include "Feature/FullSpectrum/VirtualExtruder.hpp"
+#include "Feature/NonPlanar/NonPlanar.hpp"
 #include "Fill/FillAdaptive.hpp"
 #include "Fill/FillLightning.hpp"
 
@@ -43,6 +44,7 @@ class TreeSupportData;
 class TreeSupport;
 class ExtrusionLayers;
 namespace MultiNozzleUtils { class NozzleGroupResultBase; class LayeredNozzleGroupResult; }
+namespace sla { class IndexedMesh; }
 
 #define MAX_OUTER_NOZZLE_DIAMETER   4
 // BBS: move from PrintObjectSlice.cpp
@@ -373,6 +375,10 @@ public:
     double                      max_z() const         { return m_max_z; }
     // Centering offset of the sliced mesh from the scaled and rotated mesh of the model.
     const Point& 			     center_offset() const  { return m_center_offset; }
+    // TigerSlicer: the zones printed in curved top layers (non_planar_mode on), found when slicing.
+    // A copy that shares another object's layers shares its zones.
+    const std::vector<NonPlanar::Zone>& non_planar_zones() const
+        { return m_shared_object != nullptr ? m_shared_object->m_non_planar_zones : m_non_planar_zones; }
 
     // BBS
     void generate_support_preview();
@@ -535,6 +541,12 @@ private:
     void ironing();
     bool need_z_contouring() const;
     void contour_z();
+    // TigerSlicer: curved top layers (non_planar_mode on, experimental), in Feature/NonPlanar/NonPlanar.cpp. Find the zones
+    // and cut the flat layers short under them (slicing); cover the tops left under them (preparing infill); add the
+    // curved layers (contouring).
+    void find_non_planar_zones();
+    void cover_non_planar_tops();
+    void add_non_planar_shells(const sla::IndexedMesh &mesh, double above);
     void generate_support_material();
     void estimate_curled_extrusions();
     void simplify_extrusion_path();
@@ -586,6 +598,8 @@ private:
     // The mesh is being centered before thrown to Clipper, so that the Clipper's fixed coordinates require less bits.
     // This is the adjustment of the  the Object's coordinate system towards PrintObject's coordinate system.
     Point                                   m_center_offset;
+    // TigerSlicer: see find_non_planar_zones().
+    std::vector<NonPlanar::Zone>            m_non_planar_zones;
 
     // Object split into layer ranges and regions with their associated configurations.
     // Shared among PrintObjects created for the same ModelObject.
@@ -969,6 +983,9 @@ public:
     bool                experimental_features_enabled() const { return m_experimental_features_enabled; }
     // The experimental options this print uses with a value other than their default, sorted.
     std::vector<std::string> experimental_options_used() const;
+    // The options set to an experimental value (ConfigOptionDef::experimental_values) that the last apply() replaced by
+    // their fallback, as experimental features were off.
+    const std::vector<std::string> &experimental_values_ignored() const { return m_experimental_values_ignored; }
 
     void                process(long long *time_cost_with_cache = nullptr, bool use_cache = false) override;
     // Exports G-code into a file name based on the path_template, returns the file path of the generated G-code file.
@@ -1337,6 +1354,7 @@ private:
     // TigerSlicer: see set_experimental_features_enabled().
     bool                                    m_experimental_features_requested = true;
     bool                                    m_experimental_features_enabled   = true;
+    std::vector<std::string>                m_experimental_values_ignored;
 
     //SoftFever
     bool m_isBBLPrinter = false;

@@ -3743,17 +3743,34 @@ static bool is_experimental_option(const std::string &key)
     return def != nullptr && def->experimental;
 }
 
+// Whether `config` sets `key` to one of its experimental values (ConfigOptionDef::experimental_values).
+static bool has_experimental_value(const ModelConfig &config, const std::string &key)
+{
+    const ConfigOptionDef *def = print_config_def.get(key);
+    if (def == nullptr || def->experimental_values.empty())
+        return false;
+    const ConfigOption *opt = config.option(key);
+    return opt != nullptr && std::find(def->experimental_values.begin(), def->experimental_values.end(), opt->serialize()) != def->experimental_values.end();
+}
+
 static bool has_experimental_options(const ModelConfig &config)
 {
     const t_config_option_keys keys = config.keys();
-    return std::any_of(keys.begin(), keys.end(), is_experimental_option);
+    return std::any_of(keys.begin(), keys.end(),
+                       [&config](const std::string &key) { return is_experimental_option(key) || has_experimental_value(config, key); });
 }
 
 static void remove_experimental_options(ModelConfig &config)
 {
-    for (const std::string &key : config.keys())
-        if (is_experimental_option(key))
+    for (const std::string &key : config.keys()) {
+        if (is_experimental_option(key)) {
             config.erase(key);
+        } else if (has_experimental_value(config, key)) {
+            // The fallback, rather than nothing: erased, the setting would come back from the object or the preset.
+            ConfigSubstitutionContext substitutions(ForwardCompatibilitySubstitutionRule::Disable);
+            config.set_deserialize(key, print_config_def.get(key)->experimental_fallback, substitutions);
+        }
+    }
 }
 
 bool model_has_experimental_options(const Model &model)
@@ -3769,6 +3786,25 @@ bool model_has_experimental_options(const Model &model)
                 return true;
     }
     return false;
+}
+
+std::vector<std::string> model_experimental_values_used(const Model &model)
+{
+    std::vector<std::string> used;
+    auto                     add = [&used](const ModelConfig &config) {
+        for (const std::string &key : config.keys())
+            if (has_experimental_value(config, key))
+                used.push_back(key);
+    };
+    for (const ModelObject *object : model.objects) {
+        add(object->config);
+        for (const ModelVolume *volume : object->volumes)
+            add(volume->config);
+        for (const auto &[range, config] : object->layer_config_ranges)
+            add(config);
+    }
+    sort_remove_duplicates(used);
+    return used;
 }
 
 void remove_experimental_options(Model &model)

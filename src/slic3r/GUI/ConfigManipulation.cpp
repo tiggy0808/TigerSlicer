@@ -996,9 +996,13 @@ void ConfigManipulation::toggle_print_fff_options(DynamicPrintConfig *config, in
     
     toggle_line("ironing_speed", has_ironing || has_support_ironing);
 
-    bool has_zaa = config->opt_bool("zaa_enabled");
+    const NonPlanarMode non_planar = config->opt_enum<NonPlanarMode>("non_planar_mode");
+    bool                has_zaa    = non_planar != npmOff;
     for (auto el : {"zaa_minimize_perimeter_height", "zaa_min_z", "zaa_dont_alternate_fill_direction", "ironing_expansion"})
         toggle_line(el, has_zaa);
+    // TigerSlicer: the curved top layers' limits.
+    for (auto el : {"non_planar_max_angle", "non_planar_max_height"})
+        toggle_line(el, non_planar == npmOn);
 
     // Brick layers lift every other inner wall, so they need an inner wall to lift
     // and cannot be combined with a vase or with Z contouring.

@@ -1786,6 +1786,8 @@ bool model_has_multi_part_objects(const Model &model);
 // (ConfigOptionDef::experimental), and removing those settings.
 bool model_has_experimental_options(const Model &model);
 void remove_experimental_options(Model &model);
+// The settings of the model's objects, parts and layer ranges set to an experimental value, sorted.
+std::vector<std::string> model_experimental_values_used(const Model &model);
 // If the model has advanced features, then it cannot be processed in simple mode.
 bool model_has_advanced_features(const Model &model);
 

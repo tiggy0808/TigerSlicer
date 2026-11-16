@@ -15,6 +15,26 @@ Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOP
   - It isn't parametric: once extruded it's an ordinary part. You can still drag it on the surface,
     resize it and change its depth, as with an SVG.
 
+**New (experimental)**
+- **Non-planar** (Quality > Non-planar) replaces the Z contouring checkbox with three choices:
+  - **Off**: flat layers, as before.
+  - **Z contouring only**: what the checkbox did. Top surfaces and walls are raised and lowered
+    within one layer to follow the model, but the layers stay flat. Projects and presets that had
+    the checkbox on load as this; off loads as Off.
+  - **On (experimental)**: gently sloped and curved tops are printed in curved layers that follow
+    the surface, as many as the top layers (top shell thickness included), instead of flat layers
+    that show steps. Under them the flat layers stop that far below the surface. The rest of the
+    model prints as with Z contouring only.
+- With On, two more settings appear:
+  - **Non-planar maximum slope** (20° by default): steeper tops stay flat.
+  - **Non-planar maximum height** (3 mm by default): how far below the highest printed point the
+    nozzle may reach. A taller curved top gets curved layers on its upper part only.
+- Check the maximum height against your printer before using On. The nozzle prints the curved
+  layers beside parts already printed higher, so the height must be less than the distance from
+  the nozzle's tip to the bottom of its heater block or fan duct. Too high and they hit the print.
+- On is experimental. While **Show experimental features** is off, it prints as Z contouring
+  only, and a slicing notice says so. Non-planar can be set per object and per modifier.
+
 ## 0.0.11 (2026-10-23)
 
 **Changed**

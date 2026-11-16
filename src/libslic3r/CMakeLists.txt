@@ -275,6 +275,8 @@ set(lisbslic3r_sources    # --- TigerSlicer ------------------------------------
     FaceDetector.hpp
     Feature/FuzzySkin/FuzzySkin.cpp
     Feature/FuzzySkin/FuzzySkin.hpp
+    Feature/NonPlanar/NonPlanar.cpp
+    Feature/NonPlanar/NonPlanar.hpp
     Feature/SmallFeatures/SmallFeatures.cpp
     Feature/SmallFeatures/SmallFeatures.hpp
     Feature/Interlocking/InterlockingGenerator.cpp

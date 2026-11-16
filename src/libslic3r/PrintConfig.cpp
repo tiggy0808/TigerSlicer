@@ -109,21 +109,45 @@ bool is_filament_extruder_override_key(const std::string &opt_key)
            opt_key == "filament_retract_length_nc";
 }
 
+// Whether `opt` holds one of the experimental values of `opt_def`.
+static bool has_experimental_value(const ConfigOption &opt, const ConfigOptionDef &opt_def)
+{
+    return !opt_def.experimental_values.empty() &&
+           std::find(opt_def.experimental_values.begin(), opt_def.experimental_values.end(), opt.serialize()) != opt_def.experimental_values.end();
+}
+
 std::vector<std::string> experimental_options_used(const ConfigBase &config, const ConfigDef &def)
 {
     std::vector<std::string> used;
     for (const auto &[key, opt_def] : def.options)
-        if (opt_def.experimental && opt_def.default_value)
-            if (const ConfigOption *opt = config.option(key); opt != nullptr && !(*opt == *opt_def.default_value))
-                used.push_back(key);
+        if ((opt_def.experimental && opt_def.default_value) || !opt_def.experimental_values.empty())
+            if (const ConfigOption *opt = config.option(key); opt != nullptr)
+                if ((opt_def.experimental && opt_def.default_value && !(*opt == *opt_def.default_value)) ||
+                    has_experimental_value(*opt, opt_def))
+                    used.push_back(key);
     return used;
 }
 
 void reset_experimental_options(DynamicPrintConfig &config, const ConfigDef &def)
 {
-    for (const auto &[key, opt_def] : def.options)
-        if (opt_def.experimental && opt_def.default_value && config.has(key))
+    for (const auto &[key, opt_def] : def.options) {
+        if (!config.has(key))
+            continue;
+        if (opt_def.experimental && opt_def.default_value)
             config.set_key_value(key, opt_def.default_value->clone());
+        else if (has_experimental_value(*config.option(key), opt_def))
+            config.set_deserialize_strict(key, opt_def.experimental_fallback);
+    }
+}
+
+std::vector<std::string> experimental_values_used(const ConfigBase &config, const ConfigDef &def)
+{
+    std::vector<std::string> used;
+    for (const auto &[key, opt_def] : def.options)
+        if (!opt_def.experimental_values.empty())
+            if (const ConfigOption *opt = config.option(key); opt != nullptr && has_experimental_value(*opt, opt_def))
+                used.push_back(key);
+    return used;
 }
 
 size_t get_extruder_index(const GCodeConfig& config, unsigned int filament_id)
@@ -421,6 +445,9 @@ CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(SmallFeaturePolicy)
 
 static t_config_enum_values s_keys_map_NarrowGapPolicy{{"allow_fill", ngpAllowFill}, {"keep_open", ngpKeepOpen}};
 CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(NarrowGapPolicy)
+
+static t_config_enum_values s_keys_map_NonPlanarMode{{"off", npmOff}, {"z_contouring", npmZContouring}, {"on", npmOn}};
+CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(NonPlanarMode)
 
 static t_config_enum_values s_keys_map_SeamPosition {
     { "nearest",        spNearest },
@@ -4867,12 +4894,51 @@ void PrintConfigDef::init_fff_params()
     def->mode     = comExpert;
     def->set_default_value(new ConfigOptionFloat(0));
 
-    def = this->add("zaa_enabled", coBool);
-    def->label    = L("Z contouring enabled");
-    def->category = L("Quality");
-    def->tooltip  = L("Enable Z-layer contouring (aka Z-layer anti-aliasing).");
-    def->mode     = comExpert;
-    def->set_default_value(new ConfigOptionBool(false));
+    // TigerSlicer: replaces Orca's zaa_enabled (see handle_legacy()).
+    def                        = this->add("non_planar_mode", coEnum);
+    def->label                 = L("Non-planar");
+    def->category              = L("Quality");
+    def->tooltip               = L("How top surfaces follow the slope of the model. Off: flat layers, so a gently sloped "
+                                   "or curved top shows steps. Z contouring only: top surfaces and walls are raised and "
+                                   "lowered within one layer to follow the model, which smooths the steps, but the layers "
+                                   "stay flat. On: gently sloped tops are also printed in curved layers that follow them, "
+                                   "several layers deep, for a smooth, stronger top; slicing takes longer, and the nozzle "
+                                   "reaches down beside the printed part, so the maximum height has to suit your printer. "
+                                   "On is experimental: with experimental features off it prints as Z contouring only.");
+    def->enum_keys_map         = &ConfigOptionEnum<NonPlanarMode>::get_enum_values();
+    def->enum_values           = {"off", "z_contouring", "on"};
+    def->enum_labels           = {L("Off"), L("Z contouring only"), L("On (experimental)")};
+    def->mode                  = comAdvanced;
+    def->experimental_values   = {"on"};
+    def->experimental_fallback = "z_contouring";
+    def->set_default_value(new ConfigOptionEnum<NonPlanarMode>(npmOff));
+
+    def               = this->add("non_planar_max_angle", coFloat);
+    def->label        = L("Non-planar maximum slope");
+    def->category     = L("Quality");
+    def->tooltip      = L("The steepest top surface printed in curved layers; steeper ones stay flat. The nozzle's tip "
+                          "has to clear the slope beside it. Lower is safer; higher curves more of the model, but risks "
+                          "the nozzle scraping the print.");
+    def->sidetext     = u8"°"; // degrees, don't need translation
+    def->min          = 1;
+    def->max          = 45;
+    def->mode         = comAdvanced;
+    def->experimental = true;
+    def->set_default_value(new ConfigOptionFloat(20));
+
+    def               = this->add("non_planar_max_height", coFloat);
+    def->label        = L("Non-planar maximum height");
+    def->category     = L("Quality");
+    def->tooltip      = L("How far below the highest printed point the nozzle may reach to print a curved layer, top "
+                          "layers included: at most the distance from the nozzle's tip to the bottom of its heater block "
+                          "or fan duct. Taller curved tops get curved layers on their top part only. Higher curves more "
+                          "of the model; too high and the heater block hits the print.");
+    def->sidetext     = L("mm");
+    def->min          = 0;
+    def->max          = 20;
+    def->mode         = comAdvanced;
+    def->experimental = true;
+    def->set_default_value(new ConfigOptionFloat(3));
 
     def = this->add("zaa_minimize_perimeter_height", coFloat);
     def->label    = L("Minimize wall height angle");
@@ -9695,6 +9761,10 @@ void PrintConfigDef::handle_legacy(t_config_option_key &opt_key, std::string &va
     //BBS: handle legacy options
     if (opt_key == "curr_bed_type" && value == "SuperTack Plate") {
         value = "Supertack Plate";
+    } else if (opt_key == "zaa_enabled") {
+        // TigerSlicer: the Z contouring checkbox became non_planar_mode.
+        opt_key = "non_planar_mode";
+        value   = (value == "1" || value == "true") ? "z_contouring" : "off";
     } else if (opt_key == "enable_wipe_tower") {
         opt_key = "enable_prime_tower";
     } else if (opt_key == "wipe_tower_width") {

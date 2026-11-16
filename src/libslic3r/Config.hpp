@@ -2546,6 +2546,10 @@ public:
     // TigerSlicer: an experimental option. Unless "Show experimental features" is on in the preferences,
     // the GUI hides it and slicing uses its default value.
     bool                                experimental = false;
+    // TigerSlicer: enum values (as saved) that are experimental, and the value slicing uses in their place unless
+    // "Show experimental features" is on. The option itself is not experimental.
+    std::vector<std::string>            experimental_values;
+    std::string                         experimental_fallback;
     // Legacy names for this configuration option.
     // Used when parsing legacy configuration file.
     std::vector<t_config_option_key>    aliases;

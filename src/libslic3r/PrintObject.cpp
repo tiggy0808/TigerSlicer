@@ -741,6 +741,8 @@ void PrintObject::prepare_infill()
     // by the cummulative area of the previous $layerm->fill_surfaces.
     this->detect_surfaces_type();
     m_print->throw_if_canceled();
+    // TigerSlicer: the tops the flat layers leave under curved top layers are not top surfaces.
+    this->cover_non_planar_tops();
 
     // Decide what surfaces are to be filled.
     // Here the stTop / stBottomBridge / stBottom infill is turned to just stInternal if zero top / bottom infill layers are configured.
@@ -984,7 +986,7 @@ bool PrintObject::need_z_contouring() const
 {
     size_t num_regions = this->num_printing_regions();
     for (size_t region_id = 0; region_id < num_regions; region_id++) {
-        if (this->printing_region(region_id).config().zaa_enabled)
+        if (this->printing_region(region_id).config().non_planar_mode.value != npmOff)
             return true;
     }
 
@@ -1000,18 +1002,10 @@ void PrintObject::contour_z()
     m_print->set_status(40, L("Z contouring"));
     BOOST_LOG_TRIVIAL(debug) << "Contouring in parallel - start";
 
-    TriangleMesh mesh = this->m_model_object->raw_mesh();
-    if (m_model_object->instances.size() != 1) {
-        throw RuntimeError("ContourZ: unexpected number of instances");
-    }
-
-    ModelInstance *inst = m_model_object->instances.front();
-    Point                    center_offset = this->center_offset();
-    Geometry::Transformation trans = inst->get_transformation();
-
-    double z = this->m_model_object->min_z();
-    trans.set_offset(Vec3d(-unscale<double>(center_offset.x()), -unscale<double>(center_offset.y()), 0));
-    mesh.transform(trans.get_matrix());
+    // TigerSlicer: the instances of one object share its layers, so the first instance's mesh does for all of them.
+    double       ground = 0.;
+    TriangleMesh mesh   = NonPlanar::object_mesh(*this, ground);
+    double       z      = this->m_model_object->min_z();
 
     sla::IndexedMesh imesh(mesh);
     imesh.ground_level_offset(-z);
@@ -1035,6 +1029,10 @@ void PrintObject::contour_z()
     );
     m_print->throw_if_canceled();
     BOOST_LOG_TRIVIAL(debug) << "Contouring in parallel - end";
+
+    // TigerSlicer: then the curved top layers, which Z contouring leaves alone.
+    this->add_non_planar_shells(imesh, mesh.bounding_box().max.z() + 1.);
+    m_print->throw_if_canceled();
 
     this->set_done(posContouring);
 }

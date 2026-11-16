@@ -1198,7 +1198,11 @@ Print::ApplyStatus Print::apply(const Model &model_in, DynamicPrintConfig new_fu
 {
     // TigerSlicer: with experimental features off, slice with every experimental option at its default.
     std::optional<Model> model_without_experimental;
+    m_experimental_values_ignored.clear();
     if (! m_experimental_features_requested) {
+        m_experimental_values_ignored = experimental_values_used(new_full_config);
+        append(m_experimental_values_ignored, model_experimental_values_used(model_in));
+        sort_remove_duplicates(m_experimental_values_ignored);
         reset_experimental_options(new_full_config);
         if (model_has_experimental_options(model_in)) {
             model_without_experimental.emplace(model_in);

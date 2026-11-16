@@ -30,7 +30,7 @@ static coordf_t compute_slice_z(PrintObject* print_object, size_t i_layer, coord
     size_t num_regions = print_object->num_printing_regions();
     for (size_t rid = 0; rid < num_regions; ++rid) {
         const auto& rcfg = print_object->printing_region(rid).config();
-        if (rcfg.zaa_enabled) {
+        if (rcfg.non_planar_mode.value != npmOff) {
             if (!zaa_active || rcfg.zaa_min_z < z_offset)
                 z_offset = rcfg.zaa_min_z;
             zaa_active = true;
@@ -846,6 +846,10 @@ void PrintObject::slice()
 
     // Detect and process holes that should be converted to polyholes
     this->_transform_hole_to_polyholes();
+
+    // TigerSlicer: curved top layers (non_planar_mode on): the flat layers stop short under them.
+    this->find_non_planar_zones();
+    m_print->throw_if_canceled();
 
     // BBS: the actual first layer slices stored in layers are re-sorted by volume group and will be used to generate brim
     groupingVolumesForBrim(this, m_layers, firstLayerReplacedBy);

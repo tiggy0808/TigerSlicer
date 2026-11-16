@@ -235,7 +235,7 @@ static void handle_extrusion_collection(LayerRegion *region, const sla::IndexedM
 void Layer::make_contour_z(const sla::IndexedMesh &mesh)
 {
 	for (LayerRegion *region : this->regions()) {
-        if (!region->region().config().zaa_enabled)
+        if (region->region().config().non_planar_mode.value == npmOff)
             continue;
 
         handle_extrusion_collection(region, mesh, region->fills, {erTopSolidInfill, erIroning, erPerimeter, erExternalPerimeter, erMixed});

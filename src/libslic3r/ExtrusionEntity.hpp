@@ -175,6 +175,12 @@ public:
     float height;
     double smooth_speed = 0;
     bool z_contoured = false;
+    // TigerSlicer: part of a curved top layer (non_planar_mode on), reaching down several layers below the layer's print
+    // Z. Also z_contoured. The G-code writer travels to it at the layer's Z and goes straight down, and straight up after.
+    bool non_planar = false;
+    // TigerSlicer: for a non_planar path, a flow multiplier per point of the polyline (empty: 1). The lowest curved layer
+    // fills the step the flat layers under it leave, up to a layer high.
+    std::vector<float> point_flow;
     // Brick layers: height in mm above the layer's print Z at which this path is extruded.
     double z_offset = 0.;
 
@@ -191,6 +197,8 @@ public:
         , height(rhs.height)
         , smooth_speed(rhs.smooth_speed)
         , z_contoured(rhs.z_contoured)
+        , non_planar(rhs.non_planar)
+        , point_flow(rhs.point_flow)
         , z_offset(rhs.z_offset)
         , m_can_reverse(rhs.m_can_reverse)
         , m_role(rhs.m_role)
@@ -205,6 +213,8 @@ public:
         , height(rhs.height)
         , smooth_speed(rhs.smooth_speed)
         , z_contoured(rhs.z_contoured)
+        , non_planar(rhs.non_planar)
+        , point_flow(rhs.point_flow)
         , z_offset(rhs.z_offset)
         , m_can_reverse(rhs.m_can_reverse)
         , m_role(rhs.m_role)
@@ -219,6 +229,8 @@ public:
         , height(rhs.height)
         , smooth_speed(rhs.smooth_speed)
         , z_contoured(rhs.z_contoured)
+        , non_planar(rhs.non_planar)
+        , point_flow(rhs.point_flow)
         , z_offset(rhs.z_offset)
         , m_can_reverse(rhs.m_can_reverse)
         , m_role(rhs.m_role)
@@ -233,6 +245,8 @@ public:
         , height(rhs.height)
         , smooth_speed(rhs.smooth_speed)
         , z_contoured(rhs.z_contoured)
+        , non_planar(rhs.non_planar)
+        , point_flow(rhs.point_flow)
         , z_offset(rhs.z_offset)
         , m_can_reverse(rhs.m_can_reverse)
         , m_role(rhs.m_role)
@@ -248,6 +262,8 @@ public:
         this->height = rhs.height;
         this->smooth_speed = rhs.smooth_speed;
         this->z_contoured = rhs.z_contoured;
+        this->non_planar = rhs.non_planar;
+        this->point_flow = rhs.point_flow;
         this->z_offset = rhs.z_offset;
         this->overhang_degree = rhs.overhang_degree;
         this->curve_degree = rhs.curve_degree;
@@ -263,6 +279,8 @@ public:
         this->height = rhs.height;
         this->smooth_speed = rhs.smooth_speed;
         this->z_contoured = rhs.z_contoured;
+        this->non_planar = rhs.non_planar;
+        this->point_flow = rhs.point_flow;
         this->z_offset = rhs.z_offset;
         this->overhang_degree = rhs.overhang_degree;
         this->curve_degree = rhs.curve_degree;
@@ -273,7 +291,7 @@ public:
 	ExtrusionEntity* clone() const override { return new ExtrusionPath(*this); }
     // Create a new object, initialize it with this object using the move semantics.
 	ExtrusionEntity* clone_move() override { return new ExtrusionPath(std::move(*this)); }
-    void reverse() override { this->polyline.reverse(); }
+    void reverse() override { this->polyline.reverse(); std::reverse(this->point_flow.begin(), this->point_flow.end()); }
     Point first_point() const override { return this->polyline.points.front().to_point(); }
     const Point3& first_point3() const override { return this->polyline.points.front(); }
     Point last_point() const override { return this->polyline.points.back().to_point(); }

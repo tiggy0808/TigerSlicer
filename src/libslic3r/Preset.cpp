@@ -1322,8 +1322,8 @@ static std::vector<std::string> s_Preset_print_options{
     "interlocking_boundary_avoidance",
     "interlocking_beam_width",
     "calib_flowrate_topinfill_special_order",
-    // Z Anti-Aliasing (ZAA)
-    "zaa_enabled",
+    // Z Anti-Aliasing (ZAA), and TigerSlicer's non-planar top layers
+    "non_planar_mode", "non_planar_max_angle", "non_planar_max_height",
     "zaa_minimize_perimeter_height",
     "zaa_dont_alternate_fill_direction",
     "zaa_min_z",

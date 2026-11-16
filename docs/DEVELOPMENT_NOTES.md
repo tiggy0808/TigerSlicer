@@ -34,6 +34,104 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
   "Not implemented yet" (IconManager, upstream). The dialog itself was not driven from the build
   machine.
 
+### Non-planar top layers
+- **Setting.** `non_planar_mode` (enum `NonPlanarMode`: `off` / `z_contouring` / `on`, region config,
+  default `off`) replaces upstream's `zaa_enabled`. `handle_legacy()` maps `zaa_enabled` 1/true to
+  `z_contouring` and anything else to `off`. Every upstream `zaa_enabled` check is now
+  `non_planar_mode != npmOff`: ContourZ, BrickLayers, Fill (3 places), Preset's key list,
+  ConfigManipulation and `compute_slice_z`. So Off and Z contouring only print exactly what upstream
+  printed. The `[Regression]` hash tests pin this; the hashes are MSVC's.
+- Two more settings, `non_planar_max_angle` (20°) and `non_planar_max_height` (3 mm). Both are
+  `experimental`, shown only when the mode is `on`. All three are in the GUI's Non-planar group and
+  in the per-object/part settings.
+- **Experimental values.** `ConfigOptionDef::experimental_values` + `experimental_fallback` make one
+  enum value experimental (here `on` → `z_contouring`).
+  - `experimental_options_used()` / `reset_experimental_options()` and the Model helpers cover
+    them, and `experimental_values_used()` / `model_experimental_values_used()` list them.
+  - `Print::apply` records them in `experimental_values_ignored()` before resetting.
+  - `_do_export` adds a notice that the value was sliced as the fallback.
+- **Zones** (`PrintObject::find_non_planar_zones()`, called from `slice()` after the polyholes).
+  `Feature/NonPlanar/NonPlanar.cpp`.
+  - The mesh is `NonPlanar::object_mesh()`: raw mesh × instance 0, without the center offset,
+    `fix_left_handed`. It is shared with `contour_z()`.
+  - Mesh Z = object Z + `ground`; print Z = object Z + `object_print_z_min`.
+  - Top facets: normal within `max_angle` of up, and nothing above the centroid (a ray up).
+  - Each union island of the projected facets is a candidate. Its top is the highest corner.
+    `bottom = max(lowest corner, top − reach, first layer top + thickness)`:
+    - `thickness = shells × layer_height`, and `shells = max(top_shell_layers,
+      ceil(top_shell_thickness / layer_height))`.
+    - `reach = max_height − thickness`.
+  - It is a zone if `top − bottom ≥ layer_height`; smaller rises are left to Z contouring.
+  - Footprint: the island's facets clipped above `bottom`, then projected. It is dropped if the
+    object is less than `thickness + layer_height` thick anywhere under it (ray samples every mm).
+  - The zone takes the settings of the region that holds its largest piece halfway up
+    (`SmallFeatures::region_of`). It must be one of the `on` regions. The footprint is then clipped
+    to that region's slices at the base layer (the highest layer top ≤ `bottom − thickness`). That
+    keeps it off other regions and off holes that negative volumes cut.
+  - `zone.layer` is the first layer whose top reaches the zone's top. The shells are printed there.
+  - Copies that share another object's layers (`m_shared_object`) also share its zones:
+    `non_planar_zones()` forwards to it.
+- **Trim.** For each layer from `bottom − thickness` up to the zone's top, the slices lose
+  `footprint \ section(layer top + thickness − 1 µm)` in every region. The section is `slice_mesh_ex`
+  of the mesh. So the flat layers stop `thickness` under the surface. The 1 µm keeps a flat top
+  exactly at the plane.
+- **Cover.** `cover_non_planar_tops()`, in `prepare_infill` after `detect_surfaces_type()`. In the
+  same range, including the layer the lowest shell lies on, `stTop` surfaces within the footprint
+  become `stInternalSolid`. No flat top skin goes under the shells.
+- **Shells.** `add_non_planar_shells()`, at the end of `contour_z()` (posContouring, after
+  ironing). They are added to the zone layer's region `fills` as one `no_sort` collection, bottom
+  up. The G-code writer extrudes a fill collection's direct paths only, and must not reorder them.
+  - Each shell is a loop half a wall width inside the footprint, then rectilinear lines at
+    45°/135°, alternating per shell. All one role: `erTopSolidInfill` for the top shell and
+    `erSolidInfill` below it. One role per collection keeps one extruder.
+  - Every 0.2 mm, a ray from above gives the surface. The point is `(shells − 1 − j) × h` under it,
+    stored as a Z offset from the layer's `print_z` (like ZAA). A missed ray keeps the last height;
+    a path that starts with misses drops those points. Points in line within 1 µm (at the same flow)
+    are merged.
+  - The paths set `z_contoured` and the new `ExtrusionPath::non_planar` flag. That flag is copied in
+    every constructor and assignment and in the loop `split_at`. `z_contoured` already keeps
+    `simplify()` off them.
+- **Lowest shell flow.** The flat layers under it end on 0.2 mm steps, so the gap under the lowest
+  shell is from 0 to `h`. `ExtrusionPath::point_flow` holds a ratio per point:
+  `(h + g) / h`, where `g` is the curved bottom − the highest flat top under it, clamped to [0, h].
+  `reverse()` reverses it. The G-code writer uses the segment's average, and only when there is one
+  ratio per point. `print_flow_ratio` and `top_solid_infill_flow_ratio` still apply by role.
+- **G-code** (`GCode.cpp`):
+  - A `non_planar` path is reached at `m_nominal_z + path.height`. The zone's top may be up to that
+    height over the layer's Z. The existing "set Z for contouring" move takes it straight down.
+  - After the path, `extrude_path` lifts straight up to the same height ("lift after non-planar
+    path") and skips the wipe.
+  - ZAA's `(h + dz) / h` extrusion ratio is not applied to it (it would go negative a layer down).
+  - `_extrude`'s empty-layer check allows `top − bottom + thickness` more gap on a zone's layer, since
+    the layers under it are trimmed.
+- **Limits** (v1):
+  - Rectilinear lines only, and no walls in the shells beyond the edge loop.
+  - No collision model beyond `max_height` / `max_angle`.
+  - One instance's transform (instance 0) for the mesh.
+  - Not with spiral vase.
+  - The curved paths lift after each path; fills are mostly connected, so that is few lifts.
+- Tests: fff_print `[NonPlanar]`:
+  - Off and Z contouring hashes, and the legacy mapping.
+  - On on a 30 mm block with a 2 mm dome: one zone 3–5 mm, 3 shells bottom up, each point a layer
+    apart under the surface, no flat top skin, no low travels, no CRITICAL warning.
+  - Experimental off → the Z contouring hash, plus the ignored list.
+  - Steep slopes stay flat; reach caps a tall dome.
+  - Lowest-shell flow ratios.
+  - Mirrored, raft, copies, top shell thickness, and modifiers on and off.
+- Verified on Windows:
+  - fff_print 208 test cases and libslic3r 1,054 pass, and the app builds.
+  - The dev build, run on a copy of the user's data folder (Core One L, 0.6 mm nozzle, 0.32 mm
+    layers):
+    - The dropdown lists the three choices, and the two maximums show only with On and experimental
+      features on.
+    - The dome slices with no error. With these 0.32 mm layers the zone is the dome's upper disc,
+      and the rest of the top prints flat with Z contouring.
+    - The unsaved-changes dialog reads "Off → On (experimental)".
+  - The preview's layer slider labels the zone's layer by its low extrusions (3.79 here, nominal
+    5.0). That is cosmetic.
+  - "On (experimental)" stays in the dropdown with experimental features off. It slices as Z
+    contouring only, with the notice.
+
 ---
 
 ## 0.0.11 (2026-10-23)

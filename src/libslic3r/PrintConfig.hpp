@@ -290,6 +290,9 @@ enum FinSupportFallback { fsfNone, fsfTree, fsfNormal };
 enum SmallFeaturePolicy { sfpDrop, sfpInside, sfpBalanced, sfpOutside };
 // TigerSlicer: whether walls may spill into a gap narrower than two lines (experimental).
 enum NarrowGapPolicy { ngpAllowFill, ngpKeepOpen };
+// TigerSlicer: how top surfaces follow the model's slope: not at all, within one layer (Z contouring), or also in
+// curved top layers (experimental).
+enum NonPlanarMode { npmOff, npmZContouring, npmOn };
 
 inline bool is_tree(SupportType stype)
 {
@@ -671,6 +674,7 @@ CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SupportMaterialInterfacePattern)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SupportType)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SmallFeaturePolicy)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(NarrowGapPolicy)
+CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(NonPlanarMode)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SeamPosition)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SeamScarfType)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(SLADisplayOrientation)
@@ -1476,8 +1480,11 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat,                scarf_joint_flow_ratio))
     ((ConfigOptionPercent,              scarf_overhang_threshold))
     
-    // Orca: Z Anti-Aliasing (aka Z Contouring)
-    ((ConfigOptionBool, zaa_enabled))
+    // Orca: Z Anti-Aliasing (aka Z Contouring). TigerSlicer: non_planar_mode replaces zaa_enabled, and adds curved
+    // top layers.
+    ((ConfigOptionEnum<NonPlanarMode>, non_planar_mode))
+    ((ConfigOptionFloat, non_planar_max_angle))
+    ((ConfigOptionFloat, non_planar_max_height))
     ((ConfigOptionBool, zaa_dont_alternate_fill_direction))
     ((ConfigOptionFloat, zaa_min_z))
     ((ConfigOptionFloat, zaa_minimize_perimeter_height))
@@ -2558,8 +2565,11 @@ size_t get_extruder_index(const GCodeConfig& config, unsigned int filament_id);
 // TigerSlicer: experimental options (ConfigOptionDef::experimental).
 // The experimental options of `def` that `config` sets to something other than their default, sorted.
 std::vector<std::string> experimental_options_used(const ConfigBase &config, const ConfigDef &def = print_config_def);
-// Sets every experimental option of `def` present in `config` back to its default.
+// Sets every experimental option of `def` present in `config` back to its default, and every option set to an
+// experimental value (ConfigOptionDef::experimental_values) to its fallback.
 void reset_experimental_options(DynamicPrintConfig &config, const ConfigDef &def = print_config_def);
+// The options of `def` that `config` sets to one of their experimental values, sorted.
+std::vector<std::string> experimental_values_used(const ConfigBase &config, const ConfigDef &def = print_config_def);
 
 } // namespace Slic3r
 

@@ -2189,6 +2189,12 @@ std::vector<GCode::LayerToPrint> GCode::collect_layers_to_print(const PrintObjec
                 bottom_cd = std::ceil(bottom_cd / object.config().layer_height) * object.config().layer_height;
             }
             double extra_gap = (layer_to_print.support_layer ? bottom_cd : top_cd);
+            // TigerSlicer: a layer that prints curved top layers lays them on the flat layers under its zones, which end
+            // up to the zone's height and thickness below it.
+            if (layer_to_print.object_layer != nullptr)
+                for (const NonPlanar::Zone &zone : object.non_planar_zones())
+                    if (zone.layer < object.layers().size() && object.layers()[zone.layer] == layer_to_print.object_layer)
+                        extra_gap = std::max(extra_gap, zone.top - zone.bottom + zone.thickness());
 
             // raft contact distance should not trigger any warning
             if (last_extrusion_layer && last_extrusion_layer->support_layer) {
@@ -3014,6 +3020,18 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
         print.active_step_add_warning(PrintStateBase::WarningLevel::NON_CRITICAL,
                                       Slic3r::format(_(L("This print uses experimental features: %1%")), list));
     }
+    // TigerSlicer: an experimental choice, such as non-planar On, sliced as its fallback as experimental features are off.
+    for (const std::string &key : print.experimental_values_ignored())
+        if (const ConfigOptionDef *def = print_config_def.get(key); def != nullptr) {
+            auto              fallback = std::find(def->enum_values.begin(), def->enum_values.end(), def->experimental_fallback);
+            const std::string label    = fallback != def->enum_values.end() && size_t(fallback - def->enum_values.begin()) < def->enum_labels.size() ?
+                                             def->enum_labels[fallback - def->enum_values.begin()] :
+                                             def->experimental_fallback;
+            print.active_step_add_warning(PrintStateBase::WarningLevel::NON_CRITICAL,
+                                          Slic3r::format(_(L("%1% is set to an experimental choice, which needs Show experimental "
+                                                             "features on. It was sliced as %2%.")),
+                                                         def->label, label));
+        }
 
     if(!has_BTT_thumbnail){
         file.write_format("; HEADER_BLOCK_START\n");
@@ -7336,6 +7354,13 @@ std::string GCode::extrude_path(const ExtrusionPath& path, const std::string& de
     m_multi_flow_segment_path_average_mm3_per_mm = 0;
     //    description += ExtrusionEntity::role_to_string(path.role());
     std::string gcode = this->_extrude(path, description, speed);
+    if (path.non_planar) {
+        // TigerSlicer: a curved top layer's path ends below the layer's Z, beside parts printed higher. No wipe along it at
+        // one Z, and straight up before any travel, a layer above the layer's Z, which the zone's top may reach.
+        m_wipe.reset_path();
+        gcode += m_writer.travel_to_z(m_nominal_z + path.height, "lift after non-planar path");
+        return gcode;
+    }
     if (m_wipe.enable && FILAMENT_CONFIG(wipe)) {
         m_wipe.path = path.polyline.to_polyline();
         if (is_tree(this->config().support_type) && is_support(path.role())) {
@@ -7655,6 +7680,10 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
         double z = DBL_MAX;
         if (sloped != nullptr) {
             z =  get_sloped_z(sloped->slope_begin.z_ratio);
+        } else if (path.non_planar) {
+            // A curved top layer's path is reached a layer above the layer's Z, which the zone's top may reach, then
+            // straight down, below.
+            z = m_nominal_z + path.height;
         } else if (path.z_contoured && !path.polyline.lines().empty()) {
             z = unscale_(path.polyline.lines().begin()->a.z()) + m_nominal_z;
         } else if (path.z_offset > 0.) {
@@ -8316,8 +8345,10 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
                 double path_length = 0.;
                 double total_length = sloped == nullptr ? 0. : path.polyline.length() * SCALING_FACTOR;
                 double saved_z      = m_writer.get_position().z();
+                size_t line_index   = 0;
 
                 for (const Line3& line : path.polyline.lines()) {
+                    const size_t segment = line_index++;
                     std::string tempDescription = description;
                     const double line_length = line.length() * SCALING_FACTOR;
                     if (line_length < EPSILON)
@@ -8337,9 +8368,14 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
                         Vec2d dest2d = this->point_to_gcode(line.b.to_point());
                         coordf_t z_diff = unscale_(line.b.z());
 
+                        // A lowered line of Z contouring is a thinner bead; a curved top layer's (non_planar) sits a
+                        // whole layer over the one under it.
                         double extrusion_ratio = 1;
-                        if (path.role() != erIroning) {
+                        if (path.role() != erIroning && !path.non_planar) {
                             extrusion_ratio = (path.height + z_diff) / path.height;
+                        } else if (path.non_planar && path.point_flow.size() == path.polyline.points.size() &&
+                                   segment + 1 < path.point_flow.size()) {
+                            extrusion_ratio = 0.5 * (path.point_flow[segment] + path.point_flow[segment + 1]);
                         }
 
                         double e = dE * extrusion_ratio;
