@@ -9,30 +9,10 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 
 ## Unreleased
 
-### Sketch
-- `libslic3r/Sketch.{hpp,cpp}`: `SketchShape` (rectangle with optional corner radius, circle, regular
-  polygon, free outline; mm, y up), `contour()` (counter-clockwise, arcs split to a maximum chord
-  deviation), `sketch_to_expolygons()` (Clipper union with even-odd fill, so a shape inside another
-  is a hole) and `sketch_to_svg()`: width/height in mm and a viewBox in mm, one even-odd path, y
-  flipped for SVG. nanosvg's `nsvgParse(..., "mm")` reads the path points back in mm.
-- `GUI/SketchDialog.{hpp,cpp}`: a modal `DPIDialog` with a custom-drawn canvas (wxGraphicsContext,
-  mm grid, wheel zoom around the cursor, right/middle or Space-drag pan, 1 mm snap, snap to an
-  outline's first point to close it), tools Select/Rectangle/Circle/Polygon/Outline, fields for the
-  selected shape, undo, and depth + New object / Add to selected object / Cut into selected object.
-  `extrude_sketch()` writes the SVG to `<data_dir>/sketches/Sketch N.svg` (kept, because the SVG
-  tool re-reads it when the part is edited) and calls `GLGizmoSVG::create_volume_from_sketch()`, which
-  is `create_volume(svg_file)` with the depth set: no selection → `start_create_object_job` (flat on
-  the bed, z = depth/2), otherwise a part or a negative volume on the selected object's surface, and
-  the SVG gizmo opens on it.
-- Entry points: Edit > Sketch..., and "Sketch..." after "SVG" in the Add Primitive submenu
-  (`MenuFactory::append_menu_item_add_sketch`, for INVALID = new object, MODEL_PART and
-  NEGATIVE_VOLUME; not for modifiers).
-- Tests: libslic3r `[Sketch]`, 5 cases (areas, holes, empty shapes, SVG size in mm, bounds/hits).
-- Verified on macOS with a temporary startup hook (removed): a 40 × 20 mm plate with a Ø10 mm hole
-  at 7.5 mm depth became a new object of 40 × 20 × 7.5 mm and 5,412.5 mm³ (expected ≈ 5,411); a
-  Ø6 mm, 3 mm cut became a negative volume of 6 × 6 × 3 mm and 84.5 mm³. Entering the SVG gizmo logs
-  "Not implemented yet" (IconManager, upstream). The dialog itself was not driven from the build
-  machine.
+### Sketch (removed before release)
+- Added in 3295b1d06 (Sketch window, `libslic3r/Sketch`, `GLGizmoSVG::create_volume_from_sketch`, Edit menu
+  and Add part / Negative part items), then reverted whole before any release: CAD in the slicer is kept to
+  the hole and edge tools below.
 
 ### Non-planar top layers
 - **Setting.** `non_planar_mode` (enum `NonPlanarMode`: `off` / `z_contouring` / `on`, region config,

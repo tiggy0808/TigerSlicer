@@ -122,8 +122,6 @@ set(lisbslic3r_sources    # --- TigerSlicer ------------------------------------
     ResinProfileMigration.hpp
     SeamOptimizer.cpp
     SeamOptimizer.hpp
-    Sketch.cpp
-    Sketch.hpp
     SliceCache.cpp
     SliceCache.hpp
     StageAcceptance.cpp

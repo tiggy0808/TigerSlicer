@@ -119,8 +119,6 @@ set(SLIC3R_GUI_SOURCES
     GUI/PluginPickerDialog.hpp
     GUI/PluginsDialog.cpp
     GUI/PluginsDialog.hpp
-    GUI/SketchDialog.cpp
-    GUI/SketchDialog.hpp
     GUI/SpeedDialDialog.cpp
     GUI/SpeedDialDialog.hpp
     GUI/ActionRegistry.cpp

@@ -64,11 +64,6 @@ public:
     bool create_volume(std::string_view svg_file, const Vec2d &mouse_pos, ModelVolumeType volume_type = ModelVolumeType::MODEL_PART);
     bool create_volume(std::string_view svg_file, ModelVolumeType volume_type = ModelVolumeType::MODEL_PART);
 
-    // TigerSlicer: extrude a sketch (an SVG in mm written by the Sketch tool) to the given depth, as a new
-    // object when nothing is selected, otherwise onto the selected object as a part or a cut (negative volume).
-    bool create_volume_from_sketch(std::string_view svg_file, ModelVolumeType volume_type, double depth,
-                                   const std::optional<Vec2d> &mouse_pos);
-
     /// <summary>
     /// Check whether volume is object containing only emboss volume
     /// </summary>

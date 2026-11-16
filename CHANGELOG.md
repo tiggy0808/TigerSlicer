@@ -5,16 +5,6 @@ Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOP
 
 ## Unreleased
 
-**New**
-- **Sketch.** Draw shapes and extrude them, right in the slicer: **Edit > Sketch...**, or right-click the
-  bed (Add Primitive > Sketch...) or an object (Add part / Negative part > Sketch...).
-  - Draw rectangles (with rounded corners if you like), circles, polygons and free outlines on a 1 mm
-    grid, and type exact sizes and positions for the selected shape. A shape inside another one cuts a
-    hole in it.
-  - Pick a depth and whether it becomes a new object, is added to the selected object, or cuts into it.
-  - It isn't parametric: once extruded it's an ordinary part. You can still drag it on the surface,
-    resize it and change its depth, as with an SVG.
-
 **New (experimental)**
 - **Non-planar** (Quality > Non-planar) replaces the Z contouring checkbox with three choices:
   - **Off**: flat layers, as before.
