@@ -190,6 +190,31 @@ Commits, oldest first (all on `main`; the release commit follows them):
   - "On (experimental)" stays in the dropdown with experimental features off. It slices as Z
     contouring only, with the notice.
 
+### Verification (Windows)
+- Tests (MSVC), from `58e33bcbf` (the release commit only changes the version): fff_print 210 of 210,
+  libslic3r 1,065 of 1,065, including `[ModelTools]` (11 + 2 cases) and `[NonPlanar]` (13). The
+  `[CalibrationBuilder]` case that failed two runs in three before the label id fix passed 5 runs of 5.
+- Release build from the release commit (`de8e30ffa`, tag `v0.0.12`), with a clean `build\OrcaSlicer`
+  and `BUILD_TESTS` off: no errors. It installed 9,323 files: 0.0.11's 9,319 plus the four new
+  toolbar icons.
+- Packaged with `%TEMP%\tsrel012`, made by `%LOCALAPPDATA%\TigerSlicer-release-kit\make_kit.py`: the
+  earlier kits' setup.sed and install.ps1 had been deleted by Windows temp cleanup and were rebuilt
+  from the session logs (only `$version` and the kit paths ever changed).
+- Release assets:
+  - `TigerSlicer-0.0.12-win64-Setup.exe`, 229,617,664 B, sha256 `45fe957c…63f727`.
+  - `TigerSlicer-0.0.12-win64.zip`, 236,005,453 B, sha256 `e2f88192…ee9032`.
+  - Both digests were checked on GitHub after upload.
+- The Setup.exe test install (`TIGERSLICER_INSTALL_DIR`) has 9,324 files. Its `TigerSlicer.exe` and
+  `TigerSlicer.dll` match the build.
+- Smoke test of the test install, started minimized on a copy of the real data folder (without `log`
+  and `cache`), no input: "Version 0.0.12 build de8e30ffa7", responding after about 20 s, no crash log.
+  The `[error]` lines are two `calc_exclude_triangles` and "Unsupported printer type: Prusa CORE One
+  L", which earlier releases log too.
+- In the app (dev build, before the preview fix): both toolbar icons show and the Screw hole panel
+  opens with its controls. The hover preview was not seen; that led to the `GLModel::reset()` and
+  color fixes above. Neither tool was used on a model in the app: they are covered by the
+  `[ModelTools]` tests only.
+
 ---
 
 ## 0.0.11 (2026-10-23)
