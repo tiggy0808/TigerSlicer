@@ -1479,7 +1479,8 @@ bool PrintObject::invalidate_state_by_config_options(
             || opt_key == "interlocking_beam_layer_count"
             || opt_key == "interlocking_depth"
             || opt_key == "interlocking_boundary_avoidance"
-            || opt_key == "interlocking_beam_width") {
+            || opt_key == "interlocking_beam_width"
+            || opt_key == "apply_filament_shrinkage") {
             steps.emplace_back(posSlice);
 		} else if (
                opt_key == "elefant_foot_compensation"
@@ -4135,7 +4136,7 @@ void PrintObject::update_slicing_parameters()
     // Orca: updated function call for XYZ shrinkage compensation
     if (!m_slicing_params.valid) {
           m_slicing_params = SlicingParameters::create_from_config(this->print()->config(), m_config, this->model_object()->max_z(),
-                                                                   this->object_extruders(), this->print()->shrinkage_compensation());
+                                                                   this->object_extruders(), this->print()->shrinkage_compensation(*this->model_object()));
       }
 }
 

@@ -1781,7 +1781,7 @@ Print::ApplyStatus Print::apply(const Model &model_in, DynamicPrintConfig new_fu
         for (ModelObject *model_object : m_model.objects) {
             ModelObjectStatus &model_object_status = const_cast<ModelObjectStatus&>(model_object_status_db.reuse(*model_object));
             // Orca: Updated for XYZ filament shrink compensation
-            model_object_status.print_instances = print_objects_from_model_object(*model_object, this->shrinkage_compensation());
+            model_object_status.print_instances = print_objects_from_model_object(*model_object, this->shrinkage_compensation(*model_object));
             std::vector<const PrintObjectStatus*> old;
             old.reserve(print_object_status_db.count(*model_object));
             for (const PrintObjectStatus &print_object_status : print_object_status_db.get_range(*model_object))

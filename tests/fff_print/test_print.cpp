@@ -571,3 +571,34 @@ TEST_CASE("Every build plate heats to the filament's one bed temperature", "[Pri
     CHECK(config.option<ConfigOptionInts>("cool_plate_temp")->values == std::vector<int>{71});
     CHECK(config.option<ConfigOptionInts>("textured_plate_temp_initial_layer")->values == std::vector<int>{73});
 }
+
+// TigerSlicer: the shrinkage calibration test part prints at its true size, whatever the filament compensates.
+TEST_CASE("An object can opt out of filament shrinkage compensation", "[Print][ShrinkageCalibration]")
+{
+    DynamicPrintConfig config = DynamicPrintConfig::full_print_config();
+    config.set_deserialize_strict({{"filament_shrink", "95%"}, {"filament_shrinkage_compensation_z", "98%"}, {"layer_height", "0.1"},
+                                   {"initial_layer_print_height", "0.1"}});
+    // Width of the sliced cube halfway up, and the height of its top layer.
+    auto printed_size = [&config](const char *apply) {
+        Print print;
+        Model model;
+        const std::vector<std::vector<ConfigBase::SetDeserializeItem>> per_object{{{"apply_filament_shrinkage", apply}}};
+        init_print(std::vector<TriangleMesh>{cube(20)}, print, model, config, &per_object);
+        // Shrinkage follows the filaments the objects use, known from the first apply on, so apply again as the
+        // plater does.
+        print.apply(model, config);
+        print.process();
+        const PrintObject &object = *print.objects().front();
+        const Layer       &middle = *object.layers()[object.layers().size() / 2];
+        const BoundingBox  bb     = get_extents(middle.lslices);
+        return Vec2d(unscale<double>(bb.size().x()), object.layers().back()->print_z);
+    };
+    // A 20 mm cube at 95 % XY and 98 % Z shrinkage prints 21.05 mm wide and 20.41 mm tall ...
+    const Vec2d compensated = printed_size("1");
+    CHECK_THAT(compensated.x(), Catch::Matchers::WithinAbs(20. * 100. / 95., 0.01));
+    CHECK_THAT(compensated.y(), Catch::Matchers::WithinAbs(20. * 100. / 98., 0.1));
+    // ... and at its true size with the compensation turned off for it.
+    const Vec2d true_size = printed_size("0");
+    CHECK_THAT(true_size.x(), Catch::Matchers::WithinAbs(20., 0.01));
+    CHECK_THAT(true_size.y(), Catch::Matchers::WithinAbs(20., 0.1));
+}

@@ -1590,8 +1590,7 @@ StringObjectException Print::validate(std::vector<StringObjectException> *warnin
         if (auto layers = generate_object_layers(print_object.slicing_parameters(), layer_height_profile(print_object_idx), print_object.config().precise_z_height.value);
             !layers.empty()) {
 
-            Vec3d test =this->shrinkage_compensation();
-            const double shrinkage_compensation_z = this->shrinkage_compensation().z();
+            const double shrinkage_compensation_z = this->shrinkage_compensation(*print_object.model_object()).z();
             
             if (shrinkage_compensation_z != 1. && layers.back() > (this->config().printable_height / shrinkage_compensation_z + EPSILON)) {
                 // The object exceeds the maximum build volume height because of shrinkage compensation.
@@ -4898,6 +4897,12 @@ Vec3d Print::shrinkage_compensation() const
     const double z_compensation  = 100.0 / z_shrinkage_percent;
 
     return { xy_compensation, xy_compensation, z_compensation };
+}
+
+Vec3d Print::shrinkage_compensation(const ModelObject &object) const
+{
+    const ConfigOption *apply = object.config.option("apply_filament_shrinkage");
+    return apply != nullptr && !apply->getBool() ? Vec3d::Ones() : this->shrinkage_compensation();
 }
 
 const std::string PrintStatistics::FilamentUsedG     = "filament used [g]";

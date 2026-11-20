@@ -3109,6 +3109,15 @@ void PrintConfigDef::init_fff_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionPercents{ 100 });
     
+    // TigerSlicer: lets one object opt out of the filament shrinkage compensation above.
+    def = this->add("apply_filament_shrinkage", coBool);
+    def->label = L("Apply filament shrinkage compensation");
+    def->category = L("Quality");
+    def->tooltip = L("Scale this object to compensate for the filament's shrinkage (Shrinkage (XY) and Shrinkage (Z) in the "
+                     "filament settings). Turned off on the shrinkage calibration test part, which has to print at its true size.");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(true));
+
     def = this->add("filament_shrinkage_compensation_z", coPercents);
     def->label = L("Shrinkage (Z)");
     // xgettext:no-c-format, no-boost-format

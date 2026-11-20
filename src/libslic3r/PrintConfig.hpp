@@ -1134,6 +1134,8 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat,               elefant_foot_compensation))
     ((ConfigOptionInt,                 elefant_foot_compensation_layers))
     ((ConfigOptionPercent,             elefant_foot_layers_density))
+    // TigerSlicer: off for an object printed at its true size, such as the shrinkage calibration test part.
+    ((ConfigOptionBool,                apply_filament_shrinkage))
     ((ConfigOptionFloat,               max_bridge_length))
     ((ConfigOptionFloatOrPercent,      line_width))
     // Force the generation of solid shells between adjacent materials/volumes.

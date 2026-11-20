@@ -1257,6 +1257,8 @@ public:
      bool has_same_shrinkage_compensations() const;
     // Returns scaling for each axis representing shrinkage compensations in each axis.
      Vec3d shrinkage_compensation() const;
+     // TigerSlicer: the same for one object, which may opt out (apply_filament_shrinkage).
+     Vec3d shrinkage_compensation(const ModelObject &object) const;
 
     std::tuple<float, float> object_skirt_offset(double margin_height = 0) const;
 

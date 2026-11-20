@@ -721,7 +721,10 @@ void GLCanvas3D::LayersEditing::update_slicing_parameters()
 {
     if (m_slicing_parameters == nullptr) {
         m_slicing_parameters = new SlicingParameters();
-        *m_slicing_parameters = PrintObject::slicing_parameters(*m_config, *m_model_object, m_object_max_z, m_shrinkage_compensation);
+        // TigerSlicer: an object may opt out of the filament shrinkage compensation.
+        const ConfigOption *apply_shrinkage = m_model_object->config.option("apply_filament_shrinkage");
+        const Vec3d shrinkage = apply_shrinkage != nullptr && !apply_shrinkage->getBool() ? Vec3d::Ones() : m_shrinkage_compensation;
+        *m_slicing_parameters = PrintObject::slicing_parameters(*m_config, *m_model_object, m_object_max_z, shrinkage);
     }
 
 }
