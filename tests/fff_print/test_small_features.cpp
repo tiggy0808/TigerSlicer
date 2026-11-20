@@ -113,29 +113,103 @@ TEST_CASE("The deviation of the classic pulley slice shows every tooth tip unpri
     CHECK(checked > 40);
 }
 
-TEST_CASE("Slicing warns about features below the printable width", "[SmallFeatures]")
+// A 10 x 10 x 3 mm block with a fin standing 4 mm out of one side, `thickness` thin and `height` tall.
+static TriangleMesh block_with_fin(double thickness, double height = 3.)
 {
-    const bool experimental = GENERATE(true, false);
-    CAPTURE(experimental);
-    // A 10 x 10 x 3 mm block with a 0.15 mm thin fin standing 4 mm out of one side. 0.15 mm is below the default
-    // small_feature_min_width, 60% of the 0.4 mm nozzle.
     TriangleMesh part = make_cube(10, 10, 3);
-    TriangleMesh fin  = make_cube(4, 0.15, 3);
+    TriangleMesh fin  = make_cube(4, thickness, height);
     fin.translate(10, 5, 0);
     part.merge(fin);
+    return part;
+}
+
+// A 3 mm tall wedge 10 mm long, with a `tip_angle` (degrees) point.
+static TriangleMesh wedge(double tip_angle)
+{
+    const float          h = float(10. * std::tan(0.5 * tip_angle * M_PI / 180.));
+    indexed_triangle_set its;
+    its.vertices = {{0.f, 0.f, 0.f}, {10.f, -h, 0.f}, {10.f, h, 0.f}, {0.f, 0.f, 3.f}, {10.f, -h, 3.f}, {10.f, h, 3.f}};
+    its.indices  = {{0, 2, 1}, {3, 4, 5}, {0, 1, 4}, {0, 4, 3}, {1, 2, 5}, {1, 5, 4}, {2, 0, 3}, {2, 3, 5}};
+    if (its_volume(its) < 0.f)
+        its_flip_triangles(its);
+    return TriangleMesh(std::move(its));
+}
+
+// The messages of the warnings slicing `part` with a 0.4 mm nozzle and `extra` gives at the walls step.
+static std::vector<std::string> wall_step_warnings(const TriangleMesh                                    &part,
+                                                   std::initializer_list<ConfigBase::SetDeserializeItem> extra,
+                                                   bool                                                  experimental = true)
+{
+    DynamicPrintConfig config = DynamicPrintConfig::full_print_config();
+    config.set_deserialize_strict({{"nozzle_diameter", "0.4"}, {"layer_height", 0.2}, {"initial_layer_print_height", 0.2}});
+    config.set_deserialize_strict(extra);
     Print print;
     Model model;
     print.set_experimental_features_enabled(experimental);
-    init_print({part}, print, model, {{"nozzle_diameter", "0.4"}, {"layer_height", 0.2}});
+    init_print({part}, print, model, config);
     print.process();
-    const auto state = print.objects().front()->step_state_with_warnings(posPerimeters);
+    std::vector<std::string> messages;
+    for (const PrintStateBase::Warning &warning : print.objects().front()->step_state_with_warnings(posPerimeters).warnings)
+        messages.push_back(warning.message);
+    return messages;
+}
+
+static bool has_text(const std::string &text, const std::string &part) { return text.find(part) != std::string::npos; }
+
+TEST_CASE("Slicing warns about thin features the print leaves out", "[SmallFeatures]")
+{
+    const bool experimental = GENERATE(true, false);
+    CAPTURE(experimental);
+    // 0.15 mm is below the default small_feature_min_width, 60% of the 0.4 mm nozzle, and classic walls leave it out.
+    const std::vector<std::string> warnings = wall_step_warnings(block_with_fin(0.15), {{"wall_generator", "classic"}}, experimental);
     if (experimental) {
-        REQUIRE(state.warnings.size() == 1);
-        CHECK(state.warnings.front().message.find("1 features below printable width for a 0.4 mm nozzle") != std::string::npos);
+        REQUIRE(warnings.size() == 1);
+        CHECK(has_text(warnings.front(), "1 thin features will not print with a 0.4 mm nozzle"));
+        CHECK(has_text(warnings.front(), "A small feature policy other than Drop can print them."));
     } else {
         // An experimental-only warning.
-        CHECK(state.warnings.empty());
+        CHECK(warnings.empty());
     }
+}
+
+TEST_CASE("No thin feature warning when the walls print the feature", "[SmallFeatures]")
+{
+    // Arachne prints a 0.2 mm fin, below the 0.24 mm minimum width, as a wider line. (It leaves out a 0.18 mm one.)
+    CHECK(wall_step_warnings(block_with_fin(0.2), {{"wall_generator", "arachne"}}).empty());
+}
+
+TEST_CASE("No thin feature warning when the small feature policy prints the feature", "[SmallFeatures]")
+{
+    const std::string policy = GENERATE("balanced", "outside");
+    CAPTURE(policy);
+    CHECK(wall_step_warnings(block_with_fin(0.15), {{"wall_generator", "classic"}, {"small_feature_policy", policy}}).empty());
+}
+
+TEST_CASE("The thin feature warning keeps features the small feature policy leaves out", "[SmallFeatures]")
+{
+    // Every policy skips features narrower than half the minimum width, 0.12 mm here. Inside also skips those narrower
+    // than the minimum width, as its line would cross the model's edge.
+    const auto [thickness, policy] = GENERATE(table<double, std::string>({{0.08, "balanced"}, {0.08, "outside"}, {0.15, "inside"}}));
+    CAPTURE(thickness, policy);
+    const std::vector<std::string> warnings =
+        wall_step_warnings(block_with_fin(thickness), {{"wall_generator", "classic"}, {"small_feature_policy", policy}});
+    REQUIRE(warnings.size() == 1);
+    CHECK(has_text(warnings.front(), "1 thin features will not print"));
+    // Another policy is already set.
+    CHECK(!has_text(warnings.front(), "other than Drop"));
+}
+
+TEST_CASE("No thin feature warning for sharp corners", "[SmallFeatures]")
+{
+    const std::string generator = GENERATE("classic", "arachne");
+    const double      angle     = GENERATE(25., 45., 90.);
+    CAPTURE(generator, angle);
+    CHECK(wall_step_warnings(wedge(angle), {{"wall_generator", generator}}).empty());
+}
+
+TEST_CASE("No thin feature warning for a feature only two layers tall", "[SmallFeatures]")
+{
+    CHECK(wall_step_warnings(block_with_fin(0.15, 0.4), {{"wall_generator", "classic"}}).empty());
 }
 
 // The reference pulley sliced with its settings and `extra` on top.

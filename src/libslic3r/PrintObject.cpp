@@ -33,6 +33,7 @@
 #include <float.h>
 #include <iterator>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <oneapi/tbb/blocked_range.h>
 #include <oneapi/tbb/concurrent_vector.h>
@@ -1325,18 +1326,22 @@ SupportLayerPtrs::iterator PrintObject::insert_support_layer(SupportLayerPtrs::i
     return m_support_layers.insert(pos, new SupportLayer(id, interface_id, this, height, print_z, slice_z));
 }
 
-// Called by Print::apply().
-// This method only accepts PrintObjectConfig and PrintRegionConfig option keys.
+// TigerSlicer: thin features left unprinted on less than this much height (mm) in all, such as the last layers of a
+// ridge, are too little to warn about.
+static constexpr double kMinUnprintedHeight = 0.6;
+
 void PrintObject::warn_features_below_printable_width()
 {
     if (this->num_printing_regions() == 0 || m_layers.empty())
         return;
     auto nozzle_of    = [this](const PrintRegion &region) { return m_print->config().nozzle_diameter.get_at(region.extruder(frExternalPerimeter) - 1); };
     auto min_width_of = [&nozzle_of](const PrintRegion &region) { return region.config().small_feature_min_width.get_abs_value(nozzle_of(region)); };
-    // Each feature counts against the minimum width of the region it lies in, as a modifier can set its own. Counted on
-    // the layer with the most of them, so a feature through many layers counts once.
+    // Only features the print leaves out count: the walls often print a thin feature anyway, wider than the model, and
+    // the small feature policy prints others. Each feature counts against the minimum width of the region it lies in, as
+    // a modifier can set its own, and must leave out at least the area of a minimum width line a nozzle long. Counted on
+    // the layer with the most, so a feature through many layers counts once.
     std::vector<size_t> counts(m_layers.size(), 0);
-    tbb::parallel_for(tbb::blocked_range<size_t>(0, m_layers.size()), [this, &counts, &min_width_of](const tbb::blocked_range<size_t> &range) {
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, m_layers.size()), [this, &counts, &min_width_of, &nozzle_of](const tbb::blocked_range<size_t> &range) {
         for (size_t i = range.begin(); i < range.end(); ++i) {
             const Layer        &layer = *m_layers[i];
             std::vector<double> widths;
@@ -1344,33 +1349,52 @@ void PrintObject::warn_features_below_printable_width()
                 if (!region->slices.empty())
                     widths.push_back(min_width_of(region->region()));
             sort_remove_duplicates(widths);
-            for (const double width : widths)
-                if (width > 0.)
-                    for (const ExPolygon &feature : SmallFeatures::features_below_width(layer.lslices, scaled<coord_t>(width)))
-                        if (const LayerRegion *region = SmallFeatures::region_of(layer.regions(), feature);
-                            region != nullptr && min_width_of(region->region()) == width)
-                            ++counts[i];
+            std::optional<Polygons> covered;
+            for (const double width : widths) {
+                if (width <= 0.)
+                    continue;
+                for (const ExPolygon &feature : SmallFeatures::features_below_width(layer.lslices, scaled<coord_t>(width))) {
+                    const LayerRegion *region = SmallFeatures::region_of(layer.regions(), feature);
+                    if (region == nullptr || min_width_of(region->region()) != width)
+                        continue;
+                    if (!covered)
+                        covered = SmallFeatures::printed_coverage(layer);
+                    if (SmallFeatures::is_left_unprinted(feature, *covered, width * nozzle_of(region->region())))
+                        ++counts[i];
+                }
+            }
         }
     });
-    const size_t most = *std::max_element(counts.begin(), counts.end());
-    if (most == 0)
+    double unprinted_height = 0.;
+    for (size_t i = 0; i < m_layers.size(); ++i)
+        if (counts[i] > 0)
+            unprinted_height += m_layers[i]->height;
+    if (unprinted_height < kMinUnprintedHeight - EPSILON)
         return;
+    const size_t most = *std::max_element(counts.begin(), counts.end());
     // The minimum width named in the warning, when the object's regions agree on it.
     std::vector<double> widths;
-    for (size_t i = 0; i < this->num_printing_regions(); ++i)
+    bool                all_drop = true;
+    for (size_t i = 0; i < this->num_printing_regions(); ++i) {
         widths.push_back(min_width_of(this->printing_region(i)));
+        all_drop = all_drop && this->printing_region(i).config().small_feature_policy.value == sfpDrop;
+    }
     sort_remove_duplicates(widths);
-    const double nozzle = nozzle_of(this->printing_region(0));
-    this->active_step_add_warning(
-        PrintStateBase::WarningLevel::NON_CRITICAL,
-        widths.size() == 1 ?
-            Slic3r::format(L("%1%: %2% features below printable width for a %3% mm nozzle (narrower than %4% mm)."),
-                           this->model_object()->name, most, nozzle, widths.front()) :
-            Slic3r::format(L("%1%: %2% features below printable width for a %3% mm nozzle (narrower than the small feature "
-                             "minimum width where they are)."),
-                           this->model_object()->name, most, nozzle));
+    const double nozzle  = nozzle_of(this->printing_region(0));
+    std::string  message = widths.size() == 1 ?
+        Slic3r::format(L("%1%: %2% thin features will not print with a %3% mm nozzle (narrower than %4% mm)."),
+                       this->model_object()->name, most, nozzle, widths.front()) :
+        Slic3r::format(L("%1%: %2% thin features will not print with a %3% mm nozzle (narrower than the small feature "
+                         "minimum width where they are)."),
+                       this->model_object()->name, most, nozzle);
+    // With the Drop policy nothing prints them; another policy prints all but the thinnest.
+    if (all_drop)
+        message += std::string(" ") + L("A small feature policy other than Drop can print them.");
+    this->active_step_add_warning(PrintStateBase::WarningLevel::NON_CRITICAL, message);
 }
 
+// Called by Print::apply().
+// This method only accepts PrintObjectConfig and PrintRegionConfig option keys.
 bool PrintObject::invalidate_state_by_config_options(
     const ConfigOptionResolver &old_config, const ConfigOptionResolver &new_config, const std::vector<t_config_option_key> &opt_keys)
 {

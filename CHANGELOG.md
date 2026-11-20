@@ -24,6 +24,12 @@ Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOP
 - Objects have an **Apply filament shrinkage compensation** setting (on by default), which the test
   part turns off.
 
+**Fixed (experimental)**
+- The "features below printable width" warning now only appears when something will actually be
+  missing from the print. It used to appear for thin features the walls print anyway, sharp corners,
+  and features only a layer or two tall. It now reads "N thin features will not print", and suggests a
+  small feature policy when Drop is set.
+
 ## 0.0.12 (2026-11-15)
 
 **New**

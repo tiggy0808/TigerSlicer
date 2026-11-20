@@ -54,6 +54,39 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
   verification part's 1.0526/1.0526/1.0204; the overrides were set on the test part only and the
   filament became modified. The dialog itself was not opened from the build machine.
 
+### Fewer "below printable width" warnings (experimental)
+- Before: `PrintObject::warn_features_below_printable_width()` counted every `features_below_width()`
+  piece, whatever happened to it. It fired for:
+  - thin features the walls print anyway (Arachne prints a 0.2 mm fin with a 0.4 mm nozzle);
+  - fins the small feature policy prints (Balanced, Outside);
+  - sharp corners (a 45° or 25° point, classic or Arachne): the miter opening only gives back corners
+    blunter than its miter limit;
+  - features only a layer or two tall.
+- Now a feature counts only if `SmallFeatures::is_left_unprinted()` holds. The part of it that
+  `printed_coverage(layer)` misses, opened by half of `kDeviationTolerance`, must have a piece of at least
+  min width × nozzle mm² (a minimum-width line one nozzle long). Coverage is computed once per layer,
+  and only on layers that have a feature.
+  - It runs before `set_done(posPerimeters)`, so coverage holds walls, gap fill and small feature lines;
+    the fill area counts as covered.
+- The layers that have an unprinted feature must add up to `kMinUnprintedHeight` (0.6 mm), or there is
+  no warning.
+- New wording: "N thin features will not print with a X mm nozzle (narrower than Y mm)". When every
+  region's policy is Drop, it adds "A small feature policy other than Drop can print them."
+  - A policy can't always help, so the hint is left out otherwise. Every policy skips pieces narrower
+    than half the minimum width. Inside also skips those narrower than the minimum width, since its line
+    would cross the edge.
+- Tests (fff_print `[SmallFeatures]`), all with a 0.4 mm nozzle:
+  - Warns: classic walls with a 0.15 mm fin, with the hint, and only with experimental features on.
+  - Still warns, without the hint: 0.08 mm with Balanced or Outside, and 0.15 mm with Inside.
+  - No warning: Arachne with a 0.2 mm fin; Balanced or Outside with a 0.15 mm fin; 25°, 45° and 90°
+    wedges with both wall generators; a fin 0.4 mm tall.
+  - Against the old warning code, the corner, Arachne, policy and short-fin cases fail. The others fail
+    only on the new wording.
+- Verified on macOS: fff_print 212 of 216 cases pass, and libslic3r passes all 1,078. The 4 fff_print
+  failures are the compiler-dependent regression tests that also fail on main (`[Regression]` in
+  test_print.cpp, and test_non_planar.cpp 220, 228 and 307). The app was built, but the warning was not
+  checked in the GUI.
+
 ---
 
 ## 0.0.12 (2026-11-15)

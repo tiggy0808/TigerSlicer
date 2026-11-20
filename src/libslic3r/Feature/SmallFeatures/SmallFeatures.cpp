@@ -187,6 +187,14 @@ ExPolygons features_below_width(const ExPolygons &slices, coord_t min_width)
     return features;
 }
 
+bool is_left_unprinted(const ExPolygon &feature, const Polygons &covered, double min_area)
+{
+    for (const ExPolygon &missed : opening_ex(diff_ex(feature, covered), float(scale_(0.5 * kDeviationTolerance))))
+        if (unscale<double>(unscale<double>(missed.area())) >= min_area)
+            return true;
+    return false;
+}
+
 namespace {
 
 // A line to print a thin part on, out to the part's outline, with the part's width across it in mm: the widest, the

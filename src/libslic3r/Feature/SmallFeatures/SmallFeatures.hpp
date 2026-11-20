@@ -62,6 +62,9 @@ std::vector<PrintedLayerDeviation> print_deviation(const Print &print);
 // The parts of `slices` narrower than `min_width` (scaled), one ExPolygon per feature. The slivers that rounding a
 // sharp corner leaves, shorter than they are wide, are not features.
 ExPolygons features_below_width(const ExPolygons &slices, coord_t min_width);
+// Whether the print leaves part of `feature` out: a piece that `covered` (the layer's printed coverage) misses, of at
+// least `min_area` (mm^2). The point of a sharp corner, which no bead reaches, is smaller than a fin left out.
+bool is_left_unprinted(const ExPolygon &feature, const Polygons &covered, double min_area);
 
 // The region of `regions` that `part` lies in: the one holding its middle, or else the one it overlaps most. Null when
 // `regions` is empty.
