@@ -7,6 +7,55 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 
 ---
 
+## Unreleased
+
+### Shrinkage calibration (experimental)
+- Base (OrcaSlicer): `filament_shrink` (XY, one value) and `filament_shrinkage_compensation_z` are
+  filament percentages, 100 = off, applied as the per-axis scale `Print::shrinkage_compensation()` on
+  each instance transform in `PrintApply` (`print_objects_from_model_object`), print-wide from the
+  first used filament and only when all used filaments agree. `xy_contour_compensation`,
+  `xy_hole_compensation` and `elefant_foot_compensation` are `PrintObjectConfig`, `hole_to_polyhole`
+  `PrintRegionConfig`; they offset the slices in `PrintObjectSlice.cpp` after the scale. Separate X and
+  Y would only need the `Vec3d`; kept as one XY value by choice (the analysis reports X and Y and uses
+  the mean).
+- New object option `apply_filament_shrinkage` (bool, default true, category Quality, not in any print
+  preset page). `Print::shrinkage_compensation(const ModelObject&)` returns ones when an object turns
+  it off; used in `PrintApply`, `PrintObject::update_slicing_parameters`, the build height check in
+  `Print::validate` and the variable layer height editor. In `invalidate_state_by_config_options` it
+  invalidates `posSlice`.
+- `libslic3r/ShrinkageCalibration.{hpp,cpp}` (pure): `fit_line()` (least squares, RMS and max
+  residual), `analyse()` (per axis percent = slope × 100, intercept = constant offset; XY mean,
+  anisotropy > 0.1 pp, offset > 0.2 mm flagged, residual > 0.05 mm flagged; contour suggestion
+  −offset/2, hole suggestion −(hole error)/2 after the XY scale; wall checked against the fit),
+  `out_of_range()` (> 5 % or missing), `corrected_percent()` (new = printed-with × measured / 100, so a
+  verification print refines the current value), `nominals_for_bed()` and `make_test_part()`.
+- Test part: 14 mm arms, each three 2 mm tiers on a 2 mm base inset 1 mm from every measured face, so
+  each length runs across opposite-facing faces (a constant offset appears in the intercept) and none
+  touches the first layers. Z staircase from z = 0; holes in a 6 mm boss; 10 mm tall wall; X and Y
+  engraved 0.6 mm into the exposed top of each arm's bottom tier. Prisms via
+  `Emboss::polygons2model`. Arms (and Z) scale down, to 0.5× at most, when the bed (or height) is small.
+- GUI: `ShrinkageCalibrationDialog` (Calibration menu, both the Windows title bar and the menu bar,
+  enabled while experimental features are shown). `Plater::add_shrinkage_test_part()` adds the part
+  with the overrides above (none for verification) and lists the profiles' non-zero compensation in a
+  notification. Measurements live for the session; the last part's nominals are kept in the app
+  config (`shrinkage_calibration_nominals`). Apply writes the two percentages and a dated record
+  (condition, results, measurements) to `filament_notes` of the edited filament through
+  `Tab::load_config()`, so it is an unsaved change and a system preset is never overwritten.
+- Tests: libslic3r `[ShrinkageCalibration]` (13 cases: pure scale, pure offset, both, noisy,
+  inconsistent, anisotropy, suggestions, large offset, rejection, verification correction, bed
+  scaling, part size); fff_print "An object can opt out of filament shrinkage compensation" slices a
+  20 mm cube at 95/98 % (21.05 × 20.41 mm with the option on, 20 × 20 with it off).
+- Verified on macOS: all suites built and run. libslic3r 1,078, sla_print, libnest2d and
+  filament_group pass. fff_print (207 of 211 cases pass) and slic3rutils (68 pass, 1 fails, 33
+  skipped without numpy) fail the same way on main without this change: the compiler-dependent motion-hash tests (`[Regression]` in
+  test_print.cpp, two `[NonPlanar]` regression cases and "With experimental features off, On prints
+  as Z contouring only") and the plugin audit's `orcaslicer.conf` names. In the app, with a temporary
+  startup hook: filament at 95/98 %, the test part's print object scale was 1/1/1 and the
+  verification part's 1.0526/1.0526/1.0204; the overrides were set on the test part only and the
+  filament became modified. The dialog itself was not opened from the build machine.
+
+---
+
 ## 0.0.12 (2026-11-15)
 
 Theme: a screw hole tool and a fillet/chamfer tool (the only CAD in the slicer: the Sketch tool was

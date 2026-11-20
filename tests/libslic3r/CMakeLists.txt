@@ -54,6 +54,7 @@ add_executable(${_TEST_NAME}_tests
 	test_resin_profile_migration.cpp
 	test_resin_quality.cpp
 	test_seam_optimizer.cpp
+	test_shrinkage_calibration.cpp
 	test_slice_cache.cpp
 	test_stage_a_acceptance.cpp
 	test_stage_a_scenarios.cpp

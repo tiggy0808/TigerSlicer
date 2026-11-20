@@ -1,6 +1,7 @@
 #include "Plater.hpp"
 #include "../Utils/NetworkAgent.hpp"
 #include "../Utils/NetworkAgentFactory.hpp"
+#include "libslic3r/ShrinkageCalibration.hpp"
 #include "libslic3r/Config.hpp"
 #include "libslic3r_version.h"
 
@@ -19623,6 +19624,63 @@ int Plater::auto_hollow_and_drain(float hole_radius, float hole_depth)
 // TigerSlicer calibration builder. The setting's profiles are prepared, then either one tower whose
 // value changes every band (applied by GCode::apply_calibration_band) or one copy per value with the
 // value as a per-object override. Built-in models carry their values in raised digits.
+void Plater::add_shrinkage_test_part(const shrinkage_calibration::Nominals &nominals, bool verification)
+{
+    if (printer_technology() != ptFFF)
+        return;
+    Model        built;
+    ModelObject *part = built.add_object(verification ? _u8L("Shrinkage verification").c_str() : _u8L("Shrinkage test").c_str(), "",
+                                         shrinkage_calibration::make_test_part(nominals));
+    part->clear_instances(); // placed by the plater
+    if (!verification) {
+        part->config.set_key_value("apply_filament_shrinkage", new ConfigOptionBool(false));
+        part->config.set_key_value("xy_contour_compensation", new ConfigOptionFloat(0.));
+        part->config.set_key_value("xy_hole_compensation", new ConfigOptionFloat(0.));
+        part->config.set_key_value("elefant_foot_compensation", new ConfigOptionFloat(0.));
+        part->config.set_key_value("hole_to_polyhole", new ConfigOptionBool(false));
+    }
+    wxGetApp().mainframe->select_tab(TAB_ID_PREPARE);
+    const std::vector<size_t> objects = p->load_model_objects(built.objects);
+    if (objects.empty())
+        return;
+    changed_objects(objects);
+
+    // What the profiles compensate, which the test part leaves out (or, for verification, includes).
+    const PresetBundle       &bundle   = *wxGetApp().preset_bundle;
+    const DynamicPrintConfig &print    = bundle.prints.get_edited_preset().config;
+    const DynamicPrintConfig &filament = bundle.filaments.get_edited_preset().config;
+    std::vector<std::string>  active;
+    auto add_mm = [&active](const std::string &label, double value) {
+        if (value != 0.)
+            active.push_back(format("%1% %2% mm", label, value));
+    };
+    if (const double v = filament.option<ConfigOptionPercents>("filament_shrink")->get_at(0); v != 100.)
+        active.push_back(format("%1% %2%%%", _u8L("Shrinkage (XY)"), v));
+    if (const double v = filament.option<ConfigOptionPercents>("filament_shrinkage_compensation_z")->get_at(0); v != 100.)
+        active.push_back(format("%1% %2%%%", _u8L("Shrinkage (Z)"), v));
+    add_mm(_u8L("X-Y contour compensation"), print.opt_float("xy_contour_compensation"));
+    add_mm(_u8L("X-Y hole compensation"), print.opt_float("xy_hole_compensation"));
+    add_mm(_u8L("Elephant foot compensation"), print.opt_float("elefant_foot_compensation"));
+    if (print.opt_bool("hole_to_polyhole"))
+        active.push_back(_u8L("Convert holes to polyholes"));
+    std::string listed;
+    for (const std::string &item : active)
+        listed += (listed.empty() ? "" : ", ") + item;
+
+    std::string message;
+    if (verification) {
+        message = _u8L("Shrinkage verification part added. It prints with your current compensation. Measure it like the test part, "
+                       "then enter the measurements in Calibration > Shrinkage calibration as a verification print.");
+    } else {
+        message = _u8L("Shrinkage test part added. It prints at its true size: shrinkage, X-Y, hole and elephant foot compensation "
+                       "are turned off for it. Measure it as shown in Calibration > Shrinkage calibration.");
+        if (!listed.empty())
+            message += " " + format(_u8L("Your profiles use %1%: the test part ignores them, everything else on the plate still uses them."), listed);
+    }
+    get_notification_manager()->push_notification(NotificationType::CustomNotification,
+                                                   NotificationManager::NotificationLevel::RegularNotificationLevel, message);
+}
+
 void Plater::calib_builder(const calib_builder::Setup &setup)
 {
     using namespace calib_builder;

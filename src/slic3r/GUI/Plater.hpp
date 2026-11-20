@@ -60,6 +60,7 @@ enum class Purpose;
 enum class SupportLevel;
 } // namespace auto_slice
 namespace calib_builder { struct Setup; }
+namespace shrinkage_calibration { struct Nominals; }
 
 using ModelInstancePtrs = std::vector<ModelInstance*>;
 
@@ -347,6 +348,10 @@ public:
     // SoftFever
     // TigerSlicer: sets up the plate and profiles for a calibration builder print.
     void calib_builder(const calib_builder::Setup &setup);
+    // TigerSlicer: shrinkage calibration (experimental). Adds the test part. The first print turns off, for the part
+    // only, the filament's shrinkage compensation and the X-Y, hole and elephant foot compensation, so it prints at its
+    // true size; a verification print keeps them, to show what is left.
+    void add_shrinkage_test_part(const shrinkage_calibration::Nominals &nominals, bool verification);
 
     BuildVolume_Type get_build_volume_type() const;
 

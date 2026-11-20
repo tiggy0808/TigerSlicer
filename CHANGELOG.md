@@ -3,6 +3,27 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
+## Unreleased
+
+**New (experimental)**
+- **Shrinkage calibration** (Calibration > Shrinkage calibration, available while experimental features
+  are on). For filaments that shrink, such as fibre-filled nylon, PPA, PPS and PEEK:
+  - **Add test part** puts a calibration part on the plate: two arms with steps at 20, 60 and 100 mm,
+    a Z staircase at 10, 20 and 40 mm, a 5 mm and a 10 mm hole and a 2 mm wall, with X and Y engraved.
+    It prints at its true size: shrinkage, X-Y, hole and elephant foot compensation are turned off for
+    it, and you are told if your profiles use any of them. On a small printer it gets smaller.
+  - Enter what you measure and whether the part is as printed, annealed or moisture conditioned. Each
+    axis gets its shrinkage and its constant size error (from line width or flow) separately, by
+    fitting a line through the three lengths, with a warning when the measurements don't agree or a
+    value is more than 5 % off.
+  - **Apply to filament** sets Shrinkage (XY) and Shrinkage (Z) and records the calibration in the
+    filament's notes. The filament is marked as modified; save it to keep the values. X-Y and hole
+    compensation are suggested, not applied. When X and Y shrink differently, you're told that their
+    average is used.
+  - **Add verification part** prints the part again with the new values, to measure what is left.
+- Objects have an **Apply filament shrinkage compensation** setting (on by default), which the test
+  part turns off.
+
 ## 0.0.12 (2026-11-15)
 
 **New**

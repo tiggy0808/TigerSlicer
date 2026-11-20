@@ -1,4 +1,5 @@
 #include "MainFrame.hpp"
+#include "ShrinkageCalibrationDialog.hpp"
 #include "CalibrationBuilderDialog.hpp"
 #include "PrinterConnectionsPanel.hpp"
 
@@ -3503,7 +3504,13 @@ void MainFrame::init_menubar_as_editor()
         _L("Build a calibration print: choose a setting, its range, a tower or a grid of copies, and the model"),
         [this](wxCommandEvent&) { open_calibration_builder(this, m_plater); }, "", nullptr,
         [this]() { return m_plater->is_view3D_shown() && m_plater->printer_technology() == ptFFF; }, this);
-
+    // TigerSlicer: experimental, so only available while experimental features are shown.
+    append_menu_item(m_topbar->GetCalibMenu(), wxID_ANY, _L("Shrinkage calibration (Experimental)..."),
+        _L("Print a test part, measure it, and set the filament's shrinkage from the measurements. "
+           "Needs View > Show Experimental Features."),
+        [this](wxCommandEvent&) { open_shrinkage_calibration(this); }, "", nullptr,
+        [this]() { return m_plater->is_view3D_shown() && m_plater->printer_technology() == ptFFF && wxGetApp().show_experimental_features(); },
+        this);
 
 #else
     // On Mac, the Apple menu ignores non-standard custom items, so add Preset Bundle to the File menu
@@ -3538,6 +3545,13 @@ void MainFrame::init_menubar_as_editor()
         _L("Build a calibration print: choose a setting, its range, a tower or a grid of copies, and the model"),
         [this](wxCommandEvent&) { open_calibration_builder(this, m_plater); }, "", nullptr,
         [this]() { return m_plater->is_view3D_shown() && m_plater->printer_technology() == ptFFF; }, this);
+    // TigerSlicer: experimental, so only available while experimental features are shown.
+    append_menu_item(calib_menu, wxID_ANY, _L("Shrinkage calibration (Experimental)..."),
+        _L("Print a test part, measure it, and set the filament's shrinkage from the measurements. "
+           "Needs View > Show Experimental Features."),
+        [this](wxCommandEvent&) { open_shrinkage_calibration(this); }, "", nullptr,
+        [this]() { return m_plater->is_view3D_shown() && m_plater->printer_technology() == ptFFF && wxGetApp().show_experimental_features(); },
+        this);
     m_menubar->Append(calib_menu,wxString::Format("&%s", _L("Calibration")));
     if (helpMenu)
         m_menubar->Append(helpMenu, wxString::Format("&%s", _L("Help")));
