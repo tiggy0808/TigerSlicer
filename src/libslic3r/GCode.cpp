@@ -12,6 +12,7 @@
 #include "EdgeGrid.hpp"
 #include "Geometry/ConvexHull.hpp"
 #include "GCode/PrintExtents.hpp"
+#include "GCode/PrusaFirmware.hpp"
 #include "GCode/Thumbnails.hpp"
 #include "GCode/WipeTower.hpp"
 #include "GCode/WipeTower2.hpp"
@@ -4168,6 +4169,9 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
 
           file.write("; CONFIG_BLOCK_END\n\n");
       } // !skip_config_block
+      // TigerSlicer: Prusa's firmware compares the last filament_type it reads to the loaded filament's name, and it has
+      // no name for a type such as PPA-CF. This line, after the one of the configuration block, gives its names.
+      file.write(PrusaFirmware::filament_type_line(print.config().machine_start_gcode.value, print.config().filament_type.values));
 
     }
     file.write("\n");

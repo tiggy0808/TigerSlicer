@@ -379,6 +379,8 @@ set(lisbslic3r_sources    # --- TigerSlicer ------------------------------------
     GCode/PchipInterpolatorHelper.hpp
     GCode/PressureEqualizer.cpp
     GCode/PressureEqualizer.hpp
+    GCode/PrusaFirmware.cpp
+    GCode/PrusaFirmware.hpp
     GCode/PrintExtents.cpp
     GCode/PrintExtents.hpp
     GCodeReader.cpp

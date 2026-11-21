@@ -87,6 +87,48 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
   test_print.cpp, and test_non_planar.cpp 220, 228 and 307). The app was built, but the warning was not
   checked in the GUI.
 
+### Prusa firmware: filament names and the bed levelling temperature
+Reported on a CORE One L: PPA loaded, PPA sliced, and the printer says the wrong filament is loaded.
+- Cause, from the firmware source (Prusa-Firmware-Buddy):
+  - `GCodeInfo::parse_comment()` takes `; filament_type = a;b;c`, one name per tool, cut to 7 characters.
+  - `gcode_compatibility.cpp` sets `VirtualToolCheck::filament_type` ("Wrong filament type") when that
+    name `!=` the loaded filament's name. There is no other matching.
+  - The preset names (`PresetFilamentType`) are PLA, PETG, ASA, PC, PVB, ABS, HIPS, PP, FLEX, PA, PVA and
+    BVOH, plus PPS and PPA with the high temperature hotend. TigerSlicer's types are PPA-CF, PPA-GF, PA-CF,
+    TPU and so on, which never match. PrusaSlicer's own profiles use the base name (its Siraya Tech PPA-CF
+    has `filament_type = PPA`).
+  - The plain-text reader scans the comments before the first G-code and then the last 75,000 bytes; a
+    later `filament_type` replaces an earlier one.
+- Fix: `GCode/PrusaFirmware.{hpp,cpp}`.
+  - `filament_name()`: a preset name stays; TPU*/TPE* become FLEX; otherwise the part before the first
+    `-` if it is a preset name; PA6, PA11, PA12, PA612 and PAHT become PA; anything else is unchanged (for
+    a filament the user added to the printer under that name).
+  - `filament_type_line()` gives `; filament_type = ...` with those names, only when the start G-code has
+    `M862.3` (the firmware's printer model check) and a name differs from its type.
+  - `GCode::_do_export()` writes it after `; CONFIG_BLOCK_END`, so it is the last one in the file. The
+    configuration block keeps the slicer's types: `load_from_gcode_file()` only reads the block.
+  - Not handled: a single-tool printer whose print starts with the project's second filament. The
+    firmware assigns the names to tools in order, as with PrusaSlicer.
+- Bed levelling ("standby") temperature. The Prusa start G-codes compared `filament_type[0]` to exactly
+  "PC", "PA" and "FLEX", so every other type waited at 170 °C, and TPU missed the FLEX retraction.
+  - The comparisons are now regular expressions (the parser's `=~` is a full match):
+    `/^(PC|PC-.*|PA|PA-.*|PA[0-9]+.*|PAHT.*)$/` (not PCTG) and `/^(FLEX|TPU.*|TPE.*)$/`.
+  - New branch in front of them, from PrusaSlicer's "CORE One L HT Hotend" start G-code: PEEK* 330,
+    PEKK* 310, and `/^(PPA|PPS|PSU|PES|PEI|PI|TPI).*/` at `min(first layer - 40, 310)`.
+  - The `MBL160` and `HT_MBL10` filament notes still win. The 170 °C idle temperature while the chamber
+    heats is unchanged.
+  - In the single-tool profiles `filament_type[0]`, `filament_notes[0]` and `first_layer_temperature[0]`
+    became `[initial_tool]`. The XL files keep `[0]` where they address tool 0.
+  - 11 machine files changed (CORE One, CORE One L, MK3.5, MK4, MK4S, XL); `Prusa.json` is 02.04.00.05
+    so installed system profiles update. User printer presets keep their own start G-code.
+- Tests:
+  - libslic3r `[PrusaFirmware]`: the name table (32 types) and when the line is written.
+  - fff_print `[PrusaStartGCode]` slices a cube with the shipped CORE One L start G-code: both waits and
+    the purge temperature for 21 types, the flexible retraction, and the last `filament_type` of the file
+    (PPA, FLEX; unchanged for PLA and for a start G-code without `M862.3`).
+- Verified on macOS: fff_print 215 of 219 cases and libslic3r all 1,080; the 4 failures are the same
+  compiler-dependent regression tests as on main. Not verified on a printer.
+
 ---
 
 ## 0.0.12 (2026-11-15)

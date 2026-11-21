@@ -18,6 +18,7 @@ add_executable(${_TEST_NAME}_tests
 	test_non_planar.cpp
 	test_perimeters.cpp
 	test_print.cpp
+	test_prusa_start_gcode.cpp
 	test_printobject.cpp
 	test_skirt_brim.cpp
 	test_slicing_pipeline_hook.cpp
