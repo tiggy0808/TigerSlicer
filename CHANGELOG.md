@@ -3,7 +3,7 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
-## Unreleased
+## 0.0.13 (2026-11-21)
 
 **New (experimental)**
 - **Shrinkage calibration** (Calibration > Shrinkage calibration, available while experimental features
@@ -23,6 +23,23 @@ Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOP
   - **Add verification part** prints the part again with the new values, to measure what is left.
 - Objects have an **Apply filament shrinkage compensation** setting (on by default), which the test
   part turns off.
+
+**Fixed**
+- **Prusa printers no longer say the wrong filament is loaded** when it is the right one. The printer
+  compares the G-code's filament type to the loaded filament's name, letter for letter, and it only
+  knows base names: PPA, not PPA-CF. G-code for Prusa printers now also names the filament the
+  printer's way: PPA-CF and PPA-GF as PPA, every nylon (PA-CF, PA6-GF, PAHT-CF...) as PA, PETG-CF as
+  PETG, TPU as FLEX, and so on. On the printer, load the filament as that base type.
+- **Prusa printers level the bed at a nozzle temperature that suits the filament.** The start G-code
+  only recognised the plain types PA, PC and FLEX, so everything else (PPA-CF, PA-CF, TPU...) waited
+  at 170 °C. Now:
+  - nylons (any PA) and PC: 25 °C below the first layer temperature;
+  - PPA, PPS, PEI, PSU and other high temperature materials: 40 °C below it, 310 °C at most;
+  - PEEK 330 °C, PEKK 310 °C;
+  - TPU and other flexibles: 210 °C, with the longer retraction before nozzle cleaning;
+  - everything else: 170 °C, as before.
+  It also follows the filament the print starts with, not the first filament of the project.
+  Printer presets you made yourself keep their own start G-code.
 
 **Fixed (experimental)**
 - The "features below printable width" warning now only appears when something will actually be

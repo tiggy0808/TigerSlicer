@@ -7,7 +7,20 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 
 ---
 
-## Unreleased
+## 0.0.13 (2026-11-21)
+
+Theme: shrinkage calibration (experimental), a thin feature warning that only shows when something is
+left out, and two fixes for Prusa printers (filament names and the bed levelling temperature).
+Developed and verified on macOS; released for macOS first.
+
+Commits, oldest first (all on `main`; the release commit follows them):
+
+| Commit | Subject |
+|---|---|
+| `172189682` | feat: objects can opt out of filament shrinkage compensation |
+| `77b6eb5ba` | feat(calibration): shrinkage calibration (experimental) |
+| `9940f0796` | fix: warn about thin features only when the print leaves them out |
+| `3be585f8c` | fix(prusa): firmware filament names and a bed levelling temperature by filament type |
 
 ### Shrinkage calibration (experimental)
 - Base (OrcaSlicer): `filament_shrink` (XY, one value) and `filament_shrinkage_compensation_z` are
