@@ -7,7 +7,10 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 
 ---
 
-## Unreleased
+## 0.1.0 (2026-11-22)
+
+Theme: TigerSlicer moves from OrcaSlicer's code of August 2026 to OrcaSlicer 2.5.2. The version goes to
+0.1.0 for the size of the change. Merged and verified on macOS; released for macOS first.
 
 ### Merge of OrcaSlicer 2.5.2
 TigerSlicer was built on OrcaSlicer `main` of 2026-08-19 (`ba2297391`, between 2.4.2 and the 2.5 alpha).

@@ -3,7 +3,7 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
-## Unreleased
+## 0.1.0 (2026-11-22)
 
 **Now based on OrcaSlicer 2.5.2** (it was based on OrcaSlicer's code from August 2026). Everything
 TigerSlicer adds or does differently is kept: the name and pink theme, no cloud or sign-in, no Home tab,
