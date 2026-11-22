@@ -8,5 +8,5 @@
 	"bed_model": "flsun_T1_buildplate_model.stl",
 	"bed_texture": "FLSun_T1_buildplate_texture.svg",
 	"hotend_model": "",
-	"default_materials": "PLA @System;PETG @System;ASA @System;TPU 95A @System;ABS @System"
+	"default_materials": "PLA @System"
 }

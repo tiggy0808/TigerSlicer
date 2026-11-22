@@ -8,5 +8,5 @@
 	"bed_model": "mk3.5_bed.stl",
 	"bed_texture": "mk3.5.svg",
 	"hotend_model": "",
-	"default_materials": "PLA-CF @System;PC @System;PVA @System;PA6 @System;PA6-CF @System;ABS @System;PLA @System;PETG @System;TPU 95A @System;ASA @System"
+	"default_materials": "PLA-CF @System;PLA @System"
 }

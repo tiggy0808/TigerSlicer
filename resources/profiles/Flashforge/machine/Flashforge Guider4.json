@@ -8,5 +8,5 @@
 	"bed_model": "flashforge_g4pro_buildplate_model.stl",
 	"bed_texture": "flashforge_g4pro_buildplate_texture.svg",
 	"hotend_model": "",
-	"default_materials": "PVA @System;HIPS @System;PETG-CF @System;PETG @System;PLA-CF @System;PLA @System;ASA @System;ABS @System;PA6-CF @System;PA6 @System"
+	"default_materials": "PLA @System;PLA-CF @System"
 }

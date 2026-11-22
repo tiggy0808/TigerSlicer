@@ -1,6 +1,6 @@
 {
 	"name": "Qidi",
-	"version": "02.04.00.11",
+	"version": "02.04.00.22",
 	"force_update": "0",
 	"description": "Qidi configurations",
 	"machine_model_list": [
@@ -45,12 +45,16 @@
 			"sub_path": "machine/Qidi X-Plus 4.json"
 		},
 		{
+			"name": "Qidi X-Plus 5",
+			"sub_path": "machine/Qidi X-Plus 5.json"
+		},
+		{
 			"name": "Qidi X-Smart 3",
 			"sub_path": "machine/Qidi X-Smart 3.json"
 		},
 		{
-			"name": "Qidi X-Plus 5",
-			"sub_path": "machine/Qidi X-Plus 5.json"
+			"name": "Qidi X-Smart 5",
+			"sub_path": "machine/Qidi X-Smart 5.json"
 		}
 	],
 	"process_list": [
@@ -79,52 +83,176 @@
 			"sub_path": "process/0.08mm Extra Fine @X-Max 4 0.2 nozzle.json"
 		},
 		{
+			"name": "0.08mm High Quality @X-Plus 5",
+			"sub_path": "process/0.08mm High Quality @X-Plus 5.json"
+		},
+		{
+			"name": "0.08mm High Quality @X-Plus 5 0.2 nozzle",
+			"sub_path": "process/0.08mm High Quality @X-Plus 5 0.2 nozzle.json"
+		},
+		{
+			"name": "0.08mm High Quality @X-Smart 5",
+			"sub_path": "process/0.08mm High Quality @X-Smart 5.json"
+		},
+		{
+			"name": "0.08mm High Quality @X-Smart 5 0.2 nozzle",
+			"sub_path": "process/0.08mm High Quality @X-Smart 5 0.2 nozzle.json"
+		},
+		{
 			"name": "0.10mm Standard @X-Max 4 0.2 nozzle",
 			"sub_path": "process/0.10mm Standard @X-Max 4 0.2 nozzle.json"
+		},
+		{
+			"name": "0.10mm Standard @X-Plus 5 0.2 nozzle",
+			"sub_path": "process/0.10mm Standard @X-Plus 5 0.2 nozzle.json"
+		},
+		{
+			"name": "0.10mm Standard @X-Smart 5 0.2 nozzle",
+			"sub_path": "process/0.10mm Standard @X-Smart 5 0.2 nozzle.json"
 		},
 		{
 			"name": "0.12mm Balanced Quality @X-Max 4 0.2 nozzle",
 			"sub_path": "process/0.12mm Balanced Quality @X-Max 4 0.2 nozzle.json"
 		},
 		{
+			"name": "0.12mm Balanced Quality @X-Plus 5 0.2 nozzle",
+			"sub_path": "process/0.12mm Balanced Quality @X-Plus 5 0.2 nozzle.json"
+		},
+		{
+			"name": "0.12mm Balanced Quality @X-Smart 5 0.2 nozzle",
+			"sub_path": "process/0.12mm Balanced Quality @X-Smart 5 0.2 nozzle.json"
+		},
+		{
 			"name": "0.12mm Fine @X-Max 4",
 			"sub_path": "process/0.12mm Fine @X-Max 4.json"
+		},
+		{
+			"name": "0.12mm High Quality @X-Plus 5",
+			"sub_path": "process/0.12mm High Quality @X-Plus 5.json"
+		},
+		{
+			"name": "0.12mm High Quality @X-Smart 5",
+			"sub_path": "process/0.12mm High Quality @X-Smart 5.json"
 		},
 		{
 			"name": "0.16mm Balanced Quality @X-Max 4",
 			"sub_path": "process/0.16mm Balanced Quality @X-Max 4.json"
 		},
 		{
+			"name": "0.16mm High Quality @X-Plus 5",
+			"sub_path": "process/0.16mm High Quality @X-Plus 5.json"
+		},
+		{
+			"name": "0.16mm High Quality @X-Smart 5",
+			"sub_path": "process/0.16mm High Quality @X-Smart 5.json"
+		},
+		{
 			"name": "0.16mm Standard @X-Max 4",
 			"sub_path": "process/0.16mm Standard @X-Max 4.json"
+		},
+		{
+			"name": "0.16mm Standard @X-Plus 5",
+			"sub_path": "process/0.16mm Standard @X-Plus 5.json"
+		},
+		{
+			"name": "0.16mm Standard @X-Smart 5",
+			"sub_path": "process/0.16mm Standard @X-Smart 5.json"
 		},
 		{
 			"name": "0.18mm Balanced Quality @X-Max 4 0.6 nozzle",
 			"sub_path": "process/0.18mm Balanced Quality @X-Max 4 0.6 nozzle.json"
 		},
 		{
+			"name": "0.18mm Balanced Quality @X-Plus 5 0.6 nozzle",
+			"sub_path": "process/0.18mm Balanced Quality @X-Plus 5 0.6 nozzle.json"
+		},
+		{
+			"name": "0.18mm Balanced Quality @X-Smart 5 0.6 nozzle",
+			"sub_path": "process/0.18mm Balanced Quality @X-Smart 5 0.6 nozzle.json"
+		},
+		{
 			"name": "0.20mm Balanced Strength @X-Max 4",
 			"sub_path": "process/0.20mm Balanced Strength @X-Max 4.json"
+		},
+		{
+			"name": "0.20mm High Quality @X-Plus 5",
+			"sub_path": "process/0.20mm High Quality @X-Plus 5.json"
+		},
+		{
+			"name": "0.20mm High Quality @X-Smart 5",
+			"sub_path": "process/0.20mm High Quality @X-Smart 5.json"
 		},
 		{
 			"name": "0.20mm Standard @X-Max 4",
 			"sub_path": "process/0.20mm Standard @X-Max 4.json"
 		},
 		{
+			"name": "0.20mm Standard @X-Plus 5",
+			"sub_path": "process/0.20mm Standard @X-Plus 5.json"
+		},
+		{
+			"name": "0.20mm Standard @X-Smart 5",
+			"sub_path": "process/0.20mm Standard @X-Smart 5.json"
+		},
+		{
+			"name": "0.20mm Steady @X-Smart 5",
+			"sub_path": "process/0.20mm Steady @X-Smart 5.json"
+		},
+		{
 			"name": "0.24mm Balanced Quality @X-Max 4 0.8 nozzle",
 			"sub_path": "process/0.24mm Balanced Quality @X-Max 4 0.8 nozzle.json"
+		},
+		{
+			"name": "0.24mm Balanced Quality @X-Plus 5 0.6 nozzle",
+			"sub_path": "process/0.24mm Balanced Quality @X-Plus 5 0.6 nozzle.json"
+		},
+		{
+			"name": "0.24mm Balanced Quality @X-Plus 5 0.8 nozzle",
+			"sub_path": "process/0.24mm Balanced Quality @X-Plus 5 0.8 nozzle.json"
+		},
+		{
+			"name": "0.24mm Balanced Quality @X-Smart 5 0.8 nozzle",
+			"sub_path": "process/0.24mm Balanced Quality @X-Smart 5 0.8 nozzle.json"
 		},
 		{
 			"name": "0.24mm Balanced Strength @X-Max 4 0.6 nozzle",
 			"sub_path": "process/0.24mm Balanced Strength @X-Max 4 0.6 nozzle.json"
 		},
 		{
+			"name": "0.24mm Balanced Strength @X-Smart 5 0.6 nozzle",
+			"sub_path": "process/0.24mm Balanced Strength @X-Smart 5 0.6 nozzle.json"
+		},
+		{
 			"name": "0.24mm Standard @X-Max 4",
 			"sub_path": "process/0.24mm Standard @X-Max 4.json"
 		},
 		{
+			"name": "0.24mm Standard @X-Plus 5",
+			"sub_path": "process/0.24mm Standard @X-Plus 5.json"
+		},
+		{
+			"name": "0.24mm Standard @X-Smart 5",
+			"sub_path": "process/0.24mm Standard @X-Smart 5.json"
+		},
+		{
 			"name": "0.30mm Standard @X-Max 4 0.6 nozzle",
 			"sub_path": "process/0.30mm Standard @X-Max 4 0.6 nozzle.json"
+		},
+		{
+			"name": "0.30mm Standard @X-Plus 5 0.6 nozzle",
+			"sub_path": "process/0.30mm Standard @X-Plus 5 0.6 nozzle.json"
+		},
+		{
+			"name": "0.30mm Standard @X-Smart 5 0.6 nozzle",
+			"sub_path": "process/0.30mm Standard @X-Smart 5 0.6 nozzle.json"
+		},
+		{
+			"name": "0.32mm Balanced Quality @X-Plus 5 0.8 nozzle",
+			"sub_path": "process/0.32mm Balanced Quality @X-Plus 5 0.8 nozzle.json"
+		},
+		{
+			"name": "0.32mm Balanced Quality @X-Smart 5 0.8 nozzle",
+			"sub_path": "process/0.32mm Balanced Quality @X-Smart 5 0.8 nozzle.json"
 		},
 		{
 			"name": "0.32mm Balanced Strength @X-Max 4 0.8 nozzle",
@@ -133,6 +261,14 @@
 		{
 			"name": "0.40mm Standard @X-Max 4 0.8 nozzle",
 			"sub_path": "process/0.40mm Standard @X-Max 4 0.8 nozzle.json"
+		},
+		{
+			"name": "0.40mm Standard @X-Plus 5 0.8 nozzle",
+			"sub_path": "process/0.40mm Standard @X-Plus 5 0.8 nozzle.json"
+		},
+		{
+			"name": "0.40mm Standard @X-Smart 5 0.8 nozzle",
+			"sub_path": "process/0.40mm Standard @X-Smart 5 0.8 nozzle.json"
 		},
 		{
 			"name": "0.12mm Fine @Qidi XCFPro",
@@ -889,70 +1025,6 @@
 		{
 			"name": "0.56mm Standard @Qidi XSmart3 0.8 nozzle",
 			"sub_path": "process/0.56mm Standard @Qidi XSmart3 0.8 nozzle.json"
-		},
-		{
-			"name": "0.08mm High Quality @X-Plus 5",
-			"sub_path": "process/0.08mm High Quality @X-Plus 5.json"
-		},
-		{
-			"name": "0.12mm High Quality @X-Plus 5",
-			"sub_path": "process/0.12mm High Quality @X-Plus 5.json"
-		},
-		{
-			"name": "0.16mm High Quality @X-Plus 5",
-			"sub_path": "process/0.16mm High Quality @X-Plus 5.json"
-		},
-		{
-			"name": "0.16mm Standard @X-Plus 5",
-			"sub_path": "process/0.16mm Standard @X-Plus 5.json"
-		},
-		{
-			"name": "0.20mm High Quality @X-Plus 5",
-			"sub_path": "process/0.20mm High Quality @X-Plus 5.json"
-		},
-		{
-			"name": "0.20mm Standard @X-Plus 5",
-			"sub_path": "process/0.20mm Standard @X-Plus 5.json"
-		},
-		{
-			"name": "0.24mm Standard @X-Plus 5",
-			"sub_path": "process/0.24mm Standard @X-Plus 5.json"
-		},
-		{
-			"name": "0.08mm High Quality @X-Plus 5 0.2 nozzle",
-			"sub_path": "process/0.08mm High Quality @X-Plus 5 0.2 nozzle.json"
-		},
-		{
-			"name": "0.10mm Standard @X-Plus 5 0.2 nozzle",
-			"sub_path": "process/0.10mm Standard @X-Plus 5 0.2 nozzle.json"
-		},
-		{
-			"name": "0.12mm Balanced Quality @X-Plus 5 0.2 nozzle",
-			"sub_path": "process/0.12mm Balanced Quality @X-Plus 5 0.2 nozzle.json"
-		},
-		{
-			"name": "0.18mm Balanced Quality @X-Plus 5 0.6 nozzle",
-			"sub_path": "process/0.18mm Balanced Quality @X-Plus 5 0.6 nozzle.json"
-		},
-		{
-			"name": "0.24mm Balanced Quality @X-Plus 5 0.6 nozzle",
-			"sub_path": "process/0.24mm Balanced Quality @X-Plus 5 0.6 nozzle.json"
-		},
-		{
-			"name": "0.30mm Standard @X-Plus 5 0.6 nozzle",
-			"sub_path": "process/0.30mm Standard @X-Plus 5 0.6 nozzle.json"
-		},
-		{
-			"name": "0.24mm Balanced Quality @X-Plus 5 0.8 nozzle",
-			"sub_path": "process/0.24mm Balanced Quality @X-Plus 5 0.8 nozzle.json"
-		},
-		{
-			"name": "0.32mm Balanced Quality @X-Plus 5 0.8 nozzle",
-			"sub_path": "process/0.32mm Balanced Quality @X-Plus 5 0.8 nozzle.json"
-		},
-		{
-			"name": "0.40mm Standard @X-Plus 5 0.8 nozzle",
-			"sub_path": "process/0.40mm Standard @X-Plus 5 0.8 nozzle.json"
 		}
 	],
 	"filament_list": [],
@@ -1074,6 +1146,14 @@
 			"sub_path": "machine/Qidi X-Max 4 0.4 nozzle.json"
 		},
 		{
+			"name": "Qidi X-Plus 5 0.4 nozzle",
+			"sub_path": "machine/Qidi X-Plus 5 0.4 nozzle.json"
+		},
+		{
+			"name": "Qidi X-Smart 5 0.4 nozzle",
+			"sub_path": "machine/Qidi X-Smart 5 0.4 nozzle.json"
+		},
+		{
 			"name": "Qidi Q2 0.4 nozzle",
 			"sub_path": "machine/Qidi Q2 0.4 nozzle.json"
 		},
@@ -1092,6 +1172,30 @@
 		{
 			"name": "Qidi X-Max 4 0.8 nozzle",
 			"sub_path": "machine/Qidi X-Max 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Qidi X-Plus 5 0.2 nozzle",
+			"sub_path": "machine/Qidi X-Plus 5 0.2 nozzle.json"
+		},
+		{
+			"name": "Qidi X-Plus 5 0.6 nozzle",
+			"sub_path": "machine/Qidi X-Plus 5 0.6 nozzle.json"
+		},
+		{
+			"name": "Qidi X-Plus 5 0.8 nozzle",
+			"sub_path": "machine/Qidi X-Plus 5 0.8 nozzle.json"
+		},
+		{
+			"name": "Qidi X-Smart 5 0.2 nozzle",
+			"sub_path": "machine/Qidi X-Smart 5 0.2 nozzle.json"
+		},
+		{
+			"name": "Qidi X-Smart 5 0.6 nozzle",
+			"sub_path": "machine/Qidi X-Smart 5 0.6 nozzle.json"
+		},
+		{
+			"name": "Qidi X-Smart 5 0.8 nozzle",
+			"sub_path": "machine/Qidi X-Smart 5 0.8 nozzle.json"
 		},
 		{
 			"name": "Qidi Q2 0.2 nozzle",
@@ -1116,22 +1220,6 @@
 		{
 			"name": "Qidi Q2C 0.8 nozzle",
 			"sub_path": "machine/Qidi Q2C 0.8 nozzle.json"
-		},
-		{
-			"name": "Qidi X-Plus 5 0.4 nozzle",
-			"sub_path": "machine/Qidi X-Plus 5 0.4 nozzle.json"
-		},
-		{
-			"name": "Qidi X-Plus 5 0.6 nozzle",
-			"sub_path": "machine/Qidi X-Plus 5 0.6 nozzle.json"
-		},
-		{
-			"name": "Qidi X-Plus 5 0.8 nozzle",
-			"sub_path": "machine/Qidi X-Plus 5 0.8 nozzle.json"
-		},
-		{
-			"name": "Qidi X-Plus 5 0.2 nozzle",
-			"sub_path": "machine/Qidi X-Plus 5 0.2 nozzle.json"
 		}
 	]
 }

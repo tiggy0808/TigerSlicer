@@ -11,5 +11,5 @@
 		"Spiral Lift"
 	],
 	"hotend_model": "",
-	"default_materials": "PLA @System;PETG @System;ABS @System;TPU 95A @System"
+	"default_materials": "PLA @System"
 }

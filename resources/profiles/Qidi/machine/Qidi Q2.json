@@ -7,6 +7,6 @@
 	"family": "Qidi",
 	"bed_model": "qidi_q2_buildplate_model.stl",
 	"bed_texture": "qidi_q2_buildplate_texture.svg",
-	"hotend_model": "X-Series_gen3_hotend.stl",
+	"hotend_model": "qidi_xseries_gen3_hotend.stl",
 	"default_materials": "PLA @System;ABS @System;PETG @System;ASA @System;PETG-CF @System"
 }

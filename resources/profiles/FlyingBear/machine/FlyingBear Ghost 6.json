@@ -8,5 +8,5 @@
 	"bed_model": "FlyingBear Ghost 6-bed.stl",
 	"bed_texture": "FlyingBear Ghost 6-texture.png",
 	"hotend_model": "",
-	"default_materials": "ABS @System;PA6-CF @System;PC @System;PETG @System;PLA @System;TPU 95A @System"
+	"default_materials": "PLA @System;PLA-CF @System"
 }

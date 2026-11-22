@@ -75,7 +75,7 @@ static void append_coverage(const ExtrusionEntity &entity, Polygons &out)
         if (path->mm3_per_mm <= 0. || path->polyline.points.size() < 2)
             return;
         const Polyline line(path_points(path->polyline, scaled<double>(0.002)));
-        append(out, offset(line, float(scale_(0.5 * path->width)), ClipperLib::jtRound, DefaultLineMiterLimit, ClipperLib::etOpenRound));
+        append(out, offset(line, float(scale_(0.5 * path->width)), jtRound, DefaultLineMiterLimit, etOpenRound));
     }
 }
 

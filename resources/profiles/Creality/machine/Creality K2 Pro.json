@@ -9,5 +9,5 @@
 	"bed_texture": "creality_k2pro_buildplate_texture.svg",
 	"default_bed_type": "Textured PEI Plate",
 	"hotend_model": "",
-	"default_materials": "ABS @System;ASA @System;PETG @System;PLA @System"
+	"default_materials": "PLA @System;ABS @System;ASA @System;PETG @System"
 }

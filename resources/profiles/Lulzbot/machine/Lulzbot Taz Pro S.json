@@ -15,5 +15,5 @@
 	"machine_load_filament_time": "20",
 	"machine_unload_filament_time": "20",
 	"machine_tool_change_time": "5",
-	"default_materials": "PLA @System"
+	"default_materials": "PLA @System;PETG @System;ABS @System"
 }

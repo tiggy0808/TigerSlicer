@@ -24,7 +24,7 @@ namespace Slic3r {
 TriangleMesh NonPlanar::object_mesh(const PrintObject &object, double &ground_level)
 {
     TriangleMesh             mesh  = object.model_object()->raw_mesh();
-    Geometry::Transformation trans = object.model_object()->instances.front()->get_transformation();
+    Geometry::Transformation trans = object.instances().front().model_instance->get_transformation();
     trans.set_offset(Vec3d(-unscale<double>(object.center_offset().x()), -unscale<double>(object.center_offset().y()), 0));
     // A mirrored instance keeps its facets facing out, so that a top facet faces up.
     mesh.transform(trans.get_matrix(), true);

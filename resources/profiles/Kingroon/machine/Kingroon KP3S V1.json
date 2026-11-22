@@ -5,6 +5,8 @@
 	"nozzle_diameter": "0.4",
 	"machine_tech": "FFF",
 	"family": "Kingroon",
+	"bed_model": "mini_bed.stl",
+	"bed_texture": "Kingroon_buildplate.svg",
 	"hotend_model": "",
 	"default_materials": "ABS @System;PLA @System;PLA-CF @System;PETG @System;TPU 95A @System;ASA @System;PC @System;PVA @System;PA6 @System;PA6-CF @System"
 }

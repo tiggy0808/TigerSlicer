@@ -1,13 +1,13 @@
 {
-	"type": "machine_model",
-	"name": "Bambu Lab P1S",
-	"nozzle_diameter": "0.4;0.2;0.6;0.8",
-	"url": "http://www.bambulab.com/Parameters/printer_model/Bambu Lab X1.json",
-	"bed_model": "bbl-3dp-X1.stl",
-	"bed_texture": "bbl-3dp-logo.svg",
-	"default_bed_type": "Textured PEI Plate",
-	"family": "BBL-3DP",
-	"machine_tech": "FFF",
-	"model_id": "C12",
-	"default_materials": "PLA @System;PLA-CF @System;PETG-CF @System;ABS @System;PA6-CF @System;PA6 @System;PETG @System"
+    "type": "machine_model",
+    "name": "Bambu Lab P1S",
+    "nozzle_diameter": "0.4;0.2;0.6;0.8",
+    "url": "http://www.bambulab.com/Parameters/printer_model/Bambu Lab X1.json",
+    "bed_model": "bbl-3dp-X1.stl",
+    "bed_texture": "bbl-3dp-logo.svg",
+    "default_bed_type": "Textured PEI Plate",
+    "family": "BBL-3DP",
+    "machine_tech": "FFF",
+    "model_id": "C12",
+    "default_materials": "PLA @System;PLA-CF @System;PETG-CF @System;ABS @System;PA6-CF @System;PA6 @System;PETG @System"
 }

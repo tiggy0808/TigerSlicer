@@ -8,5 +8,5 @@
 	"bed_model": "ratrig-vcore-bed-400-clone-mode.stl",
 	"bed_texture": "ratrig_logo_copy_mode.svg",
 	"hotend_model": "",
-	"default_materials": "ABS @System;PLA @System;PLA-CF @System;PETG @System;TPU 95A @System;ASA @System;PC @System;PVA @System;PA6 @System;PA6-CF @System"
+	"default_materials": "PLA @System;PLA-CF @System"
 }

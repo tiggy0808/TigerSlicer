@@ -7,5 +7,5 @@
 	"family": "Anker",
 	"machine_tech": "FFF",
 	"model_id": "V8111v2",
-	"default_materials": "PLA @System;TPU 95A @System;PETG @System"
+	"default_materials": "PLA @System"
 }

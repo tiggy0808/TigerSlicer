@@ -9,5 +9,5 @@
 	"hotend_model": "",
 	"machine_tech": "FFF",
 	"model_id": "Creality_K1_CFS_C",
-	"default_materials": "ABS @System;ASA @System;PC @System;PLA @System;PETG @System;TPU 95A @System"
+	"default_materials": "PLA @System"
 }

@@ -8,5 +8,5 @@
 	"bed_model": "",
 	"bed_texture": "",
 	"hotend_model": "",
-	"default_materials": "PLA @System;ABS @System;PETG @System;TPU 95A @System"
+	"default_materials": "PLA @System"
 }

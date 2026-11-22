@@ -1,7 +1,9 @@
 Build
 Build.bat
 /build*/
+/out/
 CMakeLists.txt.user
+CMakeUserPresets.json
 **/CMakeLists.txt.autosave
 deps/build*
 MYMETA.json
@@ -51,3 +53,7 @@ __pycache__/
 *.pyc
 # Local AI assistant settings and worktrees
 .claude/
+*.opc
+/.test/
+docs/superpowers/
+ctest_results.xml

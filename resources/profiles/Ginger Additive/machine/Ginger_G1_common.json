@@ -1,7 +1,6 @@
 {
 	"type": "machine",
 	"name": "Ginger_G1_common",
-	"renamed_from": "ginger_one_common",
 	"inherits": "fdm_machine_common",
 	"from": "system",
 	"instantiation": "false",

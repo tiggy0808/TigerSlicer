@@ -1,9 +1,9 @@
 {
 	"name": "Bambulab",
 	"url": "http://www.bambulab.com/Parameters/vendor/BBL.json",
-	"version": "02.01.00.24",
+	"version": "02.08.00.17",
 	"force_update": "0",
-	"description": "BBL configurations",
+	"description": "the initial version of BBL configurations",
 	"machine_model_list": [
 		{
 			"name": "Bambu Lab A1",
@@ -60,6 +60,601 @@
 		{
 			"name": "Bambu Lab X2D",
 			"sub_path": "machine/Bambu Lab X2D.json"
+		}
+	],
+	"filament_list": [],
+	"machine_list": [
+		{
+			"name": "Bambu Lab A1 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab A1 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A1 0.4 nozzle template layer_change_gcode",
+			"sub_path": "machine/Bambu Lab A1 0.4 nozzle template layer_change_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A1 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab A1 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A1 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab A1 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A1 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab A1 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A1 mini 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab A1 mini 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A1 mini 0.4 nozzle template layer_change_gcode",
+			"sub_path": "machine/Bambu Lab A1 mini 0.4 nozzle template layer_change_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A1 mini 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab A1 mini 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A1 mini 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab A1 mini 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A1 mini 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab A1 mini 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A2L 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab A2L 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A2L 0.4 nozzle template layer_change_gcode",
+			"sub_path": "machine/Bambu Lab A2L 0.4 nozzle template layer_change_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A2L 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab A2L 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A2L 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab A2L 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab A2L 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab A2L 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2C 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab H2C 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2C 0.4 nozzle template layer_change_gcode",
+			"sub_path": "machine/Bambu Lab H2C 0.4 nozzle template layer_change_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2C 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab H2C 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2C 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab H2C 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2C 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab H2C 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2C 0.4 nozzle template wrapping_detection_gcode",
+			"sub_path": "machine/Bambu Lab H2C 0.4 nozzle template wrapping_detection_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2D 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab H2D 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2D 0.4 nozzle template layer_change_gcode",
+			"sub_path": "machine/Bambu Lab H2D 0.4 nozzle template layer_change_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2D 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab H2D 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2D 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab H2D 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2D 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab H2D 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2D 0.4 nozzle template wrapping_detection_gcode",
+			"sub_path": "machine/Bambu Lab H2D 0.4 nozzle template wrapping_detection_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2D Pro 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab H2D Pro 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2D Pro 0.4 nozzle template layer_change_gcode",
+			"sub_path": "machine/Bambu Lab H2D Pro 0.4 nozzle template layer_change_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2D Pro 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab H2D Pro 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2D Pro 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab H2D Pro 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2D Pro 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab H2D Pro 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2D Pro 0.4 nozzle template wrapping_detection_gcode",
+			"sub_path": "machine/Bambu Lab H2D Pro 0.4 nozzle template wrapping_detection_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2S 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab H2S 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2S 0.4 nozzle template layer_change_gcode",
+			"sub_path": "machine/Bambu Lab H2S 0.4 nozzle template layer_change_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2S 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab H2S 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2S 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab H2S 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2S 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab H2S 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "Bambu Lab H2S 0.4 nozzle template wrapping_detection_gcode",
+			"sub_path": "machine/Bambu Lab H2S 0.4 nozzle template wrapping_detection_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1P 0.2 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab P1P 0.2 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1P 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab P1P 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1P 0.4 nozzle template layer_change_gcode",
+			"sub_path": "machine/Bambu Lab P1P 0.4 nozzle template layer_change_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1P 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab P1P 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1P 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab P1P 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1P 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab P1P 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1P 0.6 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab P1P 0.6 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1P 0.8 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab P1P 0.8 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1S 0.2 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab P1S 0.2 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1S 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab P1S 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1S 0.4 nozzle template layer_change_gcode",
+			"sub_path": "machine/Bambu Lab P1S 0.4 nozzle template layer_change_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1S 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab P1S 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1S 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab P1S 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1S 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab P1S 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1S 0.6 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab P1S 0.6 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P1S 0.8 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab P1S 0.8 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P2S 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab P2S 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P2S 0.4 nozzle template layer_change_gcode",
+			"sub_path": "machine/Bambu Lab P2S 0.4 nozzle template layer_change_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P2S 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab P2S 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P2S 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab P2S 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P2S 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab P2S 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "Bambu Lab P2S 0.4 nozzle template wrapping_detection_gcode",
+			"sub_path": "machine/Bambu Lab P2S 0.4 nozzle template wrapping_detection_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 0.2 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab X1 0.2 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab X1 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab X1 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab X1 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab X1 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 0.6 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab X1 0.6 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 0.8 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab X1 0.8 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 Carbon 0.2 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab X1 Carbon 0.2 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 Carbon 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab X1 Carbon 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 Carbon 0.4 nozzle template layer_change_gcode",
+			"sub_path": "machine/Bambu Lab X1 Carbon 0.4 nozzle template layer_change_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 Carbon 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab X1 Carbon 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 Carbon 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab X1 Carbon 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 Carbon 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab X1 Carbon 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 Carbon 0.6 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab X1 Carbon 0.6 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1 Carbon 0.8 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab X1 Carbon 0.8 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1E 0.2 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab X1E 0.2 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1E 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab X1E 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1E 0.4 nozzle template layer_change_gcode",
+			"sub_path": "machine/Bambu Lab X1E 0.4 nozzle template layer_change_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1E 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab X1E 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1E 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab X1E 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1E 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab X1E 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1E 0.6 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab X1E 0.6 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X1E 0.8 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab X1E 0.8 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X2D 0.4 nozzle template change_filament_gcode",
+			"sub_path": "machine/Bambu Lab X2D 0.4 nozzle template change_filament_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X2D 0.4 nozzle template layer_change_gcode",
+			"sub_path": "machine/Bambu Lab X2D 0.4 nozzle template layer_change_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X2D 0.4 nozzle template machine_end_gcode",
+			"sub_path": "machine/Bambu Lab X2D 0.4 nozzle template machine_end_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X2D 0.4 nozzle template machine_start_gcode",
+			"sub_path": "machine/Bambu Lab X2D 0.4 nozzle template machine_start_gcode.json"
+		},
+		{
+			"name": "Bambu Lab X2D 0.4 nozzle template time_lapse_gcode",
+			"sub_path": "machine/Bambu Lab X2D 0.4 nozzle template time_lapse_gcode.json"
+		},
+		{
+			"name": "fdm_machine_common",
+			"sub_path": "machine/fdm_machine_common.json"
+		},
+		{
+			"name": "fdm_bbl_3dp_001_common",
+			"sub_path": "machine/fdm_bbl_3dp_001_common.json"
+		},
+		{
+			"name": "fdm_bbl_3dp_002_common",
+			"sub_path": "machine/fdm_bbl_3dp_002_common.json"
+		},
+		{
+			"name": "Bambu Lab A1 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab A1 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab A1 mini 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab A1 mini 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab A2L 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab A2L 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2S 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab H2S 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab P1P 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab P1P 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab P1S 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab P1S 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab P2S 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab P2S 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X1 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab X1 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X1 Carbon 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab X1 Carbon 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X1E 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab X1E 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2C 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab H2C 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2D 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab H2D 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2D Pro 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab H2D Pro 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X2D 0.4 nozzle",
+			"sub_path": "machine/Bambu Lab X2D 0.4 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab A1 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab A1 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab A1 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab A1 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab A1 0.8 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab A1 mini 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab A1 mini 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab A1 mini 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab A1 mini 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab A1 mini 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab A1 mini 0.8 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab A2L 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab A2L 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab A2L 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab A2L 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab A2L 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab A2L 0.8 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2S 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab H2S 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2S 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab H2S 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2S 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab H2S 0.8 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab P1P 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab P1P 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab P1P 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab P1P 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab P1P 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab P1P 0.8 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab P1S 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab P1S 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab P1S 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab P1S 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab P1S 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab P1S 0.8 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab P2S 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab P2S 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab P2S 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab P2S 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab P2S 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab P2S 0.8 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X1 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab X1 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X1 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab X1 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X1 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab X1 0.8 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X1 Carbon 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab X1 Carbon 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X1 Carbon 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab X1 Carbon 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X1 Carbon 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab X1 Carbon 0.8 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X1E 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab X1E 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X1E 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab X1E 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X1E 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab X1E 0.8 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2C 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab H2C 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2C 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab H2C 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2C 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab H2C 0.8 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2D 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab H2D 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2D 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab H2D 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2D 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab H2D 0.8 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2D Pro 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab H2D Pro 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2D Pro 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab H2D Pro 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab H2D Pro 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab H2D Pro 0.8 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X2D 0.2 nozzle",
+			"sub_path": "machine/Bambu Lab X2D 0.2 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X2D 0.6 nozzle",
+			"sub_path": "machine/Bambu Lab X2D 0.6 nozzle.json"
+		},
+		{
+			"name": "Bambu Lab X2D 0.8 nozzle",
+			"sub_path": "machine/Bambu Lab X2D 0.8 nozzle.json"
 		}
 	],
 	"process_list": [
@@ -252,6 +847,10 @@
 			"sub_path": "process/0.08mm Extra Fine @BBL H2DP 0.2 nozzle.json"
 		},
 		{
+			"name": "0.08mm High Quality @BBL H2C 0.2 nozzle",
+			"sub_path": "process/0.08mm High Quality @BBL H2C 0.2 nozzle.json"
+		},
+		{
 			"name": "0.08mm High Quality @BBL X2D 0.2 nozzle",
 			"sub_path": "process/0.08mm High Quality @BBL X2D 0.2 nozzle.json"
 		},
@@ -264,8 +863,16 @@
 			"sub_path": "process/0.08mm Extra Fine @BBL H2DP.json"
 		},
 		{
+			"name": "0.08mm High Quality @BBL H2C",
+			"sub_path": "process/0.08mm High Quality @BBL H2C.json"
+		},
+		{
 			"name": "0.08mm High Quality @BBL X2D",
 			"sub_path": "process/0.08mm High Quality @BBL X2D.json"
+		},
+		{
+			"name": "0.10mm Standard @BBL H2C 0.2 nozzle",
+			"sub_path": "process/0.10mm Standard @BBL H2C 0.2 nozzle.json"
 		},
 		{
 			"name": "0.10mm Standard @BBL H2D 0.2 nozzle",
@@ -278,6 +885,10 @@
 		{
 			"name": "0.10mm Standard @BBL X2D 0.2 nozzle",
 			"sub_path": "process/0.10mm Standard @BBL X2D 0.2 nozzle.json"
+		},
+		{
+			"name": "0.12mm Balanced Quality @BBL H2C 0.2 nozzle",
+			"sub_path": "process/0.12mm Balanced Quality @BBL H2C 0.2 nozzle.json"
 		},
 		{
 			"name": "0.12mm Balanced Quality @BBL H2D 0.2 nozzle",
@@ -300,6 +911,10 @@
 			"sub_path": "process/0.12mm Fine @BBL H2DP.json"
 		},
 		{
+			"name": "0.12mm High Quality @BBL H2C",
+			"sub_path": "process/0.12mm High Quality @BBL H2C.json"
+		},
+		{
 			"name": "0.12mm High Quality @BBL X2D",
 			"sub_path": "process/0.12mm High Quality @BBL X2D.json"
 		},
@@ -312,8 +927,16 @@
 			"sub_path": "process/0.16mm Balanced Quality @BBL H2DP.json"
 		},
 		{
+			"name": "0.16mm High Quality @BBL H2C",
+			"sub_path": "process/0.16mm High Quality @BBL H2C.json"
+		},
+		{
 			"name": "0.16mm High Quality @BBL X2D",
 			"sub_path": "process/0.16mm High Quality @BBL X2D.json"
+		},
+		{
+			"name": "0.16mm Standard @BBL H2C",
+			"sub_path": "process/0.16mm Standard @BBL H2C.json"
 		},
 		{
 			"name": "0.16mm Standard @BBL H2D",
@@ -326,6 +949,10 @@
 		{
 			"name": "0.16mm Standard @BBL X2D",
 			"sub_path": "process/0.16mm Standard @BBL X2D.json"
+		},
+		{
+			"name": "0.18mm Balanced Quality @BBL H2C 0.6 nozzle",
+			"sub_path": "process/0.18mm Balanced Quality @BBL H2C 0.6 nozzle.json"
 		},
 		{
 			"name": "0.18mm Balanced Quality @BBL H2D 0.6 nozzle",
@@ -348,8 +975,16 @@
 			"sub_path": "process/0.20mm Balanced Strength @BBL H2DP.json"
 		},
 		{
+			"name": "0.20mm High Quality @BBL H2C",
+			"sub_path": "process/0.20mm High Quality @BBL H2C.json"
+		},
+		{
 			"name": "0.20mm High Quality @BBL X2D",
 			"sub_path": "process/0.20mm High Quality @BBL X2D.json"
+		},
+		{
+			"name": "0.20mm Standard @BBL H2C",
+			"sub_path": "process/0.20mm Standard @BBL H2C.json"
 		},
 		{
 			"name": "0.20mm Standard @BBL H2D",
@@ -364,6 +999,10 @@
 			"sub_path": "process/0.20mm Standard @BBL X2D.json"
 		},
 		{
+			"name": "0.24mm Standard @BBL H2C",
+			"sub_path": "process/0.24mm Standard @BBL H2C.json"
+		},
+		{
 			"name": "0.24mm Standard @BBL H2D",
 			"sub_path": "process/0.24mm Standard @BBL H2D.json"
 		},
@@ -376,8 +1015,16 @@
 			"sub_path": "process/0.24mm Standard @BBL X2D.json"
 		},
 		{
+			"name": "0.24mm Balanced Quality @BBL H2C 0.6 nozzle",
+			"sub_path": "process/0.24mm Balanced Quality @BBL H2C 0.6 nozzle.json"
+		},
+		{
 			"name": "0.24mm Balanced Quality @BBL X2D 0.6 nozzle",
 			"sub_path": "process/0.24mm Balanced Quality @BBL X2D 0.6 nozzle.json"
+		},
+		{
+			"name": "0.24mm Balanced Strength @BBL H2C 0.6 nozzle",
+			"sub_path": "process/0.24mm Balanced Strength @BBL H2C 0.6 nozzle.json"
 		},
 		{
 			"name": "0.24mm Balanced Strength @BBL H2D 0.6 nozzle",
@@ -386,6 +1033,10 @@
 		{
 			"name": "0.24mm Balanced Strength @BBL H2DP 0.6 nozzle",
 			"sub_path": "process/0.24mm Balanced Strength @BBL H2DP 0.6 nozzle.json"
+		},
+		{
+			"name": "0.24mm Balanced Quality @BBL H2C 0.8 nozzle",
+			"sub_path": "process/0.24mm Balanced Quality @BBL H2C 0.8 nozzle.json"
 		},
 		{
 			"name": "0.24mm Balanced Quality @BBL H2D 0.8 nozzle",
@@ -400,6 +1051,10 @@
 			"sub_path": "process/0.24mm Balanced Quality @BBL X2D 0.8 nozzle.json"
 		},
 		{
+			"name": "0.30mm Standard @BBL H2C 0.6 nozzle",
+			"sub_path": "process/0.30mm Standard @BBL H2C 0.6 nozzle.json"
+		},
+		{
 			"name": "0.30mm Standard @BBL H2D 0.6 nozzle",
 			"sub_path": "process/0.30mm Standard @BBL H2D 0.6 nozzle.json"
 		},
@@ -412,8 +1067,16 @@
 			"sub_path": "process/0.30mm Standard @BBL X2D 0.6 nozzle.json"
 		},
 		{
+			"name": "0.32mm Balanced Quality @BBL H2C 0.8 nozzle",
+			"sub_path": "process/0.32mm Balanced Quality @BBL H2C 0.8 nozzle.json"
+		},
+		{
 			"name": "0.32mm Balanced Quality @BBL X2D 0.8 nozzle",
 			"sub_path": "process/0.32mm Balanced Quality @BBL X2D 0.8 nozzle.json"
+		},
+		{
+			"name": "0.32mm Balanced Strength @BBL H2C 0.8 nozzle",
+			"sub_path": "process/0.32mm Balanced Strength @BBL H2C 0.8 nozzle.json"
 		},
 		{
 			"name": "0.32mm Balanced Strength @BBL H2D 0.8 nozzle",
@@ -422,6 +1085,10 @@
 		{
 			"name": "0.32mm Balanced Strength @BBL H2DP 0.8 nozzle",
 			"sub_path": "process/0.32mm Balanced Strength @BBL H2DP 0.8 nozzle.json"
+		},
+		{
+			"name": "0.40mm Standard @BBL H2C 0.8 nozzle",
+			"sub_path": "process/0.40mm Standard @BBL H2C 0.8 nozzle.json"
 		},
 		{
 			"name": "0.40mm Standard @BBL H2D 0.8 nozzle",
@@ -492,6 +1159,10 @@
 			"sub_path": "process/0.08mm High Quality @BBL A1M.json"
 		},
 		{
+			"name": "0.08mm High Quality @BBL A2L",
+			"sub_path": "process/0.08mm High Quality @BBL A2L.json"
+		},
+		{
 			"name": "0.08mm High Quality @BBL H2S",
 			"sub_path": "process/0.08mm High Quality @BBL H2S.json"
 		},
@@ -514,6 +1185,10 @@
 		{
 			"name": "0.08mm High Quality @BBL A1M 0.2 nozzle",
 			"sub_path": "process/0.08mm High Quality @BBL A1M 0.2 nozzle.json"
+		},
+		{
+			"name": "0.08mm High Quality @BBL A2L 0.2 nozzle",
+			"sub_path": "process/0.08mm High Quality @BBL A2L 0.2 nozzle.json"
 		},
 		{
 			"name": "0.08mm High Quality @BBL H2S 0.2 nozzle",
@@ -572,6 +1247,10 @@
 			"sub_path": "process/0.10mm Standard @BBL A1M 0.2 nozzle.json"
 		},
 		{
+			"name": "0.10mm Standard @BBL A2L 0.2 nozzle",
+			"sub_path": "process/0.10mm Standard @BBL A2L 0.2 nozzle.json"
+		},
+		{
 			"name": "0.10mm Standard @BBL H2S 0.2 nozzle",
 			"sub_path": "process/0.10mm Standard @BBL H2S 0.2 nozzle.json"
 		},
@@ -612,6 +1291,10 @@
 			"sub_path": "process/0.12mm High Quality @BBL A1M.json"
 		},
 		{
+			"name": "0.12mm High Quality @BBL A2L",
+			"sub_path": "process/0.12mm High Quality @BBL A2L.json"
+		},
+		{
 			"name": "0.12mm High Quality @BBL H2S",
 			"sub_path": "process/0.12mm High Quality @BBL H2S.json"
 		},
@@ -626,6 +1309,10 @@
 		{
 			"name": "0.12mm High Quality @BBL X1C",
 			"sub_path": "process/0.12mm High Quality @BBL X1C.json"
+		},
+		{
+			"name": "0.12mm Balanced Quality @BBL A2L 0.2 nozzle",
+			"sub_path": "process/0.12mm Balanced Quality @BBL A2L 0.2 nozzle.json"
 		},
 		{
 			"name": "0.12mm Balanced Quality @BBL H2S 0.2 nozzle",
@@ -676,6 +1363,10 @@
 			"sub_path": "process/0.16mm High Quality @BBL A1M.json"
 		},
 		{
+			"name": "0.16mm High Quality @BBL A2L",
+			"sub_path": "process/0.16mm High Quality @BBL A2L.json"
+		},
+		{
 			"name": "0.16mm High Quality @BBL H2S",
 			"sub_path": "process/0.16mm High Quality @BBL H2S.json"
 		},
@@ -708,12 +1399,20 @@
 			"sub_path": "process/0.16mm Optimal @BBL X1C.json"
 		},
 		{
+			"name": "0.16mm Standard @BBL A2L",
+			"sub_path": "process/0.16mm Standard @BBL A2L.json"
+		},
+		{
 			"name": "0.16mm Standard @BBL H2S",
 			"sub_path": "process/0.16mm Standard @BBL H2S.json"
 		},
 		{
 			"name": "0.16mm Standard @BBL P2S",
 			"sub_path": "process/0.16mm Standard @BBL P2S.json"
+		},
+		{
+			"name": "0.18mm Balanced Quality @BBL A2L 0.6 nozzle",
+			"sub_path": "process/0.18mm Balanced Quality @BBL A2L 0.6 nozzle.json"
 		},
 		{
 			"name": "0.18mm Balanced Quality @BBL H2S 0.6 nozzle",
@@ -740,6 +1439,10 @@
 			"sub_path": "process/0.18mm Standard @BBL X1C 0.6 nozzle.json"
 		},
 		{
+			"name": "0.20mm High Quality @BBL A2L",
+			"sub_path": "process/0.20mm High Quality @BBL A2L.json"
+		},
+		{
 			"name": "0.20mm High Quality @BBL H2S",
 			"sub_path": "process/0.20mm High Quality @BBL H2S.json"
 		},
@@ -756,6 +1459,10 @@
 			"sub_path": "process/0.20mm Standard @BBL A1M.json"
 		},
 		{
+			"name": "0.20mm Standard @BBL A2L",
+			"sub_path": "process/0.20mm Standard @BBL A2L.json"
+		},
+		{
 			"name": "0.20mm Standard @BBL H2S",
 			"sub_path": "process/0.20mm Standard @BBL H2S.json"
 		},
@@ -770,6 +1477,10 @@
 		{
 			"name": "0.20mm Standard @BBL X1C",
 			"sub_path": "process/0.20mm Standard @BBL X1C.json"
+		},
+		{
+			"name": "0.20mm Steady @BBL A2L",
+			"sub_path": "process/0.20mm Steady @BBL A2L.json"
 		},
 		{
 			"name": "0.20mm Strength @BBL A1",
@@ -804,12 +1515,20 @@
 			"sub_path": "process/0.24mm Draft @BBL X1C.json"
 		},
 		{
+			"name": "0.24mm Standard @BBL A2L",
+			"sub_path": "process/0.24mm Standard @BBL A2L.json"
+		},
+		{
 			"name": "0.24mm Standard @BBL H2S",
 			"sub_path": "process/0.24mm Standard @BBL H2S.json"
 		},
 		{
 			"name": "0.24mm Standard @BBL P2S",
 			"sub_path": "process/0.24mm Standard @BBL P2S.json"
+		},
+		{
+			"name": "0.24mm Balanced Quality @BBL A2L 0.6 nozzle",
+			"sub_path": "process/0.24mm Balanced Quality @BBL A2L 0.6 nozzle.json"
 		},
 		{
 			"name": "0.24mm Balanced Quality @BBL H2S 0.6 nozzle",
@@ -834,6 +1553,10 @@
 		{
 			"name": "0.24mm Standard @BBL X1C 0.6 nozzle",
 			"sub_path": "process/0.24mm Standard @BBL X1C 0.6 nozzle.json"
+		},
+		{
+			"name": "0.24mm Balanced Quality @BBL A2L 0.8 nozzle",
+			"sub_path": "process/0.24mm Balanced Quality @BBL A2L 0.8 nozzle.json"
 		},
 		{
 			"name": "0.24mm Balanced Quality @BBL H2S 0.8 nozzle",
@@ -884,6 +1607,10 @@
 			"sub_path": "process/0.30mm Standard @BBL A1M 0.6 nozzle.json"
 		},
 		{
+			"name": "0.30mm Standard @BBL A2L 0.6 nozzle",
+			"sub_path": "process/0.30mm Standard @BBL A2L 0.6 nozzle.json"
+		},
+		{
 			"name": "0.30mm Standard @BBL H2S 0.6 nozzle",
 			"sub_path": "process/0.30mm Standard @BBL H2S 0.6 nozzle.json"
 		},
@@ -918,6 +1645,10 @@
 		{
 			"name": "0.30mm Strength @BBL X1C 0.6 nozzle",
 			"sub_path": "process/0.30mm Strength @BBL X1C 0.6 nozzle.json"
+		},
+		{
+			"name": "0.32mm Balanced Quality @BBL A2L 0.8 nozzle",
+			"sub_path": "process/0.32mm Balanced Quality @BBL A2L 0.8 nozzle.json"
 		},
 		{
 			"name": "0.32mm Balanced Quality @BBL H2S 0.8 nozzle",
@@ -966,6 +1697,10 @@
 		{
 			"name": "0.40mm Standard @BBL A1M 0.8 nozzle",
 			"sub_path": "process/0.40mm Standard @BBL A1M 0.8 nozzle.json"
+		},
+		{
+			"name": "0.40mm Standard @BBL A2L 0.8 nozzle",
+			"sub_path": "process/0.40mm Standard @BBL A2L 0.8 nozzle.json"
 		},
 		{
 			"name": "0.40mm Standard @BBL H2S 0.8 nozzle",
@@ -1034,377 +1769,6 @@
 		{
 			"name": "0.56mm Standard @BBL X1C 0.8 nozzle",
 			"sub_path": "process/0.56mm Standard @BBL X1C 0.8 nozzle.json"
-		},
-		{
-			"name": "0.08mm High Quality @BBL A2L",
-			"sub_path": "process/0.08mm High Quality @BBL A2L.json"
-		},
-		{
-			"name": "0.08mm High Quality @BBL A2L 0.2 nozzle",
-			"sub_path": "process/0.08mm High Quality @BBL A2L 0.2 nozzle.json"
-		},
-		{
-			"name": "0.08mm High Quality @BBL H2C",
-			"sub_path": "process/0.08mm High Quality @BBL H2C.json"
-		},
-		{
-			"name": "0.08mm High Quality @BBL H2C 0.2 nozzle",
-			"sub_path": "process/0.08mm High Quality @BBL H2C 0.2 nozzle.json"
-		},
-		{
-			"name": "0.10mm Standard @BBL A2L 0.2 nozzle",
-			"sub_path": "process/0.10mm Standard @BBL A2L 0.2 nozzle.json"
-		},
-		{
-			"name": "0.10mm Standard @BBL H2C 0.2 nozzle",
-			"sub_path": "process/0.10mm Standard @BBL H2C 0.2 nozzle.json"
-		},
-		{
-			"name": "0.12mm Balanced Quality @BBL A2L 0.2 nozzle",
-			"sub_path": "process/0.12mm Balanced Quality @BBL A2L 0.2 nozzle.json"
-		},
-		{
-			"name": "0.12mm Balanced Quality @BBL H2C 0.2 nozzle",
-			"sub_path": "process/0.12mm Balanced Quality @BBL H2C 0.2 nozzle.json"
-		},
-		{
-			"name": "0.12mm High Quality @BBL A2L",
-			"sub_path": "process/0.12mm High Quality @BBL A2L.json"
-		},
-		{
-			"name": "0.12mm High Quality @BBL H2C",
-			"sub_path": "process/0.12mm High Quality @BBL H2C.json"
-		},
-		{
-			"name": "0.16mm High Quality @BBL A2L",
-			"sub_path": "process/0.16mm High Quality @BBL A2L.json"
-		},
-		{
-			"name": "0.16mm High Quality @BBL H2C",
-			"sub_path": "process/0.16mm High Quality @BBL H2C.json"
-		},
-		{
-			"name": "0.16mm Standard @BBL A2L",
-			"sub_path": "process/0.16mm Standard @BBL A2L.json"
-		},
-		{
-			"name": "0.16mm Standard @BBL H2C",
-			"sub_path": "process/0.16mm Standard @BBL H2C.json"
-		},
-		{
-			"name": "0.18mm Balanced Quality @BBL A2L 0.6 nozzle",
-			"sub_path": "process/0.18mm Balanced Quality @BBL A2L 0.6 nozzle.json"
-		},
-		{
-			"name": "0.18mm Balanced Quality @BBL H2C 0.6 nozzle",
-			"sub_path": "process/0.18mm Balanced Quality @BBL H2C 0.6 nozzle.json"
-		},
-		{
-			"name": "0.20mm High Quality @BBL A2L",
-			"sub_path": "process/0.20mm High Quality @BBL A2L.json"
-		},
-		{
-			"name": "0.20mm High Quality @BBL H2C",
-			"sub_path": "process/0.20mm High Quality @BBL H2C.json"
-		},
-		{
-			"name": "0.20mm Standard @BBL A2L",
-			"sub_path": "process/0.20mm Standard @BBL A2L.json"
-		},
-		{
-			"name": "0.20mm Standard @BBL H2C",
-			"sub_path": "process/0.20mm Standard @BBL H2C.json"
-		},
-		{
-			"name": "0.20mm Steady @BBL A2L",
-			"sub_path": "process/0.20mm Steady @BBL A2L.json"
-		},
-		{
-			"name": "0.24mm Balanced Quality @BBL A2L 0.6 nozzle",
-			"sub_path": "process/0.24mm Balanced Quality @BBL A2L 0.6 nozzle.json"
-		},
-		{
-			"name": "0.24mm Balanced Quality @BBL A2L 0.8 nozzle",
-			"sub_path": "process/0.24mm Balanced Quality @BBL A2L 0.8 nozzle.json"
-		},
-		{
-			"name": "0.24mm Balanced Quality @BBL H2C 0.8 nozzle",
-			"sub_path": "process/0.24mm Balanced Quality @BBL H2C 0.8 nozzle.json"
-		},
-		{
-			"name": "0.24mm Balanced Strength @BBL H2C 0.6 nozzle",
-			"sub_path": "process/0.24mm Balanced Strength @BBL H2C 0.6 nozzle.json"
-		},
-		{
-			"name": "0.24mm Standard @BBL A2L",
-			"sub_path": "process/0.24mm Standard @BBL A2L.json"
-		},
-		{
-			"name": "0.24mm Standard @BBL H2C",
-			"sub_path": "process/0.24mm Standard @BBL H2C.json"
-		},
-		{
-			"name": "0.30mm Standard @BBL A2L 0.6 nozzle",
-			"sub_path": "process/0.30mm Standard @BBL A2L 0.6 nozzle.json"
-		},
-		{
-			"name": "0.30mm Standard @BBL H2C 0.6 nozzle",
-			"sub_path": "process/0.30mm Standard @BBL H2C 0.6 nozzle.json"
-		},
-		{
-			"name": "0.32mm Balanced Quality @BBL A2L 0.8 nozzle",
-			"sub_path": "process/0.32mm Balanced Quality @BBL A2L 0.8 nozzle.json"
-		},
-		{
-			"name": "0.32mm Balanced Strength @BBL H2C 0.8 nozzle",
-			"sub_path": "process/0.32mm Balanced Strength @BBL H2C 0.8 nozzle.json"
-		},
-		{
-			"name": "0.40mm Standard @BBL A2L 0.8 nozzle",
-			"sub_path": "process/0.40mm Standard @BBL A2L 0.8 nozzle.json"
-		},
-		{
-			"name": "0.40mm Standard @BBL H2C 0.8 nozzle",
-			"sub_path": "process/0.40mm Standard @BBL H2C 0.8 nozzle.json"
-		}
-	],
-	"filament_list": [],
-	"machine_list": [
-		{
-			"name": "fdm_machine_common",
-			"sub_path": "machine/fdm_machine_common.json"
-		},
-		{
-			"name": "fdm_bbl_3dp_001_common",
-			"sub_path": "machine/fdm_bbl_3dp_001_common.json"
-		},
-		{
-			"name": "fdm_bbl_3dp_002_common",
-			"sub_path": "machine/fdm_bbl_3dp_002_common.json"
-		},
-		{
-			"name": "Bambu Lab A1 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab A1 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab A1 mini 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab A1 mini 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2S 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab H2S 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab P1P 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab P1P 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab P1S 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab P1S 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab P2S 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab P2S 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X1 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab X1 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X1 Carbon 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab X1 Carbon 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X1E 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab X1E 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2D 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab H2D 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2D Pro 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab H2D Pro 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X2D 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab X2D 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab A1 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab A1 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab A1 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab A1 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab A1 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab A1 0.8 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab A1 mini 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab A1 mini 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab A1 mini 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab A1 mini 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab A1 mini 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab A1 mini 0.8 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2S 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab H2S 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2S 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab H2S 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2S 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab H2S 0.8 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab P1P 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab P1P 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab P1P 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab P1P 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab P1P 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab P1P 0.8 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab P1S 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab P1S 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab P1S 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab P1S 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab P1S 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab P1S 0.8 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab P2S 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab P2S 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab P2S 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab P2S 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab P2S 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab P2S 0.8 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X1 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab X1 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X1 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab X1 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X1 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab X1 0.8 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X1 Carbon 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab X1 Carbon 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X1 Carbon 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab X1 Carbon 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X1 Carbon 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab X1 Carbon 0.8 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X1E 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab X1E 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X1E 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab X1E 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X1E 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab X1E 0.8 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2D 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab H2D 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2D 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab H2D 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2D 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab H2D 0.8 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2D Pro 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab H2D Pro 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2D Pro 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab H2D Pro 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2D Pro 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab H2D Pro 0.8 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X2D 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab X2D 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X2D 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab X2D 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab X2D 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab X2D 0.8 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab A2L 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab A2L 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab A2L 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab A2L 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab A2L 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab A2L 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab A2L 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab A2L 0.8 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2C 0.4 nozzle",
-			"sub_path": "machine/Bambu Lab H2C 0.4 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2C 0.2 nozzle",
-			"sub_path": "machine/Bambu Lab H2C 0.2 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2C 0.6 nozzle",
-			"sub_path": "machine/Bambu Lab H2C 0.6 nozzle.json"
-		},
-		{
-			"name": "Bambu Lab H2C 0.8 nozzle",
-			"sub_path": "machine/Bambu Lab H2C 0.8 nozzle.json"
 		}
 	]
 }

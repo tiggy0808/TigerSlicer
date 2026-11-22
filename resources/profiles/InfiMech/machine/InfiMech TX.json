@@ -8,5 +8,5 @@
 	"bed_model": "InfiMech TX-bed.stl",
 	"bed_texture": "InfiMech TX-texture.svg",
 	"hotend_model": "",
-	"default_materials": "ABS @System;PA6-CF @System;PC @System;PETG @System;PLA @System;TPU 95A @System"
+	"default_materials": "PLA @System;PLA-CF @System"
 }

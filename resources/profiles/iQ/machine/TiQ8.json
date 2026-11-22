@@ -7,5 +7,5 @@
 	"family": "TiQ",
 	"bed_model": "TiQ8.stl",
 	"bed_texture": "TiQ8_texture.svg",
-	"default_materials": "ABS @System"
+	"default_materials": "ABS @System;PLA @System"
 }

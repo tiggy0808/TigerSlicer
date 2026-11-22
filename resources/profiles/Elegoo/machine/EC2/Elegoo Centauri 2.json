@@ -6,7 +6,7 @@
 	"machine_tech": "FFF",
 	"family": "Elegoo",
 	"bed_model": "elegoo_centuri_carbon_buildplate_model.stl",
-	"bed_texture": "elegoo_centuri_carbon_buildplate_texture.png",
+	"bed_texture": "elegoo_centuri_carbon_buildplate_texture.svg",
 	"hotend_model": "",
 	"default_materials": "ASA @System;PETG @System;PLA @System;PLA-CF @System;TPU 95A @System;ABS @System;PA6-CF @System;PC @System;PETG-CF @System;PETG-GF @System;ASA-CF @System"
 }

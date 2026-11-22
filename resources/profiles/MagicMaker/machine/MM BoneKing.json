@@ -8,5 +8,5 @@
 	"bed_model": "310_buildplate_model.stl",
 	"bed_texture": "MM_buildplate_texture.svg",
 	"hotend_model": "MM_hotend.stl",
-	"default_materials": "PLA @System;PETG @System;ABS @System;TPU 95A @System;PC @System;PA6 @System;PEEK @System"
+	"default_materials": "PLA @System;PETG @System;ABS @System;TPU 95A @System;PC @System;PA6 @System"
 }

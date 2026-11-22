@@ -8,6 +8,6 @@
 	"family": "SecKit",
 	"bed_model": "SK-Tank_Bed.stl",
 	"bed_texture": "seckit_logo.svg",
-	"hotend_model": "hotend.stl",
-	"default_materials": "ABS @System;PLA @System;PLA-CF @System;PETG @System;TPU 95A @System;ASA @System;PC @System;PVA @System;PA6 @System;PA6-CF @System"
+	"hotend_model": "",
+	"default_materials": "PLA @System;PLA-CF @System"
 }

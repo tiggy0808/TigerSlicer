@@ -7,7 +7,8 @@ function OnInit()
 	//-----Official-----
     TranslatePage();
 
-	// TigerSlicer: cloud features removed - no login info requests (the login area is gone).
+	// TigerSlicer: cloud features removed - no login info requests (the login area is gone), so
+	// also no network plug-in tip and no account menu (both lived in the login area).
 	SendMsg_GetRecentFile();
 	SendMsg_GetStaffPick();
 }
@@ -29,7 +30,7 @@ function Set_RecentFile_MouseRightBtn_Event()
 			
 			if(e.which == 3){
 				//鼠标点击了右键+$(this).attr('ff') );
-				ShowRecnetFileContextMenu();
+				//ShowRecnetFileContextMenu();
 			}else if(e.which == 2){
 				//鼠标点击了中键
 			}else if(e.which == 1){
@@ -43,12 +44,30 @@ function Set_RecentFile_MouseRightBtn_Event()
 		return false;
 	});	
 	
+	// ORCA file actions
+	$(".FileActions").mousedown(function(e){		
+		return false; // Block events on empty area & parent
+	});
+
+	$(".FileActionsReveal").mousedown(function(e){		
+		RightBtnFilePath=$(this).attr('fpath');
+		if(e.which == 1 && RightBtnFilePath != "")
+			OnExploreRecentFile();
+		return false; // Block events from parent
+	});
+	$(".FileActionsRemove").mousedown(function(e){		
+		RightBtnFilePath=$(this).attr('fpath');
+		if(e.which == 1)
+			OnDeleteRecentFile();
+		return false; // Block events from parent
+	});
+
     $(document).mousemove( function(e){
 		MousePosX=e.pageX;
 		MousePosY=e.pageY;
 		
-		let ContextMenuWidth=$('#recnet_context_menu').width();
-		let ContextMenuHeight=$('#recnet_context_menu').height();
+		//let ContextMenuWidth=$('#recnet_context_menu').width();
+		//let ContextMenuHeight=$('#recnet_context_menu').height();
 	
 		let DocumentWidth=$(document).width();
 		let DocumentHeight=$(document).height();
@@ -63,13 +82,13 @@ function Set_RecentFile_MouseRightBtn_Event()
 		var e = e || window.event;
         var elem = e.target || e.srcElement;
         while (elem) {
-			if (elem.id && elem.id == 'recnet_context_menu') {
-                    return;
-			}
+			//if (elem.id && elem.id == 'recnet_context_menu') {
+            //        return;
+			//}
 			elem = elem.parentNode;
 		}		
 		
-		$("#recnet_context_menu").hide();
+		//$("#recnet_context_menu").hide();
 	} );
 
 	
@@ -112,6 +131,8 @@ function HandleStudio( pVal )
   }
 }
 
+// TigerSlicer: cloud features removed - no OrcaCloud pane (SetCloudMode / GotoCloud and the
+// homepage_open_cloud / homepage_close_cloud messages).
 function GotoMenu( strMenu )
 {
 	let MenuList=$(".BtnItem");
@@ -152,27 +173,42 @@ function ShowRecentFileList( pList )
 		let sImg=OneFile["image"] || sImages[sPath];
 		let sTime=OneFile['time'];
 		let sName=OneFile['project_name'];
+		let sPublished=false; // TigerSlicer: cloud features removed - no "published to OrcaCloud" badge
 		sImages[sPath] = sImg;
 		
 		//let index=sPath.lastIndexOf('\\')>0?sPath.lastIndexOf('\\'):sPath.lastIndexOf('\/');
 		//let sShortName=sPath.substring(index+1,sPath.length);
+
+		let isExist  = !isNaN(sTime[0]); // its a valid file with time stamp
+		let btnStyle = isExist ? "ButtonStyleConfirm" : "ButtonStyleDisabled";
+		let btnPath  = isExist ? sPath : ""; // blank path will disable btn event
 		
+		let sBadge=sPublished? '<span class="FilePublishedBadge">'+T("published_badge", "PUB")+'</span>':'';
+		let sLogoBadge=sPublished? '<img class="FileLogoBadge" src="../../images/OrcaSlicer_gradient_circle.svg" alt="" />':'';
+
 		let TmpHtml='<div class="FileItem"  fpath="'+sPath+'"  >'+
-				'<a class="FileTip" title="'+sPath+'"></a>'+
-				'<div class="FileImg" ><img src="'+sImg+'" onerror="this.onerror=null;this.src=\'img/d.png\';"  alt="No Image"  /></div>'+
-				'<div class="FileName TextS1">'+sName+'</div>'+
-				'<div class="FileDate">'+sTime+'</div>'+
-			    '</div>';
+						'<a class="FileTip" title="'+sPath+'"></a>'+
+						'<div class="FileImg" ><img src="'+sImg+'" onerror="this.onerror=null;this.src=\'img/d.png\';"  alt="No Image"  />'+sLogoBadge+'</div>'+
+						'<div class="FileNamePack">'+sBadge+'<div class="FileName TextS1">'+sName+'</div></div>'+
+						'<div class="FileDate">'+sTime+'</div>'+
+						'<div class="FileActions">'+
+							'<div class="FileActionsReveal '+btnStyle+' ButtonTypeWindow trans" fpath="'+btnPath+'" data-i18n="show_in_folder">Show in folder</div>'+
+							'<div class="FileActionsRemove ButtonStyleAlert ButtonTypeWindow" fpath="'+sPath+'">'+
+								'<div class="icon16"/></div>'+
+							'</div>'+
+						'</div>'+
+			    	'</div>';
 		
 		strHtml+=TmpHtml;
 	}
 	
 	$("#FileList").html(strHtml);	
+	TranslatePage();   // translate the data-i18n attributes on the freshly inserted cards
 	
     Set_RecentFile_MouseRightBtn_Event();
 	UpdateRecentClearBtnDisplay();
 }
-
+/*
 function ShowRecnetFileContextMenu()
 {
 	$("#recnet_context_menu").offset({top: 10000, left:-10000});
@@ -194,7 +230,7 @@ function ShowRecnetFileContextMenu()
 	
 	$("#recnet_context_menu").offset({top: RealY, left:RealX});
 }
-
+*/
 /*-------RecentFile MX Message------*/
 function SendMsg_GetRecentFile()
 {
@@ -247,7 +283,7 @@ function OnOpenRecentFile( strPath )
 function OnDeleteRecentFile( )
 {
 	//Clear in UI
-	$("#recnet_context_menu").hide();
+	//$("#recnet_context_menu").hide();
 	
 	let AllFile=$(".FileItem");
 	let nFile=AllFile.length;
@@ -305,7 +341,7 @@ function OnExploreRecentFile( )
 	
 	SendWXMessage( JSON.stringify(tSend) );	
 	
-	$("#recnet_context_menu").hide();
+	//$("#recnet_context_menu").hide();
 }
 
 // TigerSlicer: cloud features removed - the Orca/Bambu login, logout and Bambu Cloud panel

@@ -8,5 +8,5 @@
 	"bed_model": "qidi_xplus_buildplate_model.stl",
 	"bed_texture": "qidi_xplus_buildplate_texture.svg",
 	"hotend_model": "qidi_xseries_gen2_hotend.stl",
-	"default_materials": "ASA @System;ABS @System;PA6-CF @System;PA6 @System;PC @System;PETG-CF @System;PETG @System;PLA @System;PLA-CF @System;PVA @System;TPU 95A @System"
+	"default_materials": "PLA @System;PLA-CF @System"
 }

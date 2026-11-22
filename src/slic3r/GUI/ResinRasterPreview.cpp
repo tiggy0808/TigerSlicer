@@ -1,6 +1,7 @@
 #include "ResinRasterPreview.hpp"
 
 #include "GUI_App.hpp"
+#include "I18N.hpp"
 
 #include <wx/bmpbuttn.h>
 #include <wx/image.h>

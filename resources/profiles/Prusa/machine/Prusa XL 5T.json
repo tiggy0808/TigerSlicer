@@ -8,5 +8,5 @@
 	"bed_model": "Prusa XL_bed.stl",
 	"bed_texture": "Prusa XL.svg",
 	"hotend_model": "",
-	"default_materials": "PLA @System;PETG @System;ABS @System;ASA @System;PC @System;PC-CF @System;PA12-CF @System;TPU 95A @System"
+	"default_materials": "PLA @System;PETG @System;ASA @System;PC @System"
 }

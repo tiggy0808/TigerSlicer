@@ -6,7 +6,7 @@
 	"machine_tech": "FFF",
 	"family": "Prusa",
 	"bed_model": "mk4_bed.stl",
-	"bed_texture": "mk4is.svg",
+	"bed_texture": "mk4.svg",
 	"hotend_model": "",
-	"default_materials": "PLA-CF @System;PC @System;PVA @System;PA6 @System;PA6-CF @System;ABS @System;PLA @System;PETG @System;TPU 95A @System;ASA @System"
+	"default_materials": "PLA-CF @System;PLA @System;PETG @System;ASA @System;PC @System;PC-CF @System;PA12-CF @System"
 }

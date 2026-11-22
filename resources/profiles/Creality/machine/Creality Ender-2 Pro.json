@@ -1,0 +1,13 @@
+{
+	"type": "machine_model",
+	"name": "Creality Ender-2 Pro",
+	"nozzle_diameter": "0.4",
+	"bed_model": "creality_ender2pro_buildplate_model.stl",
+	"default_bed_type": "Cool Plate",
+	"bed_texture": "creality_ender2pro_buildplate_texture.svg",
+	"family": "Creality",
+	"hotend_model": "",
+	"machine_tech": "FFF",
+	"model_id": "Creality_Ender_2_Pro",
+	"default_materials": "TPU 95A @System;PETG @System;ABS @System;PLA @System"
+}
