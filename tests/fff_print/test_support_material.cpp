@@ -266,19 +266,6 @@ TEST_CASE("Support G-code emission survives a second slice in the same process",
     REQUIRE(! layers_with_role(second, "support").empty());
 }
 
-// One flush block and one flush multiplier per nozzle, as the GUI sizes them when the nozzle count
-// changes; a single block leaves each nozzle's slice short.
-static void size_flush_to_nozzles(DynamicPrintConfig& config)
-{
-    const size_t nozzles = config.option<ConfigOptionFloats>("nozzle_diameter")->values.size();
-    auto& flush = config.option<ConfigOptionFloats>("flush_volumes_matrix", true)->values;
-    const std::vector<double> block = flush;
-    for (size_t i = 1; i < nozzles; ++i)
-        flush.insert(flush.end(), block.begin(), block.end());
-    for (const char* key : {"flush_multiplier", "flush_multiplier_fast"})
-        if (config.def()->get(key) != nullptr)
-            config.option<ConfigOptionFloats>(key, true)->resize(nozzles);
-}
 // A 30 x 30 x 2 mm slab held 10 mm above the bed by a 10 x 10 mm stem: the slab hangs over the bed
 // all around the stem, and fins crossing the stem end right at its walls.
 static TriangleMesh support_table()

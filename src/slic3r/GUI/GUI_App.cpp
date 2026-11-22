@@ -3557,7 +3557,7 @@ bool GUI_App::on_init_inner()
                /* wxString tips = wxString::Format(_L("Click to download new version in default browser: %s"), version_info.version_str);
                 DownloadDialog dialog(this->mainframe,
                     tips,
-                    _L("New version of Orca Slicer"),
+                    _L("New version of TigerSlicer"),
                     false,
                     wxCENTER | wxICON_INFORMATION);
 
@@ -7320,7 +7320,7 @@ void GUI_App::check_legacy_user_filament_presets(bool by_user)
     }
     if (!migration.locked) {
         // The lock is also refused for a while after a miss, and when the lock file itself cannot be opened.
-        show_error(mainframe, _L("The user presets folder could not be locked, so nothing was migrated. Another OrcaSlicer "
+        show_error(mainframe, _L("The user presets folder could not be locked, so nothing was migrated. Another TigerSlicer "
                                  "instance may be saving presets; try again later from Help > Migrate Filament Presets."));
         return;
     }

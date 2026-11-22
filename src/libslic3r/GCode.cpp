@@ -3067,7 +3067,7 @@ void GCode::do_export(Print* print, const char* path, GCodeProcessorResult* resu
             _(L("A G-code move intersects a collision volume. This may cause a printer collision."));
         if (m_processor.get_result().exclusion_volume_conflict_used_unknown_z) {
             warning += "\n" + Slic3r::format(
-                _(L("The intersecting move is at G-code line %1%. Its Z position is unknown after homing, so Orca checked it against every height.")),
+                _(L("The intersecting move is at G-code line %1%. Its Z position is unknown after homing, so TigerSlicer checked it against every height.")),
                 std::to_string(m_processor.get_result().exclusion_volume_conflict_gcode_id));
         }
         print->active_step_add_warning(

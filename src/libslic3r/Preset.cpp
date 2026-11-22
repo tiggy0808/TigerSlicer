@@ -1342,6 +1342,7 @@ static std::vector<std::string> s_Preset_print_options{
     "elefant_foot_compensation",
     "elefant_foot_compensation_layers",
     "elefant_foot_layers_density",
+    "apply_filament_shrinkage",
     "xy_contour_compensation",
     "xy_hole_compensation",
     "resolution",

@@ -1721,9 +1721,9 @@ void PreferencesDialog::create_items()
     // TRN "GPU" is the graphics card; the option only matters on computers that have two of them.
     auto item_discrete_gpu = create_item_checkbox(_L("Render on the discrete GPU"),
         // TRN DRI_PRIME is an environment variable name and must stay as it is.
-        _L("On a computer with two GPUs, run OrcaSlicer on the discrete GPU instead of the one that drives the display. "
+        _L("On a computer with two GPUs, run TigerSlicer on the discrete GPU instead of the one that drives the display. "
            "Some Wayland systems cannot show frames rendered on the other GPU, or fail to open the window at all. "
-           "Turn this off if the 3D view stays empty; if OrcaSlicer no longer starts, start it once with DRI_PRIME=0 "
+           "Turn this off if the 3D view stays empty; if TigerSlicer no longer starts, start it once with DRI_PRIME=0 "
            "in the environment to get back here."),
         "prefer_discrete_gpu", _L("(Requires restart)"));
     g_sizer->Add(item_discrete_gpu);
@@ -1910,7 +1910,7 @@ void PreferencesDialog::create_items()
     auto item_mix_print_high_low_temperature = create_item_checkbox(_L("Remove mixed temperature restriction"), _L("With this option enabled, you can print materials with a large temperature difference together."), "enable_high_low_temp_mixed_printing");
     g_sizer->Add(item_mix_print_high_low_temperature);
 
-    auto item_remember_print_action = create_item_checkbox(_L("Remember last print action"), _L("If enabled, OrcaSlicer will remember the last selected option in the print button's dropdown (e.g. Print, Export plate sliced file, Export G-code file) and use it as the default on next startup."), "remember_print_action");
+    auto item_remember_print_action = create_item_checkbox(_L("Remember last print action"), _L("If enabled, TigerSlicer will remember the last selected option in the print button's dropdown (e.g. Print, Export plate sliced file, Export G-code file) and use it as the default on next startup."), "remember_print_action");
     g_sizer->Add(item_remember_print_action);
 
     //// CONTROL > Camera
@@ -2357,7 +2357,7 @@ void PreferencesDialog::create_items()
 
     auto item_plugin_printer_agents = create_item_checkbox(
         _L("Use printer agents instead of print hosts"), _L(
-            "Route print jobs for non-Bambu printers through printer plug-in agents instead of the classic print-host upload flow.\nWhen disabled, OrcaSlicer uses the legacy print-host behavior."),
+            "Route print jobs for non-Bambu printers through printer plug-in agents instead of the classic print-host upload flow.\nWhen disabled, TigerSlicer uses the legacy print-host behavior."),
         "use_printer_agents");
     g_sizer->Add(item_plugin_printer_agents);
 
