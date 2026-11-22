@@ -11,7 +11,6 @@ add_subdirectory(dev-utils)
 
 find_package(libnoise REQUIRED)
 
-add_subdirectory(prusa_fdm_mixer)
 add_subdirectory(mslicer)
 add_subdirectory(libslic3r)
 

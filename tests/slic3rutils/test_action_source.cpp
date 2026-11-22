@@ -213,8 +213,8 @@ TEST_CASE("Native command icons resolve to shipped SVGs", "[ActionSource][SpeedD
                               Expected{"save_project", "menu_save"},
                               Expected{"sync_ams", "ams_fila_sync"},
                               Expected{"mode_simple", "advanced"},
-                              Expected{"calib_temperature", "param_temperature"},
-                              Expected{"calib_cornering", "param_precision"},
+                              // TigerSlicer: one calibration builder instead of OrcaSlicer's calibration dialogs.
+                              Expected{"calib_builder", "param_flow_ratio_and_pressure_advance"},
                               Expected{"plate_add", "toolbar_add_plate"},
                               Expected{"add_primitive_cube", "menu_obj_cube"},
                               // These previously pointed at blank placeholder SVGs or theme-broken ones.
@@ -292,11 +292,11 @@ TEST_CASE("Native command catalog covers the Add menus", "[ActionSource][SpeedDi
         CHECK(*group == *primitive_group);
     }
 
-    const std::string* handy_group = group_of("add_handy_orca_cube");
+    // TigerSlicer: the handy models carry neutral names, and OrcaSlicer's own branded models are left out.
+    const std::string* handy_group = group_of("add_handy_calibration_cube");
     REQUIRE(handy_group != nullptr);
-    for (const char* key : {"add_handy_orcasliced_combo", "add_handy_orca_badge", "add_handy_orca_tolerance_test",
-                            "add_handy_3dbenchy", "add_handy_cali_cat", "add_handy_autodesk_fdm_test", "add_handy_voron_cube",
-                            "add_handy_stanford_bunny", "add_handy_orca_string_hell"}) {
+    for (const char* key : {"add_handy_tolerance_test", "add_handy_3dbenchy", "add_handy_cali_cat", "add_handy_autodesk_fdm_test",
+                            "add_handy_voron_cube", "add_handy_stanford_bunny", "add_handy_string_hell"}) {
         const std::string* group = group_of(key);
         INFO(key);
         REQUIRE(group != nullptr);

@@ -3,6 +3,41 @@
 Downloads for every version are on the [Releases page](https://github.com/tiggy0808/TigerSlicer/releases).
 Technical notes for each release are in [docs/DEVELOPMENT_NOTES.md](docs/DEVELOPMENT_NOTES.md).
 
+## Unreleased
+
+**Now based on OrcaSlicer 2.5.2** (it was based on OrcaSlicer's code from August 2026). Everything
+TigerSlicer adds or does differently is kept: the name and pink theme, no cloud or sign-in, no Home tab,
+one filament per material, one bed temperature, resin printers, the calibration builder, the experimental
+features switch, and all of TigerSlicer's own tools.
+
+**New, from OrcaSlicer 2.5**
+- **Python plugins**: a Plugins window with a Permissions tab. Plugins install from a file; there is no
+  online plugin hub in TigerSlicer.
+- **Speed Dial**: search for and run any action or setting from one box.
+- **Design tab (early preview)**: sketch-based CAD in the slicer, with extrude, text and revolve.
+- **Texture displacement**: give surfaces a real 3D texture from an image.
+- **Mixed filaments**: mix two or three loaded filaments into a new colour, with finer sub-layers and
+  gradients, and import textured or coloured models (glTF, GLB, FBX).
+- **Belt printers** and **IDEX / IQEX parallel printing** (two to four copies at once).
+- **Toolhead collision volumes**, smarter travel moves, faster startup, slicing and export.
+- New options: precise seam modifiers, top surface expansion, wipe inward for outer walls, print
+  unsupported walls last, adaptive density for Gyroid and TPMS infill, Spiral Inset infill, first layer
+  fan speed, per-filament toolchange retraction, and more.
+- More printers and updates to existing ones, including Prusa CORE One MMU3 and INDX, Bambu Lab H2C and
+  A2L. Their brand filament profiles are mapped to TigerSlicer's one-per-material filaments.
+- Hundreds of fixes. The full list is in OrcaSlicer's release notes for
+  [2.5.0](https://github.com/OrcaSlicer/OrcaSlicer/releases/tag/v2.5.0),
+  [2.5.1](https://github.com/OrcaSlicer/OrcaSlicer/releases/tag/v2.5.1) and
+  [2.5.2](https://github.com/OrcaSlicer/OrcaSlicer/releases/tag/v2.5.2).
+
+**Changed**
+- **Colour mixing is OrcaSlicer's mixed filaments.** TigerSlicer's own Full Spectrum colour mixing and
+  its "Color mixing" button are removed, since OrcaSlicer 2.5 has the same feature. Mixes saved in a
+  project with Full Spectrum are not carried over: the project opens, and its mixed colours need to be
+  set up again as mixed filaments.
+- The Speed Dial's calibration entry opens the calibration builder.
+- G-code written by OrcaSlicer can be loaded as a configuration.
+
 ## 0.0.13 (2026-11-21)
 
 **New (experimental)**

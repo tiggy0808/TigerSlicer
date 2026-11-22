@@ -11,7 +11,6 @@
 #include "CommonDefs.hpp"
 #include "PrintBase.hpp"
 #include "MultiRateLayerSchedule.hpp"
-#include "Feature/FullSpectrum/VirtualExtruder.hpp"
 #include "Feature/NonPlanar/NonPlanar.hpp"
 #include "Fill/FillAdaptive.hpp"
 #include "Fill/FillLightning.hpp"
@@ -160,7 +159,6 @@ public:
     // Identifier of this PrintRegion in the list of Print::m_print_regions.
     int                         print_region_id() const throw() { return m_print_region_id; }
     int                         print_object_region_id() const throw() { return m_print_object_region_id; }
-    std::optional<unsigned int> source_virtual_extruder_id() const throw() { return m_source_virtual_extruder_id; }
     // Volume identity used to differentiate same-config regions when per-part gradient is enabled.
     // Default-constructed (invalid) means this region is not tied to a specific volume — preserves
     // existing behavior for all paths not using per_part_gradient.
@@ -175,7 +173,7 @@ public:
 
     // Collect 0-based extruder indices used to print this region's object.
 	void                        collect_object_printing_extruders(const Print &print, std::vector<unsigned int> &object_extruders) const;
-	static void                 collect_object_printing_extruders(const PrintConfig &print_config, const PrintRegionConfig &region_config, const bool has_brim, std::vector<unsigned int> &object_extruders, const FullSpectrum::VirtualExtruders &virtual_extruders = {});
+	static void                 collect_object_printing_extruders(const PrintConfig &print_config, const PrintRegionConfig &region_config, const bool has_brim, std::vector<unsigned int> &object_extruders);
 
 // Methods modifying the PrintRegion's state:
 public:
@@ -183,7 +181,6 @@ public:
     void                        set_config(PrintRegionConfig &&config) { m_config = std::move(config); m_config_hash = m_config.hash(); }
     void                        config_apply_only(const ConfigBase &other, const t_config_option_keys &keys, bool ignore_nonexistent = false)
                                         { m_config.apply_only(other, keys, ignore_nonexistent); m_config_hash = m_config.hash(); }
-    void                        set_source_virtual_extruder_id(std::optional<unsigned int> v) throw() { m_source_virtual_extruder_id = v; }
 private:
     friend Print;
     friend void print_region_ref_inc(PrintRegion&);
@@ -195,14 +192,13 @@ private:
     int                m_print_region_id { -1 };
     int                m_print_object_region_id { -1 };
     int                m_ref_cnt { 0 };
-    std::optional<unsigned int> m_source_virtual_extruder_id;
     // Per-part gradient: when non-invalid, this region belongs exclusively to one ModelVolume,
     // letting same-color volumes within a combined ModelObject be tracked separately for gradient
     // emission. Default invalid -> region keying behaves exactly as before.
     ObjectID           m_gradient_volume_id;
 };
 
-inline bool operator==(const PrintRegion &lhs, const PrintRegion &rhs) { return lhs.config_hash() == rhs.config_hash() && lhs.config() == rhs.config() && lhs.source_virtual_extruder_id() == rhs.source_virtual_extruder_id(); }
+inline bool operator==(const PrintRegion &lhs, const PrintRegion &rhs) { return lhs.config_hash() == rhs.config_hash() && lhs.config() == rhs.config(); }
 inline bool operator!=(const PrintRegion &lhs, const PrintRegion &rhs) { return ! (lhs == rhs); }
 
 template<typename T>
@@ -1099,15 +1095,11 @@ private: // Prevents erroneous use by other classes.
     typedef std::pair<PrintObject *, bool>         PrintObjectInfo;
 
 public:
-    // TigerSlicer: the per-tool layer-height schedule and the Full Spectrum
-    // virtual extruders configured for this job.
+    // TigerSlicer: the per-tool layer-height schedule configured for this job.
     const MultiRateSchedule&              multi_rate_schedule() const { return m_multi_rate_schedule; }
-    unsigned int num_physical_extruders() const { return static_cast<unsigned int>(m_config.filament_diameter.size()); }
-    const FullSpectrum::VirtualExtruders& virtual_extruders()   const { return m_virtual_extruders; }
     void build_and_validate_multi_rate_schedule();
 private:
     MultiRateSchedule              m_multi_rate_schedule;
-    FullSpectrum::VirtualExtruders m_virtual_extruders;
 public:
 
     using SlicingPipelineHookFn = std::function<void(Print&, const PrintObject*, SlicingPipelineStepPlugin)>;

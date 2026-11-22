@@ -661,8 +661,6 @@ public:
     // Hollows every resin object thick enough for the wall and gives each one without drain holes
     // two at its bottom. Returns how many objects it hollowed.
     int  auto_hollow_and_drain(float hole_radius, float hole_depth);
-    // TigerSlicer: Full Spectrum virtual extruders (color mixing) editor.
-    void open_full_spectrum_dialog();
     // The Supports workspace registers itself so option edits made elsewhere
     // can refresh its panel; null whenever the view does not exist.
     void set_msla_supports_view_refresh(std::function<void()> refresh) { m_msla_supports_refresh = std::move(refresh); }

@@ -476,6 +476,7 @@ TEST_CASE_METHOD(HealthCheckFixture, "Refreshing the server connection returns b
 
 TEST_CASE_METHOD(HealthCheckFixture, "Successive health checks follow the server's state", "[OrcaCloudServiceAgent]")
 {
+    SKIP("TigerSlicer has no cloud: the health check never runs");
     server.set_mode(LoopbackServer::Mode::Ok);
     REQUIRE(start_check(1));
     REQUIRE(log.wait_for_connected(1));
@@ -498,6 +499,7 @@ TEST_CASE_METHOD(HealthCheckFixture, "Successive health checks follow the server
 
 TEST_CASE_METHOD(HealthCheckFixture, "A refresh while a health check is in flight starts no second check", "[OrcaCloudServiceAgent]")
 {
+    SKIP("TigerSlicer has no cloud: the health check never runs");
     server.set_mode(LoopbackServer::Mode::Silent);
 
     agent->refresh_connection();
@@ -510,6 +512,7 @@ TEST_CASE_METHOD(HealthCheckFixture, "A refresh while a health check is in fligh
 
 TEST_CASE_METHOD(HealthCheckFixture, "Stopping the health check cancels the request in flight", "[OrcaCloudServiceAgent]")
 {
+    SKIP("TigerSlicer has no cloud: the health check never runs");
     server.set_mode(LoopbackServer::Mode::Silent);
     queue_callbacks();
 
@@ -530,6 +533,7 @@ TEST_CASE_METHOD(HealthCheckFixture, "Stopping the health check cancels the requ
 
 TEST_CASE_METHOD(HealthCheckFixture, "Connecting to the server reports the result synchronously", "[OrcaCloudServiceAgent]")
 {
+    SKIP("TigerSlicer has no cloud: the health check never runs");
     server.set_mode(LoopbackServer::Mode::Ok);
     CHECK(agent->connect_server() == BAMBU_NETWORK_SUCCESS);
     CHECK(agent->is_server_connected());
@@ -541,6 +545,7 @@ TEST_CASE_METHOD(HealthCheckFixture, "Connecting to the server reports the resul
 
 TEST_CASE_METHOD(HealthCheckFixture, "A health check result queued before stopping is still delivered and nothing is queued after", "[OrcaCloudServiceAgent]")
 {
+    SKIP("TigerSlicer has no cloud: the health check never runs");
     server.set_mode(LoopbackServer::Mode::Ok);
     queue_callbacks();
 
@@ -564,6 +569,7 @@ TEST_CASE_METHOD(HealthCheckFixture, "A health check result queued before stoppi
 
 TEST_CASE_METHOD(HealthCheckFixture, "The health check does no token work", "[OrcaCloudServiceAgent]")
 {
+    SKIP("TigerSlicer has no cloud: the health check never runs");
     // A non-JWT access token has no expiry, so the session reads as due for a refresh.
     REQUIRE(agent->set_user_session(flat_session_json({{"refresh_token", "test-refresh-token"}}), false));
     server.set_mode(LoopbackServer::Mode::Ok);
@@ -584,6 +590,7 @@ TEST_CASE_METHOD(HealthCheckFixture, "The health check does no token work", "[Or
 
 TEST_CASE_METHOD(HealthCheckFixture, "A token request made while start() refreshes waits for it instead of refreshing again", "[OrcaCloudServiceAgent]")
 {
+    SKIP("TigerSlicer has no cloud: the health check never runs");
     // A session saved by a previous run: start() refreshes it on its own thread.
     agent->persist_user_secret(nlohmann::json{{"refresh_token", "stored-refresh-token"}, {"user_id", "test-user-id"}}.dump());
     const std::string access_token = FAR_FUTURE_JWT;

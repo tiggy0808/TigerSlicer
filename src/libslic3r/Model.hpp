@@ -17,7 +17,6 @@
 #include "BrimEarsPoint.hpp"
 #include "TriangleMesh.hpp"
 #include "CustomGCode.hpp"
-#include "Feature/FullSpectrum/VirtualExtruder.hpp"
 #include "calib.hpp"
 #include "TextConfiguration.hpp"
 #include "EmbossShape.hpp"
@@ -1702,9 +1701,6 @@ public:
     ModelMaterialMap    materials;
     // Objects are owned by a model. Each model may have multiple instances, each instance having its own transformation (shift, scale, rotation).
     ModelObjectPtrs     objects;
-    // TigerSlicer: virtual extruder definitions. Empty when none are defined.
-    FullSpectrum::VirtualExtruders virtual_extruders;
-    FullSpectrum::VirtualExtruders &get_virtual_extruders() { return virtual_extruders; }
     // Wipe tower object.
     ModelWipeTower	wipe_tower;
     // BBS static members store extruder parameters and speed map of all models

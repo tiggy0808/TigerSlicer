@@ -715,8 +715,7 @@ std::vector<unsigned int> Print::object_extruders() const
     for (const PrintObject* object : m_objects)
         append_model_object_extruders(*object->model_object(), extruders);
     sort_remove_duplicates(extruders);
-    // TigerSlicer: virtual extruder ids expand to their physical components.
-    return FullSpectrum::expand_virtual_extruders_0based(extruders, m_virtual_extruders);
+    return extruders;
 }
 
 // Appends 0-based indices of the filaments assigned to the volumes of model_object (painting included) and to its height ranges.
@@ -2005,8 +2004,6 @@ static std::string tigerslicer_validate(const Print &print)
             return _u8L("Independent tool layer heights cannot currently be used with sequential printing.");
         if (m_config.spiral_mode)
             return _u8L("Independent tool layer heights cannot currently be used with Spiral Vase mode.");
-        if (! print.virtual_extruders().empty())
-            return _u8L("Independent tool layer heights cannot currently be used with Full Spectrum virtual extruders.");
 
         std::vector<coordf_t> object_synchronization_heights;
         object_synchronization_heights.reserve(m_objects.size());

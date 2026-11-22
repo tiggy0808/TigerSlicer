@@ -27,8 +27,6 @@ if (SLIC3R_CAD)
 endif ()
 
 set(lisbslic3r_sources    # --- TigerSlicer ------------------------------------------------
-    Feature/FullSpectrum/VirtualExtruder.cpp
-    Feature/FullSpectrum/VirtualExtruder.hpp
     AdaptiveLayers.cpp
     AdaptiveLayers.hpp
     AutoOutcomeFeedback.cpp
@@ -916,7 +914,6 @@ endif ()
 
 target_link_libraries(libslic3r
     PUBLIC
-        prusa_fdm_mixer
         tigerslicer_mslicer_cpp
         Eigen3::Eigen
         admesh

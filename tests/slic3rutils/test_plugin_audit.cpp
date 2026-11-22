@@ -113,8 +113,9 @@ TEST_CASE("Plugin audit denies host-managed filenames anywhere", "[audit]")
 
     SECTION("matching is case-insensitive on every platform")
     {
-        CHECK(mgr.is_denied_filename(fs::path("orcaslicer.conf")));
-        CHECK(mgr.is_denied_filename(fs::path("ORCASLICER.CONF")));
+        // TigerSlicer: the configuration file is named after the app key.
+        CHECK(mgr.is_denied_filename(fs::path("tigerslicer.conf")));
+        CHECK(mgr.is_denied_filename(fs::path("TIGERSLICER.CONF")));
         CHECK(mgr.is_denied_filename(fs::path("ORCA_REFRESH_TOKEN.SEC")));
     }
 

@@ -147,7 +147,7 @@ MediaFilePanel::MediaFilePanel(wxWindow * parent)
     m_button_delete->SetBorderColorNormal(wxColor("#FF6F00"));
     m_button_delete->SetTextColorNormal(wxColor("#FF6F00"));
     m_button_select_all->SetBorderWidth(0);
-    m_button_select_all->SetBackgroundColorNormal(wxColor("#009688"));
+    m_button_select_all->SetBackgroundColorNormal(wxColor("#F6A5C1"));
     m_button_select_all->SetTextColorNormal(*wxWHITE);
     m_button_select_all->Enable(false);
     m_button_management->SetBorderWidth(0);

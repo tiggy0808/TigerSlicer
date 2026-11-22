@@ -3093,9 +3093,6 @@ void MainFrame::add_common_view_menu_items(wxMenu* view_menu, std::function<bool
     append_menu_item(view_menu, wxID_ANY, _L("MSLA Supports Workspace"), _L("Open the MSLA support preparation workspace"),
         [this](wxCommandEvent&) { if (plater() != nullptr) plater()->select_view_3D("Supports"); },
         "", nullptr, [can_change_view]() { return can_change_view(); }, this);
-    append_menu_item(view_menu, wxID_ANY, _L("Virtual Extruders - Color Mixing"), _L("Define virtual extruders that blend or grade between filaments"),
-        [this](wxCommandEvent&) { if (plater() != nullptr) plater()->open_full_spectrum_dialog(); },
-        "", nullptr, [can_change_view]() { return can_change_view(); }, this);
     view_menu->AppendSeparator();
 
     append_shortcut_item(view_menu, Shortcut::ViewDefault, true, _L("Default View"), _L("Default View"), [this](wxCommandEvent&) {

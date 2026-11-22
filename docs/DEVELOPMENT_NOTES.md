@@ -7,6 +7,89 @@ OrcaSlicer. These are the maintainer's working notes, terse and written for some
 
 ---
 
+## Unreleased
+
+### Merge of OrcaSlicer 2.5.2
+TigerSlicer was built on OrcaSlicer `main` of 2026-08-19 (`ba2297391`, between 2.4.2 and the 2.5 alpha).
+`36d6dc5bcf` merges the tag `v2.5.2` (`f92a7c065c`, 2,928 commits ahead, about 1,600 source files). The
+owner's rule for the merge: use OrcaSlicer's code where both sides have the same thing; keep what only
+TigerSlicer has, what it did on purpose, and what it does better.
+
+- **How it was done.** A plain `git merge` on the branch `merge-orca-2.5.2`: 7,143 conflicted files.
+  - 6,908 were profiles. Printers, processes and vendor files are OrcaSlicer's. The brand filament
+    profiles stay removed: the 0.0.5 migration (`scripts/tigerslicer_filaments.py --migrate`) was run again
+    on the new tree with the names it had recorded before, so the library profiles' `renamed_from` now maps
+    7,726 old names (1,324 of them new in 2.5). The Orca Arena test vendor stays removed.
+  - About 77 source and test files had 207 conflict hunks, resolved by hand, hunk by hunk: OrcaSlicer's
+    new code first, TigerSlicer's change put back on top.
+  - Translations are OrcaSlicer's catalogs with TigerSlicer's wording edits replayed line by line.
+  - Web pages and icons: OrcaSlicer's new versions with the pink palette, the TigerSlicer name and the
+    cloud removals put back. 92 new icons were recoloured from `#009688` to `#F6A5C1`.
+- **OrcaSlicer's implementation replaced TigerSlicer's** for: object label ids
+  (`assign_object_label_ids()`), the print action menu and its default button, the setup wizard's profile
+  loading, the custom camera source dialog, the keyboard shortcuts dialog, and colour mixing (see below).
+- **Kept from TigerSlicer, where OrcaSlicer went another way:**
+  - No cloud: no sign-in, no preset sync, no plugin hub (`open_plugin_hub()` and the cloud health check
+    are stubs), no "Sync Presets" menu. Plugins install from a file.
+  - No Home tab. OrcaSlicer's lazy pages return null for it.
+  - The calibration builder: `calib_dlg.*` stays deleted, `MainFrame::run_calibration()` opens the builder,
+    and the Speed Dial has one "Calibration builder" action instead of nine calibrations.
+  - One bed temperature, the by-material filament library (`MoonrakerPrinterAgent` keeps TigerSlicer's
+    filament id table, as OrcaSlicer's looks up "Generic X @System" presets), the experimental switch
+    (the settings search filter moved to `SettingsIndex.cpp`), resin mode and its guards.
+  - `NonPlanar::object_mesh()` stays (it also fixes mirrored facets) but takes the print object's own
+    first instance, as OrcaSlicer's fix for Z contouring with several copies does.
+  - OrcaSlicer's startup prompt to migrate filament presets is off (`check_legacy_user_filament_presets()`
+    only runs from the Help menu): TigerSlicer's filaments fit every printer.
+- **Colour mixing is OrcaSlicer's mixed filaments; Full Spectrum is removed.** Both mix two or three
+  loaded filaments by ratio into extra filament slots, with gradients, so by the owner's rule
+  OrcaSlicer's stays.
+  - Deleted: `Feature/FullSpectrum/`, `FullSpectrumDialog`, `VirtualExtruderListBox` and the dialog's
+    helpers (`ColorUtils`, `BarycentricRatioPicker`, `GradientRatioBar`, `LayerSequenceBar`, `UIColors.hpp`),
+    `src/prusa_fdm_mixer/`, `TriangleSelector::remap_states(std::map)`, `Print::num_physical_extruders()`,
+    the sidebar's "Color mixing" button and the View menu item.
+  - Back to OrcaSlicer's form: `get_create_region()`, `Print::object_extruders()`,
+    `update_shrinkage_compensation()`, `PrintRegion::operator==`, `collect_object_printing_extruders()`,
+    `clamp_feature_filament_to_valid()`. `MultiMaterialSegmentation.cpp` and `Format/bbs_3mf.cpp` are
+    identical to OrcaSlicer's again.
+  - An old project keeps opening: its `Metadata/tiger_slicer_full_spectrum.json` is copied like any other
+    metadata file and not read. Extruder ids above the filament count become filament 1 at slice time,
+    and by reading the code areas painted with a virtual extruder print as unpainted; no real file was
+    tried. The mixes have to be made again as mixed filaments.
+  - The check that kept independent tool layer heights and Full Spectrum apart went with it; nothing
+    checks independent tool layer heights against mixed filaments yet.
+- **Prusa profiles** are OrcaSlicer's updated ones (MMU3, INDX, pressure advance), with the 0.0.13
+  filament-family rules for the bed levelling temperature applied again. The INDX start G-code keeps its
+  own, lower probing temperatures and only gets the family matching.
+- **New in the build:** OrcaSlicer 2.5 needs rebuilt dependencies (`build_release_macos.sh -d`): the SLVS
+  constraint solver for the Design tab, a pinned EXPAT, newer wxWidgets and Python. A build directory
+  from before the merge needs its `CMakeCache.txt` deleted, or configure finds the SDK's older EXPAT.
+- **After-merge fixes** (`74b68a1021` and later): `AppConfig`'s per-printer settings are a string map
+  now (the default filament colour migration follows); Clipper's join and end types are `Slic3r::` enums;
+  G-code written by OrcaSlicer is accepted as a configuration source; `apply_filament_shrinkage` is in
+  `s_Preset_print_options`; the new strings of 2.5 say TigerSlicer in the source and the catalogs.
+- **Tests adjusted to TigerSlicer's choices** (`tests/slic3rutils`): the Speed Dial catalog expects the
+  calibration builder and the neutral handy model keys; the plugin audit expects `tigerslicer.conf`
+  (this one already failed before the merge); seven Orca Cloud health check cases are skipped, as the
+  health check never runs.
+- **Verified on macOS (arm64):**
+  - The app builds with rebuilt dependencies and starts with a throwaway data folder: first run, a Prusa
+    CORE One L selected, and an Elegoo Mars 3 (resin) selected. No fatal log lines, no crash report.
+  - `ctest` (every case in its own process, as OrcaSlicer's CI runs them): 3,998 of 4,002 pass. The 4 that
+    fail are the compiler-dependent reference hashes that failed before the merge (`[Regression]` in
+    test_print.cpp and three `[NonPlanar]` cases). Their reference values come from Windows and will
+    need regenerating there, since OrcaSlicer 2.5 changes the toolpaths they hash.
+  - Run directly, `slic3rutils_tests` crashes in its Python cases when another case started Python first.
+    That is a documented limit of OrcaSlicer's suite (`python_test_support.hpp`), so it is run with ctest.
+- **Not verified:** the Windows build; printing; the new 2.5 features by hand (Design tab, plugins, Speed
+  Dial, texture displacement, mixed filaments, belt and IDEX modes); TigerSlicer's tools in the GUI after
+  the merge (only their automated tests ran); an old project with Full Spectrum data.
+- **Left for later:** OrcaSlicer's belt handling for calibration prints (the calibration builder has
+  none); the wizard's "Filament printers" / "Resin printers" tab labels are not translatable under
+  OrcaSlicer's new web translation system; the Deviation view cannot be chosen as the default preview
+  view; brick layers together with mixed-filament sub-layers keep the lifted travel height for the
+  whole layer.
+
 ## 0.0.13 (2026-11-21)
 
 Theme: shrinkage calibration (experimental), a thin feature warning that only shows when something is

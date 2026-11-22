@@ -179,10 +179,8 @@
 #include "libslic3r/Print.hpp"
 #include "libslic3r/AutoSlice.hpp"
 #include "libslic3r/MSlicerResinJob.hpp"
-#include "FullSpectrumDialog.hpp"
 #include "CalibrationBuilderDialog.hpp"
 #include "libslic3r/CalibrationBuilder.hpp"
-#include "libslic3r/TriangleSelector.hpp"
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/SLAPrint.hpp"
 #include "libslic3r/Utils.hpp"
@@ -939,7 +937,6 @@ struct Sidebar::priv
     ScalableButton* m_filament_icon = nullptr;
     Button * m_purge_mode_btn = nullptr;
     Button * m_flushing_volume_btn = nullptr;
-    Button * m_color_mixing_btn = nullptr; // TigerSlicer: Full Spectrum colour mixing
     TextInput* m_search_item = nullptr;
     StaticBox* m_search_bar = nullptr;
     Search::SearchObjectDialog* dia = nullptr;
@@ -1468,7 +1465,7 @@ public:
 
         Bind(wxEVT_PAINT, [this](wxPaintEvent& evt) {
                 wxPaintDC dc(this);
-                dc.SetPen(StateColor::darkModeColorFor(wxColour("#009688"))); // ORCA match popup border color
+                dc.SetPen(StateColor::darkModeColorFor(wxColour("#F6A5C1"))); // ORCA match popup border color
                 dc.SetBrush(*wxTRANSPARENT_BRUSH);
                 dc.DrawRoundedRectangle(0, 0, GetSize().x, GetSize().y, 0);
             });
@@ -3269,8 +3266,7 @@ Sidebar::Sidebar(Plater *parent)
         // also block fold/unfold feature when user clicks to spacing between icons
         int exclude_pt = p->m_bpButton_set_filament->IsShown() ? p->m_bpButton_set_filament->GetPosition().x // maximum fixed item
                                                                : p->m_panel_filament_title->GetSize().GetWidth();
-        if      (p->m_color_mixing_btn && p->m_color_mixing_btn->IsShown()) exclude_pt = p->m_color_mixing_btn->GetPosition().x;
-        else if (p->m_purge_mode_btn->IsShown())        exclude_pt = p->m_purge_mode_btn->GetPosition().x;
+        if      (p->m_purge_mode_btn->IsShown())        exclude_pt = p->m_purge_mode_btn->GetPosition().x;
         else if (p->m_flushing_volume_btn->IsShown())   exclude_pt = p->m_flushing_volume_btn->GetPosition().x;
         else if (p->m_bpButton_add_filament->IsShown()) exclude_pt = p->m_bpButton_add_filament->GetPosition().x - FromDIP(30); // reserve spacing for delete button
         else if (ams_btn->IsShown())                    exclude_pt = ams_btn->GetPosition().x;
@@ -3307,15 +3303,6 @@ Sidebar::Sidebar(Plater *parent)
     scrolled_sizer->Add(p->m_panel_filament_separator, 0, wxEXPAND);
 
     bSizer39->AddStretchSpacer(1);
-
-    // TigerSlicer: Full Spectrum colour mixing, shown once there are two filaments to mix.
-    // The same dialog is in View > Virtual Extruders - Color Mixing.
-    p->m_color_mixing_btn = new Button(p->m_panel_filament_title, _L("Color mixing"));
-    p->m_color_mixing_btn->SetStyle(ButtonStyle::Confirm, ButtonType::Compact);
-    p->m_color_mixing_btn->SetToolTip(_L("Mix new colors from the loaded filaments and paint them onto your models"));
-    p->m_color_mixing_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent &) { p->plater->open_full_spectrum_dialog(); });
-    bSizer39->Add(p->m_color_mixing_btn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(4));
-    bSizer39->Hide(p->m_color_mixing_btn);
 
     p->m_purge_mode_btn = new Button(p->m_panel_filament_title, _L("Purge mode"));
     p->m_purge_mode_btn->SetStyle(ButtonStyle::Confirm, ButtonType::Compact);
@@ -5552,7 +5539,6 @@ void Sidebar::msw_rescale()
     p->m_bpButton_set_filament->msw_rescale();
     p->m_purge_mode_btn->Rescale();
     p->m_flushing_volume_btn->Rescale();
-    p->m_color_mixing_btn->Rescale();
     set_flushing_volume_warning(is_flush_config_modified()); // ORCA reapply appearance
 
     //BBS
@@ -5639,7 +5625,6 @@ void Sidebar::sys_color_changed()
     p->m_bpButton_set_filament->msw_rescale();
     p->m_purge_mode_btn->Rescale();
     p->m_flushing_volume_btn->Rescale();
-    p->m_color_mixing_btn->Rescale();
     set_flushing_volume_warning(is_flush_config_modified()); // ORCA reapply appearance
 
     // BBS
@@ -6614,11 +6599,6 @@ void Sidebar::show_SEMM_buttons()
     p->m_bpButton_add_filament->Show(single_or_bbl);
     p->m_bpButton_del_filament->Show(is_multi);
     p->m_flushing_volume_btn->Show(  is_multi);
-    // Full Spectrum mixes on printers with two or more extruders (it counts nozzles, not filaments).
-    if (p->m_color_mixing_btn) {
-        const auto *nozzles = wxGetApp().preset_bundle->printers.get_edited_preset().config.option<ConfigOptionFloats>("nozzle_diameter");
-        p->m_color_mixing_btn->Show(nozzles != nullptr && nozzles->values.size() >= 2);
-    }
 
     if (is_multi) {
         for (auto &c : p->combos_filament)
@@ -22959,117 +22939,6 @@ void Plater::on_imex_ghost_click(int physical_head)
 }
 
 
-
-// TigerSlicer: Full Spectrum virtual extruders --------------------------------
-
-namespace {
-
-// After edits, virtual extruder ids are renumbered to sit contiguously above
-// the physical filaments; every reference in the model follows the new ids.
-bool renumber_virtual_extruders(Plater &plater, unsigned int num_physical, bool with_snapshot = false)
-{
-    Model &model = plater.model();
-    if (model.virtual_extruders.empty())
-        return false;
-
-    std::map<unsigned int, unsigned int> remap;
-    unsigned int next_id = num_physical + 1;
-    for (FullSpectrum::VirtualExtruder &ve : model.virtual_extruders) {
-        if (ve.id != next_id) {
-            remap[ve.id] = next_id;
-            ve.id        = next_id;
-        }
-        ++next_id;
-    }
-    if (remap.empty())
-        return false;
-
-    if (with_snapshot)
-        plater.take_snapshot(std::string("Renumber virtual extruders"));
-
-    for (ModelObject *object : model.objects) {
-        if (object == nullptr)
-            continue;
-        if (object->config.has("extruder"))
-            if (auto it = remap.find(static_cast<unsigned int>(object->config.extruder())); it != remap.end())
-                object->config.set_key_value("extruder", new ConfigOptionInt(int(it->second)));
-        for (ModelVolume *volume : object->volumes) {
-            if (volume == nullptr)
-                continue;
-            if (volume->config.has("extruder"))
-                if (auto it = remap.find(static_cast<unsigned int>(volume->config.extruder())); it != remap.end())
-                    volume->config.set_key_value("extruder", new ConfigOptionInt(int(it->second)));
-            if (volume->is_mm_painted()) {
-                bool needs = false;
-                const std::vector<bool> &used = volume->mmu_segmentation_facets.get_data().used_states;
-                for (const auto &[old_id, new_id] : remap)
-                    if (old_id < used.size() && used[old_id]) { needs = true; break; }
-                if (needs) {
-                    TriangleSelector selector(volume->mesh());
-                    selector.deserialize(volume->mmu_segmentation_facets.get_data(), false);
-                    std::map<EnforcerBlockerType, EnforcerBlockerType> state_remap;
-                    for (const auto &[old_id, new_id] : remap)
-                        state_remap[EnforcerBlockerType(old_id)] = EnforcerBlockerType(new_id);
-                    selector.remap_states(state_remap);
-                    volume->mmu_segmentation_facets.set(selector);
-                }
-            }
-        }
-    }
-    return true;
-}
-
-} // namespace
-
-void Plater::open_full_spectrum_dialog()
-{
-    if (GLCanvas3D *canvas = this->canvas3D(); canvas != nullptr)
-        canvas->reset_all_gizmos();
-    FullSpectrumDialog dialog(static_cast<wxWindow *>(wxGetApp().mainframe), p->model,
-                              wxGetApp().preset_bundle->full_config());
-    if (dialog.ShowModal() != wxID_OK)
-        return;
-
-    take_snapshot(std::string("Update virtual extruders"));
-    Model &model = p->model;
-    const unsigned int num_physical = static_cast<unsigned int>(
-        wxGetApp().preset_bundle->filament_presets.size());
-
-    for (unsigned int removed_id : dialog.removed_ids()) {
-        for (ModelObject *object : model.objects) {
-            if (object == nullptr) continue;
-            if (object->config.has("extruder") && object->config.extruder() == int(removed_id))
-                object->config.erase("extruder");
-            for (ModelVolume *volume : object->volumes) {
-                if (volume == nullptr) continue;
-                if (volume->config.has("extruder") && volume->config.extruder() == int(removed_id))
-                    volume->config.erase("extruder");
-                if (volume->is_mm_painted()) {
-                    const auto &used = volume->mmu_segmentation_facets.get_data().used_states;
-                    if (removed_id < used.size() && used[removed_id]) {
-                        TriangleSelector selector(volume->mesh());
-                        selector.deserialize(volume->mmu_segmentation_facets.get_data(), false);
-                        selector.remap_states({{EnforcerBlockerType(removed_id), EnforcerBlockerType::NONE}});
-                        volume->mmu_segmentation_facets.set(selector);
-                    }
-                }
-            }
-        }
-    }
-    model.virtual_extruders = FullSpectrum::normalize_virtual_extruders(
-        dialog.result_virtual_extruders());
-
-    renumber_virtual_extruders(*this, num_physical);
-
-    for (size_t obj_idx = 0; obj_idx < model.objects.size(); ++obj_idx)
-        wxGetApp().obj_list()->update_info_items(obj_idx);
-
-    schedule_background_process();
-    wxGetApp().obj_list()->update_objects_list_filament_column(num_physical);
-    wxGetApp().obj_list()->Refresh();
-    if (GLCanvas3D *canvas = this->canvas3D(); canvas != nullptr)
-        canvas->reload_scene(true);
-}
 
 // TigerSlicer: MSLA prepared supports ---------------------------------------
 
