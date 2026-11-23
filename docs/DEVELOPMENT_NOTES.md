@@ -108,7 +108,7 @@ TigerSlicer has, what it did on purpose, and what it does better.
   - At the release commit 4 fail, the same 4 as on macOS: the reference hashes in `[Print][Regression]`
     (six values) and three `[NonPlanar]` cases (two values). OrcaSlicer 2.5 changes the toolpaths they
     hash.
-  - The values were recorded again with MSVC (the commit after the release): each was the same in five
+  - The values were recorded again with MSVC (`74292f829`, after the release): each was the same in five
     runs, and Z contouring only and On with experimental features off still give one and the same hash.
     With them all 4,003 pass.
   - `[Regression]` is on 167 fff_print cases since the merge, so run those four by name.
