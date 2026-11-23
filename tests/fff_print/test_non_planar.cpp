@@ -215,17 +215,19 @@ static std::vector<ExtrusionPath> curved_paths(const Layer &layer)
 
 TEST_CASE("Off prints what it printed before non-planar slicing", "[NonPlanar][Regression]")
 {
-    // Recorded before non_planar_mode replaced zaa_enabled, with MSVC.
+    // First recorded before non_planar_mode replaced zaa_enabled. Recorded again with MSVC after the merge of
+    // OrcaSlicer 2.5.2 (TigerSlicer 0.1.0), which changed the toolpaths. Other compilers give other values.
     Print print;
-    CHECK(motion_hash(slice_as_recorded("off", print)) == 0x5286b0b8798864beull);
+    CHECK(motion_hash(slice_as_recorded("off", print)) == 0x60a18b25c0b9b534ull);
     CHECK(print.objects().front()->non_planar_zones().empty());
 }
 
 TEST_CASE("Z contouring only prints what Z contouring printed before", "[NonPlanar][Regression]")
 {
-    // Recorded with zaa_enabled on, before non_planar_mode replaced it, with MSVC.
+    // First recorded with zaa_enabled on, before non_planar_mode replaced it. Recorded again with MSVC after
+    // the merge of OrcaSlicer 2.5.2 (TigerSlicer 0.1.0).
     Print print;
-    CHECK(motion_hash(slice_as_recorded("z_contouring", print)) == 0x7be50fe633fafc5eull);
+    CHECK(motion_hash(slice_as_recorded("z_contouring", print)) == 0xc38c218d37299d43ull);
 }
 
 TEST_CASE("Settings saved with the Z contouring checkbox load as the non-planar setting", "[NonPlanar]")
@@ -304,7 +306,7 @@ TEST_CASE("On prints a gently sloped top in curved layers that follow it", "[Non
 TEST_CASE("With experimental features off, On prints as Z contouring only", "[NonPlanar]")
 {
     Print print;
-    CHECK(motion_hash(slice_as_recorded("on", print, false)) == 0x7be50fe633fafc5eull);
+    CHECK(motion_hash(slice_as_recorded("on", print, false)) == 0xc38c218d37299d43ull);
     CHECK(print.objects().front()->non_planar_zones().empty());
     REQUIRE(print.experimental_values_ignored().size() == 1);
     CHECK(print.experimental_values_ignored().front() == "non_planar_mode");

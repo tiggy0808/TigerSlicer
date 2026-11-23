@@ -1423,18 +1423,20 @@ static uint64_t motion_hash(const std::string &gcode)
     return hash;
 }
 
-// TigerSlicer: the small feature options are experimental and off by default. Recorded before they existed,
-// these hashes prove that default settings still print exactly the same moves.
+// TigerSlicer: the small feature options are experimental and off by default. These hashes guard the moves
+// that default settings print. They were first recorded before the options existed, and recorded again with
+// MSVC after the merge of OrcaSlicer 2.5.2 (TigerSlicer 0.1.0), which changed the toolpaths. Other compilers
+// give other values.
 TEST_CASE("Default settings print the same moves as before the small feature options", "[Print][Regression]")
 {
     struct Case { TestMesh mesh; const char *wall_generator; uint64_t hash; };
     const Case cases[] = {
-        {TestMesh::gt2_teeth, "classic", 0x852075eb30be0bfull},
-        {TestMesh::gt2_teeth, "arachne", 0x5f2453c42d03062cull},
-        {TestMesh::overhang, "classic", 0x669633e37724df68ull},
-        {TestMesh::overhang, "arachne", 0x77df36c73bbcf48dull},
-        {TestMesh::cube_with_hole, "classic", 0x892cfda0616ff612ull},
-        {TestMesh::cube_with_hole, "arachne", 0x534acbda2a5e6393ull},
+        {TestMesh::gt2_teeth, "classic", 0x37f87c85ae5ebe5eull},
+        {TestMesh::gt2_teeth, "arachne", 0x4fdef0c75e26e6afull},
+        {TestMesh::overhang, "classic", 0xe9ddef78b28ff8f4ull},
+        {TestMesh::overhang, "arachne", 0x4ff7fc3b7c76bb35ull},
+        {TestMesh::cube_with_hole, "classic", 0x65e19191782fd8b2ull},
+        {TestMesh::cube_with_hole, "arachne", 0x0e4b115b51aa32f3ull},
     };
     for (const Case &c : cases) {
         DynamicPrintConfig config = DynamicPrintConfig::full_print_config();
