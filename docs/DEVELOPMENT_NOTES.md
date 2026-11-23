@@ -228,6 +228,25 @@ Reported on a CORE One L: PPA loaded, PPA sliced, and the printer says the wrong
 - Verified on macOS: fff_print 215 of 219 cases and libslic3r all 1,080; the 4 failures are the same
   compiler-dependent regression tests as on main. Not verified on a printer.
 
+### Verification (Windows)
+- Tests (MSVC), from the release commit (`a8e202c53`, tag `v0.0.13`): fff_print 219 of 219 and libslic3r
+  1,080 of 1,080, including `[PrusaStartGCode]`, `[PrusaFirmware]` and the regression hash tests, whose
+  reference values are MSVC's.
+- Release build from the same commit with a clean `build\OrcaSlicer` and `BUILD_TESTS` off, against the
+  pre-2.5 dependencies: no errors. It installed 9,323 files, as 0.0.12 did.
+- Packaged with `%TEMP%\tsrel013`, made by `%LOCALAPPDATA%\TigerSlicer-release-kit\make_kit.py`.
+- Release assets, added to the existing `v0.0.13` release on 2026-11-22 (the tag was not moved):
+  - `TigerSlicer-0.0.13-win64-Setup.exe`, 229,666,816 B, sha256 `8ef0846d…2222ec`.
+  - `TigerSlicer-0.0.13-win64.zip`, 236,056,760 B, sha256 `a908e2c9…71233b`.
+  - Both digests were checked on GitHub after upload.
+- The Setup.exe test install (`TIGERSLICER_INSTALL_DIR`) has 9,324 files. Its `TigerSlicer.exe` and
+  `TigerSlicer.dll` match the build.
+- Smoke test of the test install, started minimized on a copy of the real data folder (without `log`
+  and `cache`), no input: "Version 0.0.13 build a8e202c535", responding after about 25 s, no crash log.
+  The `[error]` lines are two `calc_exclude_triangles` and "Unsupported printer type: Prusa CORE One
+  L", as in 0.0.12.
+- Not looked at on screen: the shrinkage calibration window and the Prusa start G-code on a printer.
+
 ---
 
 ## 0.0.12 (2026-11-15)
