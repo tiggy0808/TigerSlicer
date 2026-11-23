@@ -93,6 +93,44 @@ TigerSlicer has, what it did on purpose, and what it does better.
   view; brick layers together with mixed-filament sub-layers keep the lifted travel height for the
   whole layer.
 
+### Verification (Windows)
+- Windows builds with `build_win.bat` now (OrcaSlicer's script; `build_release_vs2022.bat` and
+  `build_release_vs.bat` went with the merge). docs/BUILDING.md is updated.
+- Dependencies: `build_win.bat -d` into a new `deps\build`, with Visual Studio 2022 (MSVC 19.44): 21 min
+  50 s on 16 cores, no errors. The tree from before the merge does not fit (GLEW and OpenCSG are gone,
+  SLVS and wxInspector are new, OCCT, OpenCV, OpenSSL, PNG, Python and wxWidgets changed); on the
+  release PC it was renamed to `deps\build-pre-2.5`, and the old `build` to `build-pre-2.5`.
+- App: `build_win.bat -s -i` from the release commit (`4ae34f102`, tag `v0.1.0`) in a new `build`: 9 min
+  22 s, no errors. The merge needed no change for MSVC. It installed 9,822 files (515 MB).
+- Tests: `build_win.bat -s --tests --no-gettext`, then `ctest --test-dir build/tests -C Release -j 12`:
+  4,003 cases, 18 of them skipped by the suite itself (symlink, cloud health check and Python buffer
+  cases).
+  - At the release commit 4 fail, the same 4 as on macOS: the reference hashes in `[Print][Regression]`
+    (six values) and three `[NonPlanar]` cases (two values). OrcaSlicer 2.5 changes the toolpaths they
+    hash.
+  - The values were recorded again with MSVC (the commit after the release): each was the same in five
+    runs, and Z contouring only and On with experimental features off still give one and the same hash.
+    With them all 4,003 pass.
+  - `[Regression]` is on 167 fff_print cases since the merge, so run those four by name.
+- Packaged with `%TEMP%\tsrel-0.1.0`, made by `%LOCALAPPDATA%\TigerSlicer-release-kit\make_kit.py`.
+- Release assets, added to the existing `v0.1.0` release on 2026-11-22 (the tag was not moved):
+  - `TigerSlicer-0.1.0-win64-Setup.exe`, 198,197,248 B, sha256 `b947f87b…d34d3d`.
+  - `TigerSlicer-0.1.0-win64.zip`, 204,705,581 B, sha256 `016765f9…7a6346`.
+  - Both digests were checked on GitHub after upload.
+- The Setup.exe test install (`TIGERSLICER_INSTALL_DIR`) has 9,823 files. Its `TigerSlicer.exe` and
+  `TigerSlicer.dll` match the build.
+- Smoke tests of the test install, started minimized, no input, log only:
+  - On a copy of a real data folder last used by 0.0.12 (without `log` and `cache`): "Version 0.1.0
+    build 4ae34f102c"; the folder's own printer and process presets are selected again, as 0.0.13
+    selects them; responding after about 55 s; no crash log. The `[error]` lines are the two
+    `calc_exclude_triangles` and "Unsupported printer type: Prusa CORE One L" that 0.0.13 logs too.
+  - On a new, empty data folder (first run): the same version line, responding after about 45 s, no
+    crash log, and a `user_backup-v0.1.0` folder beside the new configuration.
+- Not looked at on screen on Windows: anything. The new 2.5 features, TigerSlicer's own tools after the
+  merge and the first-run wizard were not tried by hand, and nothing was printed.
+
+---
+
 ## 0.0.13 (2026-11-21)
 
 Theme: shrinkage calibration (experimental), a thin feature warning that only shows when something is

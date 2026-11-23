@@ -36,15 +36,22 @@ image.
 ## Windows (x64)
 
 Needs Visual Studio 2022 with the "Desktop development with C++" workload, CMake, Git and Strawberry
-Perl. From a Visual Studio 2022 developer command prompt in the repository folder:
+Perl. From the repository folder (any command prompt: the script finds Visual Studio itself):
 
 ```bat
-build_release_vs2022.bat
+build_win.bat -d
+build_win.bat -s -i
 ```
 
-Add `arm64` to build for Windows on ARM, or `slicer` to rebuild only the app once the dependencies are
-built. The app is written to `build\OrcaSlicer\TigerSlicer.exe`. For more detail, see OrcaSlicer's
-[How to build](https://www.orcaslicer.com/wiki/how_to_build) page, which applies unchanged.
+`-d` downloads and builds the dependencies into `deps\build` (about 20 minutes on a 16-core PC). `-s`
+builds the app, and `-i` installs it into `build\OrcaSlicer`, so the app is
+`build\OrcaSlicer\TigerSlicer.exe`. After the first build only the second line is needed. Add
+`--arch arm64` for Windows on ARM, and run `build_win.bat -h` for the other options. For more detail,
+see OrcaSlicer's [How to build](https://www.orcaslicer.com/wiki/how_to_build) page, which applies
+unchanged.
+
+Dependencies built for TigerSlicer 0.0.13 or earlier (before the move to OrcaSlicer 2.5.2) do not fit:
+delete or rename the old `deps\build` and `build` folders and build both again.
 
 ## Linux
 
@@ -53,17 +60,20 @@ and have not been tested with TigerSlicer.
 
 ## Tests
 
-Configure with `-DBUILD_TESTS=ON` (for example `cmake .. -DBUILD_TESTS=ON` in `build`), build the
-`libslic3r_tests` and `fff_print_tests` targets, and run them from `build/tests/<suite>/Release`. Turn
+Configure with `-DBUILD_TESTS=ON` (on Windows `build_win.bat -s --tests`), build the test targets, and
+run them with `ctest --test-dir build/tests -C Release`, which runs every case in its own process. Turn
 `BUILD_TESTS` off again before a release build. How the tests are organised is described in
 [tests/AGENTS.md](../tests/AGENTS.md).
+
+A few `[Regression]` tests in `fff_print` compare a hash of the G-code moves with a recorded value. The
+values are recorded with MSVC on Windows; other compilers give other values, so those cases fail on
+macOS.
 
 ## Scripts at the repository root
 
 | Script | Used for |
 |---|---|
-| `build_release_vs2022.bat` | Windows builds with Visual Studio 2022 (the one to use) |
-| `build_release_vs.bat` | Windows builds in CI (`.github/workflows`) |
+| `build_win.bat` | Windows builds |
 | `build_release_macos.sh` | macOS builds |
 | `build_linux.sh`, `build_flatpak.sh` | Linux, from OrcaSlicer, untested |
 
